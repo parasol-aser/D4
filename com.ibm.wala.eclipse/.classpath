@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry excluding="com/ibm/wala/eclipse/cg/views/CGView.java|com/ibm/wala/eclipse/cg/views/SelectWalaCGAction.java|com/ibm/wala/eclipse/cg/model/WalaWebPageCGModel.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="data"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.ibm.wala.ide"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.ibm.wala.cast"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.ibm.wala.cast.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.ibm.wala.ide.jdt"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
