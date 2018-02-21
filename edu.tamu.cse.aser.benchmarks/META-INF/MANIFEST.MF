@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: benchmarks
+Bundle-SymbolicName: edu.tamu.cse.aser.benchmarks
+Bundle-Version: 1.3.4.qualifier
+Bundle-Vendor: ASER
