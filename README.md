@@ -2,6 +2,10 @@
 
 This artifact contains the source code of D4, the runnable jar files of ECHO and 14 benchmarks (jar files) from Dacapo-9.12. We provide the evaluation to reproduce the performance results presented in the PLDI'18 paper: D4: Fast Concurrency Debugging with Parallel Differential Analysis (Table 4, 5, 6, 7). Due to the extra long running time to reproduce the statistics in the paper, we also provide a shorter evaluation for reviewers to evaluate the performance, which compares the same aspects but using less amount of time.
 
+For the parallel incremental points-to analysis described in the paper, we have integrated into [wala](https://github.com/april1989/Incremental_Points_to_Analysis.git), which has a better documentation. For this artifact, we have integrated the relative code into ````com.ibm.wala.core````.
+
+For the static happens-before anlaysis and parallel incremental detection, the code lies in ````edu.tamu.cse.aser.d4````.
+
 ### Software Dependencies
 - Java 1.7
 - a core subset of wala (1.3.4), already included
