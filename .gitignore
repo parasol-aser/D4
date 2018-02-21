@@ -16,6 +16,7 @@ edu.tamu.cse.aser.d4/.DS_Store
 edu.tamu.cse.aser.d4/bin/
 edu.tamu.cse.aser.d4remote/.DS_Store
 edu.tamu.cse.aser.d4remote/bin/
+edu.tamu.cse.aser.benchmarks/bin/
 libs.akka/bin/
 com.ibm.wala.cast/.svn/
 com.ibm.wala.cast.java/.svn/

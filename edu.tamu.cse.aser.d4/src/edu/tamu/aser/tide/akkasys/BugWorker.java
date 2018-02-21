@@ -28,7 +28,7 @@ import edu.tamu.aser.tide.graph.LockSetEngine;
 import edu.tamu.aser.tide.graph.SHBEdge;
 import edu.tamu.aser.tide.graph.SHBGraph;
 import edu.tamu.aser.tide.graph.Trace;
-import edu.tamu.aser.tide.tests.ArtiEva;
+import edu.tamu.aser.tide.tests.ReproduceBenchmarks;
 import edu.tamu.aser.tide.trace.DLLockPair;
 import edu.tamu.aser.tide.trace.DLockNode;
 import edu.tamu.aser.tide.trace.DUnlockNode;
@@ -86,14 +86,14 @@ public class BugWorker extends UntypedActor{
 	private void processIncreCheckDeadlock(IncreCheckDeadlock job) {
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 		DLockNode check = job.getCheckLock();
-		TIDEEngine engine = ArtiEva.engine;
+		TIDEEngine engine = ReproduceBenchmarks.engine;
 //		if(DEBUG){
 //			engine = Test.engine;
 //		}else{
 //			engine = TIDECGModel.bugEngine;
 //		}
 		//collect dlpair including check
-		SHBGraph shb = ArtiEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmarks.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -150,7 +150,7 @@ public class BugWorker extends UntypedActor{
 			}
 		}
 		if(bugs.size() > 0){
-			ArtiEva.engine.addBugsBack(bugs);
+			ReproduceBenchmarks.engine.addBugsBack(bugs);
 //			if(DEBUG)
 //				Test.engine.addBugsBack(bugs);
 //			else
@@ -171,7 +171,7 @@ public class BugWorker extends UntypedActor{
 			for(Integer tid2: tids){
 				if(tid2!=tid1){
 					ArrayList<DLLockPair> dLLockPairs2;
-					dLLockPairs2 = ArtiEva.engine.threadDLLockPairs.get(tid2);
+					dLLockPairs2 = ReproduceBenchmarks.engine.threadDLLockPairs.get(tid2);
 //					if(DEBUG)
 //						dLLockPairs2 = Test.engine.threadDLLockPairs.get(tid2);
 //					else
@@ -213,7 +213,7 @@ public class BugWorker extends UntypedActor{
 			}
 		}
 		if(bugs.size() > 0){
-			ArtiEva.engine.addBugsBack(bugs);
+			ReproduceBenchmarks.engine.addBugsBack(bugs);
 //			if(DEBUG)
 //				Test.engine.addBugsBack(bugs);
 //			else
@@ -244,7 +244,7 @@ public class BugWorker extends UntypedActor{
 //		}
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 		//
-		SHBGraph shb = ArtiEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmarks.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -298,7 +298,7 @@ public class BugWorker extends UntypedActor{
 	    }
 
 	    if(bugs.size() > 0){
-			ArtiEva.engine.addBugsBack(bugs);
+			ReproduceBenchmarks.engine.addBugsBack(bugs);
 //			if (DEBUG) {
 //				Test.engine.addBugsBack(bugs);
 //			}else{
@@ -313,7 +313,7 @@ public class BugWorker extends UntypedActor{
 		HashSet<ReadNode> reads = job.getReads();
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 		String sig = job.getSig();
-		SHBGraph shb = ArtiEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmarks.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -355,7 +355,7 @@ public class BugWorker extends UntypedActor{
 		}
 
 		if(bugs.size() > 0){
-			ArtiEva.engine.addBugsBack(bugs);
+			ReproduceBenchmarks.engine.addBugsBack(bugs);
 //			if (DEBUG) {
 //				Test.engine.addBugsBack(bugs);
 //			}else{
@@ -369,7 +369,7 @@ public class BugWorker extends UntypedActor{
 	private void processIncreRemoveLocalJob(IncreRemoveLocalJob job) {
 		//update later
 		String check = job.getCheckSig();
-		TIDEEngine engine = ArtiEva.engine;
+		TIDEEngine engine = ReproduceBenchmarks.engine;
 //		if(DEBUG){
 //			engine = Test.engine;
 //		}else{
@@ -407,8 +407,8 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-		ArtiEva.engine.addSigReadNodes(sigReadNodes);
-		ArtiEva.engine.addSigWriteNodes(sigWriteNodes);
+		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
+		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
 //		if(DEBUG){
 //			Test.engine.addSigReadNodes(sigReadNodes);
 //			Test.engine.addSigWriteNodes(sigWriteNodes);
@@ -421,7 +421,7 @@ public class BugWorker extends UntypedActor{
 
 	private void processRemoveLocalJob(RemoveLocalJob job) {
 		ArrayList<Trace> team = job.getTeam();
-		HashSet<String> sharedFields = ArtiEva.engine.sharedFields;
+		HashSet<String> sharedFields = ReproduceBenchmarks.engine.sharedFields;
 //		if(DEBUG){
 //			sharedFields = Test.engine.sharedFields;
 //		}else{
@@ -462,8 +462,8 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-		ArtiEva.engine.addSigReadNodes(sigReadNodes);
-		ArtiEva.engine.addSigWriteNodes(sigWriteNodes);
+		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
+		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
 //		if(DEBUG){
 //			Test.engine.addSigReadNodes(sigReadNodes);
 //			Test.engine.addSigWriteNodes(sigWriteNodes);
@@ -490,7 +490,7 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-		ArtiEva.engine.addSharedVars(sharedFields);
+		ReproduceBenchmarks.engine.addSharedVars(sharedFields);
 //		if (DEBUG) {
 //			Test.engine.addSharedVars(sharedFields);
 //		}else{
@@ -500,7 +500,7 @@ public class BugWorker extends UntypedActor{
 	}
 
 	private boolean checkLockSetAndHappensBefore(Integer wtid, WriteNode wnode, Integer xtid, MemNode xnode) {//ReachabilityEngine reachEngine,
-		TIDEEngine engine = ArtiEva.engine;
+		TIDEEngine engine = ReproduceBenchmarks.engine;
 //		if(DEBUG){
 //			engine = Test.engine;
 //		}else{
@@ -517,7 +517,7 @@ public class BugWorker extends UntypedActor{
 	}
 
 	private void processIncreRecheckCommonLocks(IncreRecheckCommonLock job){
-		TIDEEngine engine = ArtiEva.engine;
+		TIDEEngine engine = ReproduceBenchmarks.engine;
 //		if(DEBUG){
 //			engine = Test.engine;
 //		}else{
@@ -571,7 +571,7 @@ public class BugWorker extends UntypedActor{
 	private HashMap<String, ArrayList<LockPair>> collectAllLockPairsFor(int tid, INode node,
 			HashMap<LockPair, INode> pair_edge_locations) {
 		HashMap<String, ArrayList<LockPair>> allPairs = new HashMap<>();
-		SHBGraph shb = ArtiEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmarks.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -632,7 +632,7 @@ public class BugWorker extends UntypedActor{
 
 	private boolean doesHaveLockBetween(INode check, ArrayList<LockPair> pairs,
 			HashMap<LockPair, INode> pair_edge_locations) {
-		SHBGraph shb = ArtiEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmarks.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -658,7 +658,7 @@ public class BugWorker extends UntypedActor{
 
 
 	private StartNode sameParent(int tid1, int tid2) {
-		HashMap<Integer, StartNode> mapOfStartNode = ArtiEva.engine.mapOfStartNode;
+		HashMap<Integer, StartNode> mapOfStartNode = ReproduceBenchmarks.engine.mapOfStartNode;
 //		if(DEBUG){
 //			mapOfStartNode = Test.engine.mapOfStartNode;
 //		}else{
@@ -678,7 +678,7 @@ public class BugWorker extends UntypedActor{
 	}
 
 	private ArrayList<StartNode> shareGrandParent(int earlier, int later) {
-		HashMap<Integer, StartNode> mapOfStartNode = ArtiEva.engine.mapOfStartNode;
+		HashMap<Integer, StartNode> mapOfStartNode = ReproduceBenchmarks.engine.mapOfStartNode;
 //		if(DEBUG){
 //			mapOfStartNode = Test.engine.mapOfStartNode;
 //		}else{
@@ -795,7 +795,7 @@ public class BugWorker extends UntypedActor{
 
 	private boolean hasHBRelation(int erTID, INode comper, int eeTID, INode compee){
 		boolean donothave = false;
-		SHBGraph shb = ArtiEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmarks.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -810,10 +810,10 @@ public class BugWorker extends UntypedActor{
 //				System.out.println();
 //			}
 //		}
-		StartNode erStartNode = ArtiEva.engine.mapOfStartNode.get(erTID);
-		StartNode eeStartNode =ArtiEva.engine.mapOfStartNode.get(eeTID);
-		JoinNode erJoinNode =ArtiEva.engine.mapOfJoinNode.get(erTID);
-		JoinNode eeJoinNode =ArtiEva.engine.mapOfJoinNode.get(eeTID);
+		StartNode erStartNode = ReproduceBenchmarks.engine.mapOfStartNode.get(erTID);
+		StartNode eeStartNode =ReproduceBenchmarks.engine.mapOfStartNode.get(eeTID);
+		JoinNode erJoinNode =ReproduceBenchmarks.engine.mapOfJoinNode.get(erTID);
+		JoinNode eeJoinNode =ReproduceBenchmarks.engine.mapOfJoinNode.get(eeTID);
 //		if(DEBUG){
 //			erStartNode = Test.engine.mapOfStartNode.get(erTID);
 //			eeStartNode = Test.engine.mapOfStartNode.get(eeTID);

@@ -1,5 +1,6 @@
 package edu.tamu.aser.tide.tests;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -17,6 +18,7 @@ import org.eclipse.core.runtime.IPath;
 import com.ibm.wala.cfg.ControlFlowGraph;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.core.tests.callGraph.CallGraphTestUtil;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -61,7 +63,7 @@ import edu.tamu.aser.tide.trace.DLockNode;
 import edu.tamu.aser.tide.trace.MemNode;
 import scala.reflect.internal.Trees.This;
 
-public class ArtiEva {
+public class ReproduceBenchmarks {
 
 	static PrintStream ps;
 	private static long totaltime;
@@ -70,11 +72,11 @@ public class ArtiEva {
 	static boolean includeAllMainEntryPoints = false;
 
 	static String benchmark = null;
-	static String mainSignature = ".main"+ConvertHandler.DESC_MAIN;
+	static String mainSignature = ".main([Ljava/lang/String;)V";
 	static String mainClassName = null;
 	static String mainMethodSig = null;
 	static String testFile = null;
-	static String excludeFile = "data/EclipseDefaultExclusions.txt";
+	static String excludeFile = "data/DefaultExclusions.txt";
 
 
 	public static void main(String[] args) throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException {
@@ -85,10 +87,10 @@ public class ArtiEva {
 		String arg = args[0];
 		benchmark = arg;
 		switch (arg) {
-		case "test":
+		case "new_test":
 			mainClassName = "Tsp";
 			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/test.txt";
+			testFile = "data/newtest.txt";
 			break;
 		case "avrora":
 			mainClassName = "avrora/Main";
@@ -113,8 +115,7 @@ public class ArtiEva {
 		case "h2":
 			mainClassName = "Shell";
 			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/dacapotestfile.txt";
-			excludeFile = "data/h2excludefile.txt";
+			testFile = "data/h2testfile.txt";
 			break;
 		case "jython":
 			mainClassName = "jython";
@@ -166,6 +167,103 @@ public class ArtiEva {
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			break;
+		case "all":
+			iterateAllBenchmarks();
+			break;
+
+	    //short version
+		case "new_test_short":
+			mainClassName = "Tsp";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/newtest.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "avrora_short":
+			mainClassName = "avrora/Main";
+			mainMethodSig = "avrora.Main" + mainSignature;
+			testFile = "data/avroratestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "batik_short":
+			mainClassName = "rasterizer/Main";
+			mainMethodSig = "rasterizer.Main" + mainSignature;
+			testFile = "data/batiktestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "eclipse_short":
+			mainClassName = "EclipseStarter";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/eclipsetestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "fop_short": //no detection
+			mainClassName = "TTFFile";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/foptestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "h2_short":
+			mainClassName = "Shell";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/h2testfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "jython_short":
+			mainClassName = "jython";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/jythontestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "luindex_short":
+			mainClassName = "IndexFiles";
+			mainMethodSig = mainClassName + mainSignature;
+			excludeFile = "data/luindexexcludefileshort.txt";
+			testFile = "data/dacapotestfile.txt";
+			break;
+		case "lusearch_short":
+			mainClassName = "IndexHTML";
+			mainMethodSig = mainClassName + mainSignature;
+			excludeFile = "data/lusearchexcludefileshort.txt";
+			testFile = "data/dacapotestfile.txt";
+			break;
+		case "pmd_short"://
+			mainClassName = "Benchmark";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/pmdtestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "sunflow_short":
+			mainClassName = "Benchmark";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/sunflowtestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "tomcat_short"://
+			mainClassName = "ExpressionDemo";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/dacapotestfile.txt";
+			excludeFile = "data/tomcatexcludefileshort.txt";
+			break;
+		case "tradebeans_short":
+			mainClassName = "";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/dacapotestfile.txt";
+			excludeFile = "data/tradebeansexcludefileshort.txt";
+			break;
+		case "tradesoap_short":
+			mainClassName = "";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/dacapotestfile.txt";
+			excludeFile = "data/tradesoapexcludefileshort.txt";
+			break;
+		case "xalan_short"://
+			mainClassName = "Process";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/xalantestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "all_short":
+			iterateAllBenchmarksShort();
 
 		default:
 			throw new IllegalArgumentException("Invalid argument: " + arg);
@@ -173,9 +271,44 @@ public class ArtiEva {
 
 		//start
 		print("Benchmark: " + arg, true);
-		runD4_1();
+//		runD4_1();
 		System.out.println();
 		runD4_48();
+		System.out.println();
+	}
+
+
+	private static void iterateAllBenchmarksShort()
+			throws ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException, IOException{
+		String[] args = new String[] { "avrora_short", "batik_short", "eclipse_short", "fop_short",
+				"h2_short", "jython_short", "luindex_short", "lusearch_short", "pmd_short",
+				"sunflow_short", "tomcat_short", "tradebeans_short", "tradesoap_short",
+				"xalan_short"};
+
+		System.out.println("RUNNING SHORT TESTS FOR ALL BENCHMARKS.\n");
+
+		for (int i = 0; i < args.length; i++) {
+			String[] arg = new String[]{args[i]};
+			main(arg);
+		}
+
+		System.out.println("\n COMPLETE SHORT TESTING ALL BENCHMARKS.");
+	}
+
+
+	private static void iterateAllBenchmarks() throws ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException, IOException {
+		String[] args = new String[] { "avrora", "batik", "eclipse", "fop", "h2", "jython",
+				"luindex", "lusearch", "pmd", "sunflow", "tomcat", "tradebeans", "tradesoap",
+				"xalan"};
+
+		System.out.println("RUNNING FULL TESTS FOR ALL BENCHMARKS.\n");
+
+		for (int i = 0; i < args.length; i++) {
+			String[] arg = new String[]{args[i]};
+			main(arg);
+		}
+
+		System.out.println("\n COMPLETE FULL TESTING ALL BENCHMARKS.");
 	}
 
 
@@ -183,7 +316,7 @@ public class ArtiEva {
 			throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException{
 		print("D4-1", true);
 		System.out.println("Running Exhaustive Points-to Analysis ... ");
-		AnalysisScope scope = AnalysisScopeReader.readJavaScope(testFile, (new FileProvider()).getFile(excludeFile), ArtiEva.class.getClassLoader());
+		AnalysisScope scope = CallGraphTestUtil.makeJ2SEAnalysisScope(testFile, excludeFile);
 		ClassHierarchy cha = ClassHierarchy.make(scope);
 		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
@@ -245,12 +378,12 @@ public class ArtiEva {
 	public static void runD4_48()
 			throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException{
 		print("D4-48", true);
-		System.out.println("Running Exhaustive Points-to Analysis ... ");
 		//dist
 		DistributeMaster master = new DistributeMaster();
 		master.startClusterSystem(benchmark);
 
-		AnalysisScope scope = AnalysisScopeReader.readJavaScope(testFile, (new FileProvider()).getFile(excludeFile), ArtiEva.class.getClassLoader());
+		System.out.println("Running Exhaustive Points-to Analysis ... ");
+		AnalysisScope scope = CallGraphTestUtil.makeJ2SEAnalysisScope(testFile, excludeFile);
 		ClassHierarchy cha = ClassHierarchy.make(scope);
 		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
@@ -303,6 +436,7 @@ public class ArtiEva {
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
 		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
+		master.awaitRemoteComplete();
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
 		incrementalDistTest(master, builder, cg);
@@ -332,14 +466,13 @@ public class ArtiEva {
 
 				SSAInstruction[] insts = ir.getInstructions();
 				int size = insts.length;
-				System.out.println("DETECTION AGAIN >>> " + n.getMethod().toString());
 				for(int i=size;i>0;i--){
 					SSAInstruction inst = insts[i-1];
 					if(inst==null)
 						continue;//skip null
-					master.frontend.tell("-STMT:"+inst.toString(), master.frontend);
+					master.frontend.tell("-STMT:"+inst.iindex, master.frontend);
 					master.awaitRemoteComplete();
-					master.frontend.tell("+STMT:"+inst.toString(), master.frontend);
+					master.frontend.tell("+STMT:"+inst.iindex, master.frontend);
 					master.awaitRemoteComplete();
 				}
 			}
@@ -349,7 +482,7 @@ public class ArtiEva {
 			master.awaitRemoteComplete();
 		}
 
-		System.out.println("Complete Dist Evaluation. Please see the log on remote.");
+		System.out.println("Complete Dist Evaluation for " + benchmark + ". Please see the log on remote server.");
 	}
 
 	static boolean notreach = true;

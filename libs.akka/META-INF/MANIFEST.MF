@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Akka
+Bundle-SymbolicName: libs.akka
+Bundle-Version: 1.3.4.qualifier

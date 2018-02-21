@@ -11,7 +11,7 @@ import akka.cluster.Member;
 import akka.cluster.MemberStatus;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import edu.tamu.aser.tide.tests.DistEva;
+import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 
 public class DistributeReceiver extends UntypedActor{
 
@@ -35,7 +35,7 @@ public class DistributeReceiver extends UntypedActor{
 	@Override
 	public void onReceive(Object message) throws Exception {
 		// TODO Auto-generated method stub
-		log.info("backend received message: " + message.toString());
+//		log.info("backend received message: " + message.toString());
 		if (message instanceof CurrentClusterState) {
 			CurrentClusterState state = (CurrentClusterState) message;
 			for (Member member : state.getMembers()) {
@@ -49,23 +49,23 @@ public class DistributeReceiver extends UntypedActor{
 		}else if(message instanceof String){
 			String job = (String) message;
 			if(job.contains("-STMT:")){
-				DistEva.delete(job.substring(job.indexOf(":") + 1));
+				ReproduceBenchmark_remote.delete(job.substring(job.indexOf(":") + 1));
 				getSender().tell(true, getSelf());
 			}else if(job.contains("+STMT:")){
-				DistEva.add(job.substring(job.indexOf(":") + 1));
+				ReproduceBenchmark_remote.add(job.substring(job.indexOf(":") + 1));
 				getSender().tell(true, getSelf());
 			}else if(job.contains("METHOD:")){
-				boolean notreach = DistEva.locateCGNode(job.substring(job.indexOf(":") + 1));
+				boolean notreach = ReproduceBenchmark_remote.locateCGNode(job.substring(job.indexOf(":") + 1));
 				if(notreach){
 					getSender().tell(true, getSelf());
 				}else{
 					getSender().tell(false, getSelf());
 				}
 			}else if(job.contains("BENCHMARK:")){
-				DistEva.prepare(job.substring(job.indexOf(":") + 1));
+				ReproduceBenchmark_remote.prepare(job.substring(job.indexOf(":") + 1));
 				getSender().tell(true, getSelf());
 			}else if(job.contains("PERFORMANCE")){
-				DistEva.performance();
+				ReproduceBenchmark_remote.performance();
 				getSender().tell(true, getSelf());
 			}
 		}else{

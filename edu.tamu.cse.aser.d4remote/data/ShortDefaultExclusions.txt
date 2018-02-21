@@ -2,7 +2,6 @@ java\/applet\/.*
 java\/awt\/.*
 java\/beans\/.*
 java\/io\/.*
-java\/lang\/.*
 java\/math\/.*
 java\/net\/.*
 java\/nio\/.*

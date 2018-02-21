@@ -16,7 +16,7 @@ import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import edu.tamu.aser.tide.tests.ArtiEva;
+import edu.tamu.aser.tide.tests.ReproduceBenchmarks;
 
 public class Classification extends UntypedActor{
 
@@ -44,7 +44,7 @@ public class Classification extends UntypedActor{
 			}else{
 				//reach time limit
 				finished = true;
-				ArtiEva.terminateEva();
+				ReproduceBenchmarks.terminateEva();
 			}
 		}else{
 			unhandled(message);

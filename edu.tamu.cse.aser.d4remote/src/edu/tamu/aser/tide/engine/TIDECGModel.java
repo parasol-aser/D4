@@ -84,7 +84,7 @@ import edu.tamu.aser.tide.marker.BugMarker;
 import edu.tamu.aser.tide.plugin.Activator;
 import edu.tamu.aser.tide.plugin.ChangedItem;
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
-import edu.tamu.aser.tide.tests.DistEva;
+import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 import edu.tamu.aser.tide.trace.MemNode;
 import edu.tamu.aser.tide.trace.MethodNode;
 import edu.tamu.aser.tide.trace.DLLockPair;
@@ -515,7 +515,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 	private LinkedList<String> obtainTraceOfINode(int tid, INode rw1, ITIDEBug bug, int idx) {
 		LinkedList<String> trace = new LinkedList<>();
 		HashSet<INode> traversed = new HashSet<>();
-		SHBGraph shb = DistEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmark_remote.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{

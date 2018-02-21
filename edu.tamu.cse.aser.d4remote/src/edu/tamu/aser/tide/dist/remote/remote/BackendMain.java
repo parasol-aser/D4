@@ -20,7 +20,6 @@ public class BackendMain {
 
 	public static void main(String[] args) {
 		String port = args.length > 0 ? args[0] : "0";
-		port = "65501";
 		final Config config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).
 				withFallback(ConfigFactory.parseString("akka.cluster.roles = [backend]")).
 				withFallback(ConfigFactory.load("worker"));

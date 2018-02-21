@@ -14,7 +14,7 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 
 import edu.tamu.aser.tide.engine.Locknode;
 import edu.tamu.aser.tide.engine.TIDECGModel;
-import edu.tamu.aser.tide.tests.DistEva;
+import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 import edu.tamu.aser.tide.trace.DLockNode;
 import edu.tamu.aser.tide.trace.DUnlockNode;
 import edu.tamu.aser.tide.trace.INode;
@@ -72,7 +72,7 @@ public class LockSetEngine
 	}
 
 	public void organizeEngine() {
-		SHBGraph shb = DistEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmark_remote.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -221,7 +221,7 @@ public class LockSetEngine
 
 
 	private boolean matchAnyLockPair(ArrayList<LockPair> lockpairs, MemNode xnode, int tid) {
-		SHBGraph shb = DistEva.engine.shb;
+		SHBGraph shb = ReproduceBenchmark_remote.engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{

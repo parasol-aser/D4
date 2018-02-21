@@ -10,6 +10,7 @@ import java.util.Set;
 import com.ibm.wala.cfg.ControlFlowGraph;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.core.tests.callGraph.CallGraphTestUtil;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -50,7 +51,7 @@ import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
 
-public class DistEva {
+public class ReproduceBenchmark_remote {
 	static PrintStream ps;
 	private static long totaltime;
 	public static TIDEEngine engine;
@@ -58,11 +59,11 @@ public class DistEva {
 	static boolean includeAllMainEntryPoints = false;
 
 	static String benchmark = null;
-	static String mainSignature = ".main"+ConvertHandler.DESC_MAIN;
+	static String mainSignature = ".main([Ljava/lang/String;)V";
 	static String mainClassName = null;
 	static String mainMethodSig = null;
 	static String testFile = null;
-	static String excludeFile = "data/EclipseDefaultExclusions.txt";
+	static String excludeFile = "data/DefaultExclusions.txt";
 
 	static SSAPropagationCallGraphBuilder builder;
 	static CallGraph cg;
@@ -91,11 +92,13 @@ public class DistEva {
 
 	public static boolean prepare(String tar) throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException {
 		benchmark = tar;
+		print(benchmark, true);
+		print("D4-48", true);
 		switch (tar) {
-		case "test":
-			mainClassName = "Example";
+		case "new_test":
+			mainClassName = "Tsp";
 			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/test.txt";
+			testFile = "data/newtest.txt";
 			break;
 		case "avrora":
 			mainClassName = "avrora/Main";
@@ -120,8 +123,7 @@ public class DistEva {
 		case "h2":
 			mainClassName = "Shell";
 			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/dacapotestfile.txt";
-			excludeFile = "data/h2excludefile.txt";
+			testFile = "data/h2testfile.txt";
 			break;
 		case "jython":
 			mainClassName = "jython";
@@ -174,18 +176,110 @@ public class DistEva {
 			testFile = "data/xalantestfile.txt";
 			break;
 
+	    //short version
+		case "new_test_short":
+			mainClassName = "Tsp";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/newtest.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "avrora_short":
+			mainClassName = "avrora/Main";
+			mainMethodSig = "avrora.Main" + mainSignature;
+			testFile = "data/avroratestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "batik_short":
+			mainClassName = "rasterizer/Main";
+			mainMethodSig = "rasterizer.Main" + mainSignature;
+			testFile = "data/batiktestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "eclipse_short":
+			mainClassName = "EclipseStarter";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/eclipsetestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "fop_short": //no detection
+			mainClassName = "TTFFile";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/foptestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "h2_short":
+			mainClassName = "Shell";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/h2testfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "jython_short":
+			mainClassName = "jython";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/jythontestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "luindex_short":
+			mainClassName = "IndexFiles";
+			mainMethodSig = mainClassName + mainSignature;
+			excludeFile = "data/luindexexcludefileshort.txt";
+			testFile = "data/dacapotestfile.txt";
+			break;
+		case "lusearch_short":
+			mainClassName = "IndexHTML";
+			mainMethodSig = mainClassName + mainSignature;
+			excludeFile = "data/lusearchexcludefileshort.txt";
+			testFile = "data/dacapotestfile.txt";
+			break;
+		case "pmd_short"://
+			mainClassName = "Benchmark";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/pmdtestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "sunflow_short":
+			mainClassName = "Benchmark";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/sunflowtestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+		case "tomcat_short"://
+			mainClassName = "ExpressionDemo";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/dacapotestfile.txt";
+			excludeFile = "data/tomcatexcludefileshort.txt";
+			break;
+		case "tradebeans_short":
+			mainClassName = "";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/dacapotestfile.txt";
+			excludeFile = "data/tradebeansexcludefileshort.txt";
+			break;
+		case "tradesoap_short":
+			mainClassName = "";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/dacapotestfile.txt";
+			excludeFile = "data/tradesoapexcludefileshort.txt";
+			break;
+		case "xalan_short"://
+			mainClassName = "Process";
+			mainMethodSig = mainClassName + mainSignature;
+			testFile = "data/xalantestfile.txt";
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			break;
+
+
 		default:
 			throw new IllegalArgumentException("Invalid argument: " + tar);
 		}
 
-		AnalysisScope scope = AnalysisScopeReader.readJavaScope(testFile, (new FileProvider()).getFile(excludeFile), DistEva.class.getClassLoader());
+		AnalysisScope scope = CallGraphTestUtil.makeJ2SEAnalysisScope(testFile, excludeFile);
 		ClassHierarchy cha = ClassHierarchy.make(scope);
 		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
 
 		builder = Util.makeZeroOneContainerCFABuilder(options, new AnalysisCache(), cha, scope);
 
-		long start_time = System.currentTimeMillis();
 		cg  = builder.makeCallGraph(options, null);
 		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
 		int numofCGNodes = cg.getNumberOfNodes();
@@ -210,10 +304,9 @@ public class DistEva {
 		//detector
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 48), "bughub");
-		start_time = System.currentTimeMillis();
 		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
 		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
-		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
+		engine.detectBothBugs(ps);
 
 		builder.getPropagationSystem().initializeAkkaSys(48);
 		return true;
@@ -247,102 +340,98 @@ public class DistEva {
 		return true;
 	}
 
-	public static boolean delete(String stmt) {
-		for(int i=insts.length;i>0;i--){
-			SSAInstruction inst = insts[i-1];
-			if(inst==null)
-				continue;//skip null
-			if(inst.toString().equals(stmt)){
-				ISSABasicBlock bb = cfg.getBlockForInstruction(inst.iindex);
-				//delete
-				try{
-					boolean ptachanges = false;
-					builder.setDelete(true);
-					builder.system.setFirstDel(true);
-					v.setBasicBlock(bb);
+	public static boolean delete(String stmt_idx) {
+		int idx = Integer.parseInt(stmt_idx);
+		if(insts.length <= idx)
+			return true;
+		SSAInstruction inst = insts[idx];
+		if(inst==null)
+			return true;//skip null
+		ISSABasicBlock bb = cfg.getBlockForInstruction(inst.iindex);
+		//delete
+		try{
+			boolean ptachanges = false;
+			builder.setDelete(true);
+			builder.system.setFirstDel(true);
+			v.setBasicBlock(bb);
 
-					long delete_start_time = System.currentTimeMillis();
-					inst.visit(v);
-					//del
-					builder.system.setFirstDel(false);
-					do{
-						builder.system.solveAkkaDel(null);
-					}while(!builder.system.emptyWorkListAkka());
-					builder.setDelete(false);
-					HashSet<IVariable> resultsadd = builder.system.changes;
-					if(resultsadd.size() > 0){
-						ptachanges = true;
-					}else{
-						ptachanges = false;
-					}
-					long deldetect_start_time = System.currentTimeMillis();
-					engine.setDelete(true);
-					Set<ITIDEBug> bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
-					engine.setDelete(false);
-
-					long delete_end_time = System.currentTimeMillis();
-					long ptadelete_time = (deldetect_start_time - delete_start_time);
-					long deldetect_time = (delete_end_time - deldetect_start_time);
-
-					builder.system.clearChanges();
-					ps.print(ptadelete_time+" "+deldetect_time+" ");
-
-					totaltime = totaltime + ptadelete_time  + deldetect_time;
-				}catch(Exception e)
-				{
-					e.printStackTrace();
-				}
+			long delete_start_time = System.currentTimeMillis();
+			inst.visit(v);
+			//del
+			builder.system.setFirstDel(false);
+			do{
+				builder.system.solveAkkaDel(null);
+			}while(!builder.system.emptyWorkListAkka());
+			builder.setDelete(false);
+			HashSet<IVariable> resultsadd = builder.system.changes;
+			if(resultsadd.size() > 0){
+				ptachanges = true;
+			}else{
+				ptachanges = false;
 			}
+			long deldetect_start_time = System.currentTimeMillis();
+			engine.setDelete(true);
+			Set<ITIDEBug> bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
+			engine.setDelete(false);
+
+			long ptadelete_time = (deldetect_start_time - delete_start_time);
+			long deldetect_time = (System.currentTimeMillis() - deldetect_start_time);
+
+			builder.system.clearChanges();
+			ps.print(ptadelete_time+" ");
+
+			totaltime = totaltime + ptadelete_time  + deldetect_time;
+		}catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 		return true;
 	}
 
 
-	public static boolean add(String stmt) {
-		for(int i=insts.length;i>0;i--){
-			SSAInstruction inst = insts[i-1];
-			if(inst==null)
-				continue;//skip null
-			if(inst.toString().equals(stmt)){
-				ISSABasicBlock bb = cfg.getBlockForInstruction(inst.iindex);
-				//delete
-				try{
-					boolean ptachanges = false;
-					builder.setDelete(true);
-					builder.system.setFirstDel(true);
-					v.setBasicBlock(bb);
+	public static boolean add(String stmt_idx) {
+		int idx = Integer.parseInt(stmt_idx);
+		if(insts.length <= idx)
+			return true;
+		SSAInstruction inst = insts[idx];
+		if(inst==null)
+			return true;//skip null
+		ISSABasicBlock bb = cfg.getBlockForInstruction(inst.iindex);
+		//delete
+		try{
+			boolean ptachanges = false;
+			builder.setDelete(true);
+			builder.system.setFirstDel(true);
+			v.setBasicBlock(bb);
 
-					long delete_start_time = System.currentTimeMillis();
-					inst.visit(v);
-					long add_start_time = System.currentTimeMillis();
-					inst.visit(v);
-					do{
-						builder.system.solveAkkaAdd(null);
-						builder.addConstraintsFromNewNodes(null);
-					} while (!builder.system.emptyWorkListAkka());
+			long delete_start_time = System.currentTimeMillis();
+			inst.visit(v);
+			long add_start_time = System.currentTimeMillis();
+			inst.visit(v);
+			do{
+				builder.system.solveAkkaAdd(null);
+				builder.addConstraintsFromNewNodes(null);
+			} while (!builder.system.emptyWorkListAkka());
 
-					HashSet<IVariable> resultsdel = builder.system.changes;
-					if(resultsdel.size() > 0){
-						ptachanges = true;
-					}else{
-						ptachanges = false;
-					}
-					long adddetect_start_time = System.currentTimeMillis();
-					HashSet<ITIDEBug> bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
-
-					long add_end_time = System.currentTimeMillis();
-					long ptaadd_time = (adddetect_start_time-add_start_time);
-					long adddetect_time = (add_end_time - adddetect_start_time);
-
-					builder.system.clearChanges();
-					ps.print(ptaadd_time+" "+adddetect_time+" ");
-
-					totaltime = totaltime + ptaadd_time  + adddetect_time;
-				}catch(Exception e)
-				{
-					e.printStackTrace();
-				}
+			HashSet<IVariable> resultsdel = builder.system.changes;
+			if(resultsdel.size() > 0){
+				ptachanges = true;
+			}else{
+				ptachanges = false;
 			}
+			long adddetect_start_time = System.currentTimeMillis();
+			HashSet<ITIDEBug> bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
+
+			long ptaadd_time = (adddetect_start_time-add_start_time);
+			long adddetect_time = (System.currentTimeMillis() - adddetect_start_time);
+
+			builder.system.clearChanges();
+			ps.print(ptaadd_time+" ");
+
+			totaltime = totaltime + ptaadd_time  + adddetect_time;
+		}catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 
 		return true;

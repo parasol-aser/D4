@@ -11,7 +11,7 @@ import akka.actor.Props;
 
 public class DistributeMaster {
 
-  public static ActorRef frontend;
+  public static ActorRef frontend = null;
 
   public DistributeMaster() {
   }
@@ -22,11 +22,16 @@ public class DistributeMaster {
 //  }
 
   public void startClusterSystem(String benchmark) {
-	  startFrontEnd(benchmark);//master
-	  try {
-		  Thread.sleep(5000);
-	  } catch (InterruptedException e) {
-		  e.printStackTrace();
+	  if(frontend == null){
+		  startFrontEnd(benchmark);//master
+		  try {
+			  Thread.sleep(5000);
+		  } catch (InterruptedException e) {
+			  e.printStackTrace();
+		  }
+	  }else{
+		  System.err.println("Already started the backend in the cluster");
+		  frontend.tell("BENCHMARK:" + benchmark, frontend);
 	  }
   }
 

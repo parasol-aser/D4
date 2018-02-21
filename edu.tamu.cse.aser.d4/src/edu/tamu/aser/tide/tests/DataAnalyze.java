@@ -102,20 +102,34 @@ public class DataAnalyze {
 					double averageaddtime_dl = (double)totaladdtime_dl/totalinstruction;
 					double averagetime_dl = (averagedeletetime_dl+averageaddtime_dl)/2;
 
+					double worsttime_race;
+					if(worstdeletetime_race > worstaddtime_race){
+						worsttime_race = worstdeletetime_race;
+					}else{
+						worsttime_race = worstaddtime_race;
+					}
+
+					double worsttime_dl;
+					if(worstdeletetime_dl > worstaddtime_dl){
+						worsttime_dl = worstdeletetime_dl;
+					}else{
+						worsttime_dl = worstaddtime_dl;
+					}
+
 					System.out.println();
 					System.out.println(" =======================================================================");
 					System.out.println("Performance of " + tarfile
 							+"\n Points-to analysis: "
-							+"\n == Average: "+df2.format(averagetime)+ "(Delete: "+df2.format(averagedeletetime)+ " Add: "+df2.format(averageaddtime)+")"
-							+"\n == Worst (Delete: "+df2.format(worstdeletetime)+ " Add: "+df2.format(worstaddtime)+")"
+							+"\n Insert (Average: " + df2.format(averageaddtime)+ "  Worst: " +df2.format(worstaddtime)+")"
+							+"\n Delete (Average: " + df2.format(averagedeletetime) + "  Worst: " + df2.format(worstdeletetime)+")"
 
 							+"\n Race: "
-							+"\n == Average: "+df2.format(averagetime_race)+ "(Delete: "+df2.format(averagedeletetime_race)+ " Add: "+df2.format(averageaddtime_race)+")"
-							+"\n == Worst (Delete: "+df2.format(worstdeletetime_race)+ " Add: "+df2.format(worstaddtime_race)+")"
+							+"\n == Average: "+df2.format(averagetime_race)
+							+"\n == Worst: " + df2.format(worsttime_race)
 
 							+"\n Deadlock: "
-							+"\n == Average: "+df2.format(averagetime_dl)+ "(Delete: "+df2.format(averagedeletetime_dl)+ " Add: "+df2.format(averageaddtime_dl)+")"
-							+"\n == Worst (Delete: "+df2.format(worstdeletetime_dl)+ " Add: "+df2.format(worstaddtime_dl)+")"
+							+"\n == Average: "+df2.format(averagetime_dl)
+							+"\n == Worst : " + df2.format(worsttime_dl)
 							);
 					System.out.println(" =======================================================================");
 

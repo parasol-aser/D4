@@ -15,7 +15,7 @@ import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.graph.Trace;
-import edu.tamu.aser.tide.tests.DistEva;
+import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 import edu.tamu.aser.tide.trace.DLLockPair;
 import edu.tamu.aser.tide.trace.DLockNode;
 import edu.tamu.aser.tide.trace.INode;
@@ -52,7 +52,7 @@ public class BugHub extends UntypedActor{
 			}
 			nrOfWorks = variableWriteMap.keySet().size();
 		}else if(message instanceof RemoveLocalVar){//trace, remove local nodes
-			TIDEEngine engine = DistEva.engine;
+			TIDEEngine engine = ReproduceBenchmark_remote.engine;
 //			if(DEBUG){
 //				engine = Test.engine;
 //			}else{
@@ -79,7 +79,7 @@ public class BugHub extends UntypedActor{
 				nrOfWorks++;
 			}
 		}else if(message instanceof DistributeDatarace){//parallel check bugs
-			TIDEEngine engine = DistEva.engine;
+			TIDEEngine engine = ReproduceBenchmark_remote.engine;
 //			if(DEBUG){
 //				engine = Test.engine;
 //			}else{
@@ -97,7 +97,7 @@ public class BugHub extends UntypedActor{
 				doWeTerminate();
 			}
 		}else if(message instanceof DistributeDeadlock){//parallel check bugs
-			TIDEEngine engine = DistEva.engine;
+			TIDEEngine engine = ReproduceBenchmark_remote.engine;
 //			if(DEBUG){
 //				engine = Test.engine;
 //			}else{
@@ -144,7 +144,7 @@ public class BugHub extends UntypedActor{
 		}else if(message instanceof IncrementalCheckDatarace){
 			IncrementalCheckDatarace work = (IncrementalCheckDatarace) message;
 			HashSet<String> checks = work.getNodes();
-			TIDEEngine engine  = DistEva.engine;
+			TIDEEngine engine  = ReproduceBenchmark_remote.engine;
 //			if(DEBUG){
 //				engine = Test.engine;
 //			}else{
@@ -165,7 +165,7 @@ public class BugHub extends UntypedActor{
 			}
 		}else if(message instanceof IncrementalRecheckCommonLock){
 //			IncrementalRecheckCommonLock work = (IncrementalRecheckCommonLock) message;
-			TIDEEngine engine = DistEva.engine;
+			TIDEEngine engine = ReproduceBenchmark_remote.engine;
 //			if(DEBUG){
 //				engine = Test.engine;
 //			}else{

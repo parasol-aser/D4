@@ -63,5 +63,15 @@
 	<classpathentry kind="lib" path="/libs.akka/libs/slf4j-api-1.7.16.jar"/>
 	<classpathentry kind="lib" path="/libs.akka/libs/ssl-config-core_2.11-0.2.1.jar"/>
 	<classpathentry kind="lib" path="/libs.akka/libs/uncommons-maths-1.2.2a.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.cast_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.cast.java_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.core_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.core.testdata_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.core.tests_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.eclipse_1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.ide_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.ide.jdt_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.shrike_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.util_1.3.4.201802201451.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
