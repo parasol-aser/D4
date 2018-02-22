@@ -10,18 +10,6 @@ java\/rmi\/.*
 java\/security\/.*
 java\/sql\/.*
 java\/text\/.*
-java\/lang\/.*
-
-javax\/.*
-sun\/.*
-sunw\/.*
-com\/sun\/.*
-com\/ibm\/.*
-com\/apple\/.*
-com\/oracle\/.*
-apple\/.*
-org\/xml\/.*
-jdbm\/.*
 
 antlr\/.*
 avrora\/.*

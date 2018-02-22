@@ -160,7 +160,7 @@ public abstract class GeneralStatement<T extends IVariable<?>> extends AbstractS
   private final static int[] primes = { 331, 337, 347, 1277 };
 
   private int makeHashCode() {
-    int result = operator.hashCode();
+    int result = operator.hashCode()* 1380;
     if (lhs != null)
       result += lhs.hashCode() * primes[0];
     for (int i = 0; i < Math.min(rhs.length, 2); i++) {

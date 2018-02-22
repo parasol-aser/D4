@@ -316,7 +316,7 @@ public class ReproduceBenchmarks {
 		long start_time = System.currentTimeMillis();
 		CallGraph cg  = builder.makeCallGraph(options, null);
 		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
-		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time));
+		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time) + "ms");
 		int numofCGNodes = cg.getNumberOfNodes();
 		int totalInstanceKey = pta.getInstanceKeys().size();
 		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
@@ -355,10 +355,10 @@ public class ReproduceBenchmarks {
 				dl++;
 			}
 		}
-		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time));
+		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
-		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
+//		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
 		builder.getPropagationSystem().initializeAkkaSys(1);
@@ -383,7 +383,7 @@ public class ReproduceBenchmarks {
 		long start_time = System.currentTimeMillis();
 		CallGraph cg  = builder.makeCallGraph(options, null);
 		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
-		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time));
+		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time) + "ms");
 		int numofCGNodes = cg.getNumberOfNodes();
 		int totalInstanceKey = pta.getInstanceKeys().size();
 		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
@@ -422,10 +422,10 @@ public class ReproduceBenchmarks {
 				dl++;
 			}
 		}
-		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time));
+		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
-		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
+//		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
 		master.awaitRemoteComplete();
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
@@ -453,7 +453,10 @@ public class ReproduceBenchmarks {
 					continue;
 				master.frontend.tell("METHOD:"+n.toString(), master.frontend);
 				master.awaitRemoteComplete();
-
+				if(nextNode){
+					nextNode = false;
+					continue;
+				}
 				SSAInstruction[] insts = ir.getInstructions();
 				int size = insts.length;
 				for(int i=size;i>0;i--){
@@ -472,7 +475,12 @@ public class ReproduceBenchmarks {
 			master.awaitRemoteComplete();
 		}
 
-		System.out.println("Complete Dist Evaluation for " + benchmark + ". Please see the log on remote server.");
+		System.out.println("Complete D4-48 Evaluation for " + benchmark + ". Please see the log on remote server.");
+	}
+
+	static boolean nextNode = false;
+	public static void nextCGNode() {
+		nextNode = true;
 	}
 
 	static boolean notreach = true;
@@ -657,5 +665,7 @@ public class ReproduceBenchmarks {
 			e.printStackTrace();
 		}
 	}
+
+
 
 }

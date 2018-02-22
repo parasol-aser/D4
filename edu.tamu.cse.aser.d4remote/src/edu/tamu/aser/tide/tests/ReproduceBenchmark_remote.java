@@ -282,11 +282,6 @@ public class ReproduceBenchmark_remote {
 			int size = pta.getPointsToSet(key).size();
 			totalPointerEdge+=size;
 		}
-		System.out.println("#Class: "+totalClass);
-		System.out.println("#Method: "+numofCGNodes);
-		System.out.println("#Pointer: "+totalPointerKey);
-		System.out.println("#Object: "+totalInstanceKey);
-		System.out.println("#Edges: "+totalPointerEdge);
 		System.out.println();
 		ps.println();
 
@@ -302,8 +297,9 @@ public class ReproduceBenchmark_remote {
 	}
 
 
-	public static boolean locateCGNode(String cgnode) {
+	public static int locateCGNode(String cgnode) {
 		Iterator<CGNode> iter = cg.iterator();
+		boolean locate = false;
 		while(iter.hasNext()){
 			CGNode next = iter.next();
 			if(next.toString().equals(cgnode)){
@@ -322,13 +318,17 @@ public class ReproduceBenchmark_remote {
 				cfg = ir.getControlFlowGraph();
 				insts = ir.getInstructions();
 				changedNodes.add(next);
+				locate = true;
 			}
 		}
 		if(totaltime >= 5400000){//7200000  5400000
 			totaltime = 0;
-			return false;
+			return 0;
 		}
-		return true;
+		if(locate)
+			return 1;
+		else
+			return 2;
 	}
 
 	public static boolean delete(String stmt_idx) {

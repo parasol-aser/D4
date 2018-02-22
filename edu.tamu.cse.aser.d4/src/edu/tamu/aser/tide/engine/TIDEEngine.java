@@ -3924,8 +3924,10 @@ public class TIDEEngine {
 									if(mapOfJoinNode.containsKey(tid_child)){
 										//dup run nodes
 										CGNode threadNode = dupStartJoinTidMap.get(tid_child);
-										tid_child = threadNode.getGraphNodeId();
-										node = threadNode;
+										if(threadNode != null){
+											tid_child = threadNode.getGraphNodeId();
+											node = threadNode;
+										}
 									}
 									JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
 									curTrace.addJ(jNode, inst);
@@ -5112,8 +5114,10 @@ public class TIDEEngine {
 								if(mapOfJoinNode.containsKey(tid_child)){
 									//dup run nodes
 									CGNode threadNode = dupStartJoinTidMap.get(tid_child);
-									tid_child = threadNode.getGraphNodeId();
-									node = threadNode;
+									if(threadNode != null){
+										tid_child = threadNode.getGraphNodeId();
+										node = threadNode;
+									}
 								}
 								JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
 								curTrace.add2J(jNode, inst, tid_child);

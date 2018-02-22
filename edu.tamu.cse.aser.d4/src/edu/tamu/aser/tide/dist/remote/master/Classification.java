@@ -37,6 +37,18 @@ public class Classification extends UntypedActor{
 		}else if(message instanceof String){
 			String job = (String) message;
 			backend.forward(job, getContext());
+		}else if(message instanceof Integer){
+			Integer locate = (Integer) message;
+			if(locate == 1){
+				finished = true;
+			}else if(locate == 2){
+				finished = true;
+				ReproduceBenchmarks.nextCGNode();
+			}else if(locate == 0){
+				//reach time limit
+				finished = true;
+				ReproduceBenchmarks.terminateEva();
+			}
 		}else if(message instanceof Boolean){
 			boolean status = (boolean) message;
 			if(status){

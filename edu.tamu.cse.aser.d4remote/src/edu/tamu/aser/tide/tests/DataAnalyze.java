@@ -119,18 +119,14 @@ public class DataAnalyze {
 
 					System.out.println();
 					System.out.println(" =======================================================================");
-					System.out.println(" Performance of " + tarfile +" (D4_48):"
+					System.out.println(" Performance of " + tarfile +" (D4_48) (ms):"
 							+"\n D4_48 Points-to analysis: "
 							+"\n Insert (Average: " + df2.format(averageaddtime)+ "  Worst: " +df2.format(worstaddtime)+")"
 							+"\n Delete (Average: " + df2.format(averagedeletetime) + "  Worst: " + df2.format(worstdeletetime)+")"
 
-							+"\n D4_48 Race: "
-							+"\n == Average: "+df2.format(averagetime_race)
-							+"\n == Worst: " + df2.format(worsttime_race)
+							+"\n D4_48 Race: (Average: "+df2.format(averagetime_race) + "  Worst: " + df2.format(worsttime_race)+")"
 
-							+"\n D4_48 Deadlock: "
-							+"\n == Average: "+df2.format(averagetime_dl)
-							+"\n == Worst : " + df2.format(worsttime_dl)
+							+"\n D4_48 Deadlock: (Average: "+df2.format(averagetime_dl) +"  Worst : " + df2.format(worsttime_dl)+")"
 							);
 					System.out.println(" =======================================================================");
 

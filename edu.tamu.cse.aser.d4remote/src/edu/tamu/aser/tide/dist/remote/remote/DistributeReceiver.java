@@ -55,12 +55,8 @@ public class DistributeReceiver extends UntypedActor{
 				ReproduceBenchmark_remote.add(job.substring(job.indexOf(":") + 1));
 				getSender().tell(true, getSelf());
 			}else if(job.contains("METHOD:")){
-				boolean notreach = ReproduceBenchmark_remote.locateCGNode(job.substring(job.indexOf(":") + 1));
-				if(notreach){
-					getSender().tell(true, getSelf());
-				}else{
-					getSender().tell(false, getSelf());
-				}
+				int locate = ReproduceBenchmark_remote.locateCGNode(job.substring(job.indexOf(":") + 1));
+				getSender().tell(locate, getSelf());
 			}else if(job.contains("BENCHMARK:")){
 				ReproduceBenchmark_remote.prepare(job.substring(job.indexOf(":") + 1));
 				getSender().tell(true, getSelf());
