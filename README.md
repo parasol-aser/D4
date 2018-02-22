@@ -35,7 +35,7 @@ Reproducing the whole experiment results in the paper may require about 10 days,
 To evaluate D4-1 and D4-48, please run ````ReproduceBenchmarks.java```` with program argument ````all_short````. For each benchmark, please run the main method with the benchmark name + ````_short````, for example, ````avrora_short````.
 
 #### 4. Evaluation of ECHO
-We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). The jars are in ````/ECHO_jars/````. To reproduce the full data of ECHO, please run the jar with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
+We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). The jars are in ````/echo_jars/````. To reproduce the full data of ECHO, please run the jar with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
 
 We also prepared a short version to evaluate ECHO by using the argument ````all_short```` or the benchmark name + ````_short````. The generated statistics of ECHO will be shown in terminal.
 
@@ -47,6 +47,31 @@ There are two novel techniques in D4: incremental pointer analysis and increment
 
 Here, we provide an example to illustrate the usage of our incremental happens-before analysis with its data race and deadlock detection.
 
+After running the whole program pointer analysis, we can build our concurrency bug detection engine ````TIDEEngine```` that includes our static happens-before analysis.
+````java 
+//initialize the akka system for concurrency bug detection
+ActorSystem akkasys = ActorSystem.create();
+ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
+//create a new engine for a target program with:
+//mainSignature as its main method signature
+//cg as its CallGraph, flowgraph as its PropagationGraph, pta as its PointerAnalysis; all are from previous pointer analysis
+TIDEEngine engine = new TIDEEngine(mainSignature, cg, flowgraph, pta, bughub);
+//start the concurrency bug detection for the first time, and obtain the detected bugs
+Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
+````
+Then, user need to specify four sets: ```delInsts``` to store all the deleted SSAInstructions, ```addInsts``` to store all the added onces, ````changedNodes```` denotes which CGNodes the instructions belong to, and  ````changedModifiers```` denotes which CGNodes have changed their modifiers.
+```java
+CGNode targetNode = node;
+HashSet<SSAInstruction> delInsts = new HashSet<>();
+HashSet<SSAInstruction> addInsts = new HashSet<>();
+HashSet<CGNode> changedNodes = new HashSet<>();
+HashSet<CGNode> changedModifiers= new HashSet<>();
+````
+
+```delInsts``` and ```addInsts``` will be used for incremental pointer analysis, and we can know whether the relative points-to sets have changed (use ````ptachanges```` to indicate). Then, we can run the incremental bug detection on the engine and obtain the new results after the instruction change.
+````java
+Set<ITIDEBug> bugs = engine.updateEngine(changedNodes, changedModifier, ptachanges, ps);
+````
 
 ### Authors
 Bozhen Liu, Texas A&M University
