@@ -49,9 +49,9 @@ Here, we provide an example to illustrate the usage of our incremental happens-b
 
 After running the whole program pointer analysis, we can build our concurrency bug detection engine ````TIDEEngine```` that includes our static happens-before analysis.
 ````java 
-//initialize the akka system for concurrency bug detection
+//initialize the akka system for concurrency bug detection with n number of thread pool workers
 ActorSystem akkasys = ActorSystem.create();
-ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
+ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, n), "bughub");
 //create a new engine for a target program with:
 //mainSignature as its main method signature
 //cg as its CallGraph, flowgraph as its PropagationGraph, pta as its PointerAnalysis; all are from previous pointer analysis
