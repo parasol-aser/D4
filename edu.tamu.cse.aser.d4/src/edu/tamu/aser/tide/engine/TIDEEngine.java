@@ -216,6 +216,7 @@ public class TIDEEngine {
 	//	}
 	public boolean useMayAlias = true;//false => lockObject.size == 1
 
+	String special = "";
 
 	public TIDEEngine(String entrySignature,CallGraph callGraph, PropagationGraph flowgraph, PointerAnalysis<InstanceKey> pointerAnalysis, ActorRef bughub){
 		this.callGraph = callGraph;//?update
@@ -223,101 +224,28 @@ public class TIDEEngine {
 		this.maxGraphNodeID = callGraph.getNumberOfNodes() + 1000;//? update
 		this.propagationGraph = flowgraph;//?update
 		this.bughub = bughub;
-
 		Collection<CGNode> cgnodes = callGraph.getEntrypointNodes();
 		for(CGNode n: cgnodes){
 			String sig = n.getMethod().getSignature();
 			//find the main node
 			if(sig.contains(entrySignature)){
 				mainEntryNodes.add(n);
+				if(sig.contains("net.sourceforge.pmd.cpd")){
+					special = "pmd";
+				}else if(sig.contains("org.codehaus.janino.samples.ExpressionDemo")){
+					special = "tomcat";
+				}else if(sig.contains("org.apache.xerces.impl.xpath.regex.REUtil")){
+					special = "trade";
+				}else if(sig.contains("org.apache.xalan.processor.XSLProcessorVersion")){
+					special = "xalan";
+				}
 			}else{
 				TypeName name  = n.getMethod().getDeclaringClass().getName();
 				threadSigNodeMap.put(name, n);
 			}
 		}
-
 	}
 
-
-
-	//	private boolean checkReachabilityof(DLLockPair dllp1, DLLockPair dllp2) {
-	//		boolean isDeadlock = false;
-	//		int tid1 = dllp1.lock1.getTID();
-	//		int tid2 = dllp2.lock1.getTID();
-	//		//find out parent
-	//		StartNode startNode1 = mapOfStartNode.get(tid1);
-	//		MutableIntSet kids1 = startNode1.getTID_Child();
-	//		StartNode startNode2 = mapOfStartNode.get(tid2);
-	//		MutableIntSet kids2 = startNode2.getTID_Child();
-	//		if(kids1.contains(tid2)){
-	//			//tid1 is parent of tid2
-	//			if(trace.indexOf(startNode2) < trace.indexOf(dllp1.lock1)){
-	//				isDeadlock = true;
-	//			}
-	//		}else if(kids2.contains(tid1)) {
-	//			//tid2 is parent of tid1
-	//			if(trace.indexOf(startNode1) < trace.indexOf(dllp2.lock1)){
-	//				isDeadlock = true;
-	//			}
-	//		}else{
-	//			StartNode sNode = sameParent(tid1, tid2);
-	//			if(sNode != null){
-	//				//same parent thread
-	//				isDeadlock = true;
-	//			}else{
-	//				//other conditions
-	//				int earlier;
-	//				int later;
-	//				if(trace.indexOf(startNode1) < trace.indexOf(startNode2)){
-	//					//wtid starts early
-	//					earlier = tid1;
-	//					later = tid2;
-	//					//					System.out.println("earlier: "+earlier + "  later: "+later);
-	//					//check relation
-	//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
-	//					if(relatives == null){
-	//						isDeadlock = false;
-	//					}else {
-	//						StartNode parenStart = relatives.get(1);
-	//						if(trace.indexOf(dllp1.lock1) > trace.indexOf(parenStart)){
-	//							isDeadlock = true;
-	//						}
-	//					}
-	//				}else{
-	//					earlier = tid2;
-	//					later = tid1;
-	//					//					System.out.println("earlier: "+earlier + "  later: "+later);
-	//					//check relation
-	//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
-	//					if(relatives == null){
-	//						isDeadlock = false;
-	//					}else{
-	//						StartNode parenStart = relatives.get(1);
-	//						if(trace.indexOf(dllp2.lock1) > trace.indexOf(parenStart)){
-	//							isDeadlock = true;
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//		return isDeadlock;
-	//	}
-
-
-
-//	private StartNode sameParent(int tid1, int tid2) {
-//		Iterator<Integer> iter_thread = mapOfStartNode.keySet().iterator();
-//		while(iter_thread.hasNext()){
-//			int t = iter_thread.next();
-//			if(t != tid1 && t != tid2){
-//				MutableIntSet kids = mapOfStartNode.get(t).getTID_Child();
-//				if(kids.contains(tid1) && kids.contains(tid2)){
-//					return mapOfStartNode.get(t);
-//				}
-//			}
-//		}
-//		return null;
-//	}
 
 	private ArrayList<StartNode> shareGrandParent(int earlier, int later) {
 		int parentoflater = mapOfStartNode.get(later).getParentTID();
@@ -415,15 +343,22 @@ public class TIDEEngine {
 			shb.mainCGNode(main);
 			shb.addEdge(mainstart, main);
 
+			if(special.equals("pmd") || special.equals("tomcat") || special.equals("trade") || special.equals("xalan")){
+				for (TypeName name : threadSigNodeMap.keySet()) {
+					CGNode kidnode = threadSigNodeMap.get(name);
+					int threadID = kidnode.getGraphNodeId();
+					StartNode clientstart = new StartNode(mainTID, threadID, main, kidnode, sourceLineNum, file);
+					mapOfStartNode.put(threadID, clientstart);
+					mapOfStartNode.get(mainTID).addChild(threadID);
+					threadNodes.add(kidnode);
+				}
+			}
+
 			while(!threadNodes.isEmpty()){
 				CGNode n = threadNodes.removeFirst();
 				curTID = n.getGraphNodeId();
-//				curReceivers=tid2Receivers.get(curTID);
 
 				if(n instanceof AstCGNode2){
-//					CGNode real = newRunTargets.get(n);
-//					if(real == null)
-//						continue;
 					CGNode real = ((AstCGNode2)n).getCGNode();
 					if(thirdProcessedNodes.contains(real))//already processed once
 						continue;
@@ -461,7 +396,7 @@ public class TIDEEngine {
 //				System.out.println("ONLY HAS MAIN THREAD, NO NEED TO PROCEED:   " + main.getMethod().toString());
 //				mapOfStartNode.clear();
 //				mapOfJoinNode.clear();
-////				continue;
+//				continue;
 //			}else{
 //				System.out.println("mapOfStartNode =========================");
 //				for (Integer tid : mapOfStartNode.keySet()) {
@@ -472,8 +407,6 @@ public class TIDEEngine {
 //					System.out.println(mapOfJoinNode.get(tid).toString());
 //				}
 //				System.out.println();
-////				System.out.println("shb ====================================");
-////				shb.print();
 //			}
 
 			//race detection
@@ -1097,7 +1030,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: starting new thread: "+ name);
+//											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -1197,7 +1130,7 @@ public class TIDEEngine {
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
 										node = handleRunnable(ins,param, n);
 										if(node==null){
-											System.err.println("ERROR: joining parent thread: "+ name);
+//											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -1699,7 +1632,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: starting new thread: "+ name);
+//											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -1797,7 +1730,7 @@ public class TIDEEngine {
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: joining parent thread: "+ name);
+//											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -2411,20 +2344,21 @@ public class TIDEEngine {
 				return handleRunnable(instKey, param, useNode);
 			}else{
 				//because: assignments + ssa; array references
-				int new_param = findDefsInDataFlowFor(useNode, param, creation.iindex);
-				if(new_param != -1){
-					node = handleRunnable(instKey, new_param, useNode);
-					if(node != null)
-						return node;
-				}
-				if(creation instanceof SSAArrayLoadInstruction){
-					new_param = ((SSAArrayLoadInstruction)creation).getArrayRef();
-				}
-				while (node == null){
-					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
-					node = handleRunnable(instKey, new_param, useNode);
-				}
-				return node;
+//				int new_param = findDefsInDataFlowFor(useNode, param, creation.iindex);
+//				if(new_param != -1){
+//					node = handleRunnable(instKey, new_param, useNode);
+//					if(node != null)
+//						return node;
+//				}
+//				if(creation instanceof SSAArrayLoadInstruction){
+//					new_param = ((SSAArrayLoadInstruction)creation).getArrayRef();
+//				}
+//				while (node == null){
+//					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
+//					node = handleRunnable(instKey, new_param, useNode);
+//				}
+//				return node;
+				return null;
 			}
 		}
 		return null;
@@ -3860,7 +3794,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: starting new thread: "+ name);
+//											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -3903,7 +3837,7 @@ public class TIDEEngine {
 									}
 									if(exist == null){//new threadnode
 										threadNodes.add(node);
-									}else{
+									}else if(oldkids.contains(tempid)){
 										oldkids.remove(oldkids.indexOf(tempid));
 									}
 									int tid_child = node.getGraphNodeId();
@@ -3980,7 +3914,7 @@ public class TIDEEngine {
 										//Executors and ThreadPoolExecutor
 										node = handleRunnable(ins,param, n);
 										if(node==null){
-											System.err.println("ERROR: joining parent thread: "+ name);
+//											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -4311,24 +4245,24 @@ public class TIDEEngine {
 			traverseNodePN(newnode);
 		}
 		//if old kids has left => the thread should have been removed earlier
-		if(oldkids.size() > 0){
-			for (int oldkid : oldkids) {
-				System.err.println("thread " + oldkid + " should have been removed earlier");
+//		if(oldkids.size() > 0){
+//			for (int oldkid : oldkids) {
+//				System.err.println("thread " + oldkid + " should have been removed earlier");
 //				mapOfStartNode.remove(oldkid);
 //				tidpool.remove(oldkid);
 //				shb.removeTidFromALlTraces(n, oldkid);
 //				threadDLLockPairs.remove(oldkid);
-			}
-		}
-		if(dupkids.size() > 0){
-			for (int dupkid : dupkids) {
-				System.err.println("thread " + dupkid + " should not have duplicate tids");
+//			}
+//		}
+//		if(dupkids.size() > 0){
+//			for (int dupkid : dupkids) {
+//				System.err.println("thread " + dupkid + " should not have duplicate tids");
 //				mapOfStartNode.remove(dupkid);
 //				tidpool.remove(dupkid);
 //				shb.removeTidFromALlTraces(n, dupkid);
 //				threadDLLockPairs.remove(dupkid);
-			}
-		}
+//			}
+//		}
 		//add back to shb
 		shb.replaceTrace(n, curTrace);
 		//organize wtid num map/rwsigmap
@@ -5040,7 +4974,7 @@ public class TIDEEngine {
 									}
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-										System.err.println("ERROR: starting new thread: "+ name);
+//										System.err.println("ERROR: starting new thread: "+ name);
 										continue;
 									}
 									//threadreceiver?
@@ -5083,7 +5017,7 @@ public class TIDEEngine {
 								}
 								if(exist == null){//new threadnode
 									threadNodes.add(node);
-								}else{
+								}else if(oldkids.contains(tempid)){
 									oldkids.remove(oldkids.indexOf(tempid));
 								}
 								int tid_child = node.getGraphNodeId();
@@ -5169,7 +5103,7 @@ public class TIDEEngine {
 									//Executors and ThreadPoolExecutor
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-										System.err.println("ERROR: joining parent thread: "+ name);
+//										System.err.println("ERROR: joining parent thread: "+ name);
 										continue;
 									}
 								}
@@ -5470,13 +5404,13 @@ public class TIDEEngine {
 				}
 			}
 		}
-		if(dupkids.size() > 0){
-			for (int dupkid : dupkids) {
-				mapOfStartNode.remove(dupkid);
-				stidpool.remove(dupkid);
-				shb.removeTidFromALlTraces(n, dupkid);
-			}
-		}
+//		if(dupkids.size() > 0){
+//			for (int dupkid : dupkids) {
+//				mapOfStartNode.remove(dupkid);
+//				stidpool.remove(dupkid);
+//				shb.removeTidFromALlTraces(n, dupkid);
+//			}
+//		}
 	}
 
 

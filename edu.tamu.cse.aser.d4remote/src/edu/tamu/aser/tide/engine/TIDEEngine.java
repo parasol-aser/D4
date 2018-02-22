@@ -215,7 +215,7 @@ public class TIDEEngine {
 	//		return curGID;
 	//	}
 	public boolean useMayAlias = true;//false => lockObject.size == 1
-
+	String special = "";
 
 	public TIDEEngine(String entrySignature,CallGraph callGraph, PropagationGraph flowgraph, PointerAnalysis<InstanceKey> pointerAnalysis, ActorRef bughub){
 		this.callGraph = callGraph;//?update
@@ -230,6 +230,15 @@ public class TIDEEngine {
 			//find the main node
 			if(sig.contains(entrySignature)){
 				mainEntryNodes.add(n);
+				if(sig.contains("net.sourceforge.pmd.cpd")){
+					special = "pmd";
+				}else if(sig.contains("org.codehaus.janino.samples.ExpressionDemo")){
+					special = "tomcat";
+				}else if(sig.contains("org.apache.xerces.impl.xpath.regex.REUtil")){
+					special = "trade";
+				}else if(sig.contains("org.apache.xalan.processor.XSLProcessorVersion")){
+					special = "xalan";
+				}
 			}else{
 				TypeName name  = n.getMethod().getDeclaringClass().getName();
 				threadSigNodeMap.put(name, n);
@@ -414,6 +423,17 @@ public class TIDEEngine {
 			//add edge in shb
 			shb.mainCGNode(main);
 			shb.addEdge(mainstart, main);
+
+			if(special.equals("pmd") || special.equals("tomcat") || special.equals("trade") || special.equals("xalan")){
+				for (TypeName name : threadSigNodeMap.keySet()) {
+					CGNode kidnode = threadSigNodeMap.get(name);
+					int threadID = kidnode.getGraphNodeId();
+					StartNode clientstart = new StartNode(mainTID, threadID, main, kidnode, sourceLineNum, file);
+					mapOfStartNode.put(threadID, clientstart);
+					mapOfStartNode.get(mainTID).addChild(threadID);
+					threadNodes.add(kidnode);
+				}
+			}
 
 			while(!threadNodes.isEmpty()){
 				CGNode n = threadNodes.removeFirst();
@@ -1097,7 +1117,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: starting new thread: "+ name);
+//											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -1197,7 +1217,7 @@ public class TIDEEngine {
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
 										node = handleRunnable(ins,param, n);
 										if(node==null){
-											System.err.println("ERROR: joining parent thread: "+ name);
+//											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -1699,7 +1719,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: starting new thread: "+ name);
+//											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -1797,7 +1817,7 @@ public class TIDEEngine {
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: joining parent thread: "+ name);
+//											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -3860,7 +3880,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-											System.err.println("ERROR: starting new thread: "+ name);
+//											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -3980,7 +4000,7 @@ public class TIDEEngine {
 										//Executors and ThreadPoolExecutor
 										node = handleRunnable(ins,param, n);
 										if(node==null){
-											System.err.println("ERROR: joining parent thread: "+ name);
+//											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -4311,24 +4331,24 @@ public class TIDEEngine {
 			traverseNodePN(newnode);
 		}
 		//if old kids has left => the thread should have been removed earlier
-		if(oldkids.size() > 0){
-			for (int oldkid : oldkids) {
-				System.err.println("thread " + oldkid + " should have been removed earlier");
+//		if(oldkids.size() > 0){
+//			for (int oldkid : oldkids) {
+//				System.err.println("thread " + oldkid + " should have been removed earlier");
 //				mapOfStartNode.remove(oldkid);
 //				tidpool.remove(oldkid);
 //				shb.removeTidFromALlTraces(n, oldkid);
 //				threadDLLockPairs.remove(oldkid);
-			}
-		}
-		if(dupkids.size() > 0){
-			for (int dupkid : dupkids) {
-				System.err.println("thread " + dupkid + " should not have duplicate tids");
+//			}
+//		}
+//		if(dupkids.size() > 0){
+//			for (int dupkid : dupkids) {
+//				System.err.println("thread " + dupkid + " should not have duplicate tids");
 //				mapOfStartNode.remove(dupkid);
 //				tidpool.remove(dupkid);
 //				shb.removeTidFromALlTraces(n, dupkid);
 //				threadDLLockPairs.remove(dupkid);
-			}
-		}
+//			}
+//		}
 		//add back to shb
 		shb.replaceTrace(n, curTrace);
 		//organize wtid num map/rwsigmap
@@ -5040,7 +5060,7 @@ public class TIDEEngine {
 									}
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-										System.err.println("ERROR: starting new thread: "+ name);
+//										System.err.println("ERROR: starting new thread: "+ name);
 										continue;
 									}
 									//threadreceiver?
@@ -5169,7 +5189,7 @@ public class TIDEEngine {
 									//Executors and ThreadPoolExecutor
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-										System.err.println("ERROR: joining parent thread: "+ name);
+//										System.err.println("ERROR: joining parent thread: "+ name);
 										continue;
 									}
 								}
@@ -5470,13 +5490,13 @@ public class TIDEEngine {
 				}
 			}
 		}
-		if(dupkids.size() > 0){
-			for (int dupkid : dupkids) {
-				mapOfStartNode.remove(dupkid);
-				stidpool.remove(dupkid);
-				shb.removeTidFromALlTraces(n, dupkid);
-			}
-		}
+//		if(dupkids.size() > 0){
+//			for (int dupkid : dupkids) {
+//				mapOfStartNode.remove(dupkid);
+//				stidpool.remove(dupkid);
+//				shb.removeTidFromALlTraces(n, dupkid);
+//			}
+//		}
 	}
 
 

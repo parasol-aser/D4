@@ -1,0 +1,114 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+\documentclass[preprint, number, 10pt]{sigplanconf}
+
+% The following \documentclass options may be useful:
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% numbers       To obtain numeric citation style instead of author/year.
+
+\usepackage{amsmath}
+\usepackage{SIunits}            % typset units correctly
+\usepackage{courier}            % standard fixed width font
+\usepackage[scaled]{helvet} % see www.ctan.org/get/macros/latex/required/psnfss/psnfss2e.pdf
+\usepackage{listings}          % format code
+\usepackage{enumitem}      % adjust spacing in enums
+\usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}   % hyperlinks, including DOIs and URLs in bibliography
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{caption}
+\usepackage[english]{babel}
+\usepackage[autostyle]{csquotes}
+\usepackage{hyperref}
+
+\setcitestyle{square}
+
+\begin{document}
+
+\special{papersize=8.5in,11in}
+\setlength{\pdfpageheight}{\paperheight}
+\setlength{\pdfpagewidth}{\paperwidth}
+
+
+\title{D4: Fast Concurrency Debugging with Parallel Differential Analysis}
+\subtitle{}
+
+\maketitle
+
+\section{Artifact description}
+\subsection{Abstract}
+This artifact contains the source code of D4, the executables of ECHO along with 14 benchmarks to demonstrate the performance improvement
+by the new techniques described in paper \textit{D4: Fast Concurrency Debugging with Parallel Differential Analysis}. We provide the required
+benchmarks and settings to reproduce the performance results presented in the paper, e.g., the same content presented in Table 4, 5, 6 and 7. Due to the large amount of time to complete the full evaluation (i.e., around 10 days), we also provide a short version of evaluation to show the performance advantage of D4.
+
+\subsection{Description}
+\subsubsection{Check-list (artifact meta information)}
+\begin{itemize}
+\item \textbf{Algorithm: Parallel incremental pointer analysis, parallel incremental happens-before analysis, a client-server architecture design}
+\item \textbf{Program: WALA, Akka}
+\item \textbf{Compilation: Java 1.7}
+\item \textbf{Executable: Java runnable jars}
+\item \textbf{Benchmark: Dacapo-9.12}
+\item \textbf{Run-time environment: Eclipse Mars installed on UNIX OS}
+\item \textbf{Hardware: Memory capacity of no less than 15GB} % one pc and one server connected by stable internet
+\item \textbf{Output: All results are shown in the console or terminal with the same metrics in our PLDI'18 paper} % can update
+\item \textbf{Experiment workflow: git clone; build by Eclipse; generate a runnable jar for the remote server;
+run the evaluation; evaluate performance results.}
+\item \textbf{Publicly available?: Yes}
+\end{itemize}
+
+\subsubsection{How delivered}
+The artifact is publicly available on Github at: 
+
+\href{https://github.com/parasol-aser/D4}{https://github.com/parasol-aser/D4}.
+
+\subsubsection{Hardware dependencies}
+The artifact evaluation requires two machine connected by stable network connection: one machine acts as a client and the other acts as a server. To perform the full evaluation, we require a memory with more than 15 GB. To evaluate the performance of the parallel algorithms, we recommend to use a server that can support at least 48 threads, which is performed in the paper.
+
+\subsubsection{Software dependencies}
+The artifact is tested on a client machine with Eclipse Mars running on Mac OS X, and a server machine with CentOS Linux 7. We recommend to setup
+the maximum size of the memory allocation pool with \texttt{-Xmx15g} for each benchmark to guarantee enough run-time heap space while reproducing the full data in the paper.
+
+\subsubsection{Benchmarks}
+The evaluated benchmark is Dacapo-9.12 including 14 large, real-world Java programs, in which 13 of them are multithreaded. We have built and included these benchmarks in the artifact. 
+ 
+\subsection{Installation}
+After cloning the repository, import the projects into Eclipse, compile and build them with Java 1.7. To generate the executable for the server evaluation, update the \texttt{master.conf} (in \texttt{/edu.tamu.cse.aser.d4/src/master.conf}) and \texttt{worker.conf} (in \texttt{/edu.tamu.cse.aser.d4rem-
+ote/src/worker.conf}) with the local machine and remote server hostnames as indicated in the \texttt{.conf} files. Then, export \texttt{edu.tamu.cse.aser.d4remote} as a runnable jar with the main method \texttt{/edu.tamu.cse.ase-
+r.d4remote/src/edu/tamu/aser/tide/dist/r-
+emote/remote/BackendStart.java} and the option "Copy required libraries into a sub-folder next to the generated JAR". Transfer the generated jar, sub-folder libraries and \texttt{/edu.tamu.cse.aser.d4remote/data} to your remote server.
+
+\subsection{Experiment workflow}
+To reproduce the full results of D4-1 and D4-48 in the paper, run the main method in \texttt{ReproduceBenchmarks.java} with program argument \texttt{all} in Run Configration. To reproduce individual benchmark data, please run the main method with the benchmark name as the program argument. 
+
+To reproduce the full data of ECHO (including the Reset-Recompute algorithm, Reachability-based algorithm and its data race detetion), run the runnable jar \texttt{echo.jar} (in \texttt{/ECHO\_jars/}) with argument \texttt{all}.
+
+Reproducing the full results requires around 10 days, which is too long for reviewer evaluation. So, we provide a shorter version of evaluation with a reasonable running time to compare the performance. To evaluate D4-1 and D4-48, run \texttt{ReproduceBenchmarks.java} with program argument \texttt{all\_short}. For individual benchmark, please run the main with the benchmark name with \texttt{\_short}, for example, \texttt{avrora\_short}. To evaluate ECHO, run \texttt{echo.jar} with argument \texttt{all\_short}.
+
+\subsection{Evaluation and expected result}
+All the evaluation results will be shown in the Eclipse console or the server terminal. We don't expect absolute values to match with the paper, due to the hardware difference and the stability of the wireless connection. But we expect a similar trend of D4 performance metrics as presented in the paper.
+
+
+\end{document}

@@ -87,11 +87,6 @@ public class ReproduceBenchmarks {
 		String arg = args[0];
 		benchmark = arg;
 		switch (arg) {
-		case "new_test":
-			mainClassName = "Tsp";
-			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/newtest.txt";
-			break;
 		case "avrora":
 			mainClassName = "avrora/Main";
 			mainMethodSig = "avrora.Main" + mainSignature;
@@ -134,8 +129,8 @@ public class ReproduceBenchmarks {
 			excludeFile = "data/lusearchexcludefile.txt";
 			testFile = "data/dacapotestfile.txt";
 			break;
-		case "pmd"://
-			mainClassName = "Benchmark";
+		case "pmd":
+			mainClassName = "GUI";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/pmdtestfile.txt";
 			break;
@@ -144,26 +139,26 @@ public class ReproduceBenchmarks {
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/sunflowtestfile.txt";
 			break;
-		case "tomcat"://
+		case "tomcat":
 			mainClassName = "ExpressionDemo";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tomcatexcludefile.txt";
 			break;
 		case "tradebeans":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradebeansexcludefile.txt";
 			break;
 		case "tradesoap":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradesoapexcludefile.txt";
 			break;
-		case "xalan"://
-			mainClassName = "Process";
+		case "xalan":
+			mainClassName = "XSLProcessorVersion";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			break;
@@ -172,12 +167,6 @@ public class ReproduceBenchmarks {
 			break;
 
 	    //short version
-		case "new_test_short":
-			mainClassName = "Tsp";
-			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/newtest.txt";
-			excludeFile = "data/ShortDefaultExclusions.txt";
-			break;
 		case "avrora_short":
 			mainClassName = "avrora/Main";
 			mainMethodSig = "avrora.Main" + mainSignature;
@@ -226,8 +215,8 @@ public class ReproduceBenchmarks {
 			excludeFile = "data/lusearchexcludefileshort.txt";
 			testFile = "data/dacapotestfile.txt";
 			break;
-		case "pmd_short"://
-			mainClassName = "Benchmark";
+		case "pmd_short":
+			mainClassName = "GUI";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/pmdtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
@@ -238,32 +227,33 @@ public class ReproduceBenchmarks {
 			testFile = "data/sunflowtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
 			break;
-		case "tomcat_short"://
+		case "tomcat_short":
 			mainClassName = "ExpressionDemo";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tomcatexcludefileshort.txt";
 			break;
 		case "tradebeans_short":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradebeansexcludefileshort.txt";
 			break;
 		case "tradesoap_short":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradesoapexcludefileshort.txt";
 			break;
-		case "xalan_short"://
-			mainClassName = "Process";
+		case "xalan_short":
+			mainClassName = "XSLProcessorVersion";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
 			break;
 		case "all_short":
 			iterateAllBenchmarksShort();
+			break;
 
 		default:
 			throw new IllegalArgumentException("Invalid argument: " + arg);
@@ -271,7 +261,7 @@ public class ReproduceBenchmarks {
 
 		//start
 		print("Benchmark: " + arg, true);
-//		runD4_1();
+		runD4_1();
 		System.out.println();
 		runD4_48();
 		System.out.println();
@@ -551,14 +541,16 @@ public class ReproduceBenchmarks {
 						}else{
 							ptachanges = false;
 						}
-						long deldetect_start_time = System.currentTimeMillis();
-						engine.setDelete(true);
-						bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
-						engine.setDelete(false);
-
 						long delete_end_time = System.currentTimeMillis();
+						long deldetect_start_time = System.currentTimeMillis();
 						long ptadelete_time = (deldetect_start_time - delete_start_time);
-						long deldetect_time = (delete_end_time - deldetect_start_time);
+						long deldetect_time = 0;
+						if(!benchmark.contains("fop")){
+							engine.setDelete(true);
+							bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
+							engine.setDelete(false);
+							deldetect_time = (delete_end_time - deldetect_start_time);
+						}
 
 						builder.system.clearChanges();
 						//add
@@ -576,17 +568,16 @@ public class ReproduceBenchmarks {
 							ptachanges = false;
 						}
 						long adddetect_start_time = System.currentTimeMillis();
-						bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
-
 						long add_end_time = System.currentTimeMillis();
 						long ptaadd_time = (adddetect_start_time-add_start_time);
-						long adddetect_time = (add_end_time - adddetect_start_time);
-
+						long adddetect_time = 0;
+						if(!benchmark.contains("fop")){
+							bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
+							adddetect_time = (add_end_time - adddetect_start_time);
+						}
 						builder.system.clearChanges();
 						ps.print(ptadelete_time+" "+ptaadd_time+" ");
 						//incre_race_time+" "+incre_dl_time+" "+ptadelete_time+" "+ptaadd_time+" "
-
-
 						totaltime = totaltime + ptadelete_time + ptaadd_time + deldetect_time + adddetect_time;
 					}catch(Exception e)
 					{
@@ -596,9 +587,10 @@ public class ReproduceBenchmarks {
 				changedNodes.clear();
 				ps.println();
 			}
-			if(PropagationCallGraphBuilder.totaltime >= 3600000)//7200000  5400000
+			if(totaltime >= 5400000)//7200000  5400000
 				break;
 		}
+		totaltime = 0;
 
 		DataAnalyze analyze = new DataAnalyze();
 		try {
@@ -642,11 +634,6 @@ public class ReproduceBenchmarks {
 				}
 			}
 		}
-
-		//show entry points
-//		for(Entrypoint entry:result){
-//			System.out.println(entry.getMethod().getSignature());
-//		}
 
 		return new Iterable<Entrypoint>() {
 			public Iterator<Entrypoint> iterator() {

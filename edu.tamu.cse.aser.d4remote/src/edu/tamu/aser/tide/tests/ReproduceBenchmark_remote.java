@@ -95,11 +95,6 @@ public class ReproduceBenchmark_remote {
 		print(benchmark, true);
 		print("D4-48", true);
 		switch (tar) {
-		case "new_test":
-			mainClassName = "Tsp";
-			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/newtest.txt";
-			break;
 		case "avrora":
 			mainClassName = "avrora/Main";
 			mainMethodSig = "avrora.Main" + mainSignature;
@@ -142,8 +137,8 @@ public class ReproduceBenchmark_remote {
 			excludeFile = "data/lusearchexcludefile.txt";
 			testFile = "data/dacapotestfile.txt";
 			break;
-		case "pmd"://
-			mainClassName = "Benchmark";
+		case "pmd":
+			mainClassName = "GUI";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/pmdtestfile.txt";
 			break;
@@ -152,37 +147,31 @@ public class ReproduceBenchmark_remote {
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/sunflowtestfile.txt";
 			break;
-		case "tomcat"://
+		case "tomcat":
 			mainClassName = "ExpressionDemo";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tomcatexcludefile.txt";
 			break;
 		case "tradebeans":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradebeansexcludefile.txt";
 			break;
 		case "tradesoap":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradesoapexcludefile.txt";
 			break;
-		case "xalan"://
-			mainClassName = "Process";
+		case "xalan":
+			mainClassName = "XSLProcessorVersion";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			break;
 
 	    //short version
-		case "new_test_short":
-			mainClassName = "Tsp";
-			mainMethodSig = mainClassName + mainSignature;
-			testFile = "data/newtest.txt";
-			excludeFile = "data/ShortDefaultExclusions.txt";
-			break;
 		case "avrora_short":
 			mainClassName = "avrora/Main";
 			mainMethodSig = "avrora.Main" + mainSignature;
@@ -231,8 +220,8 @@ public class ReproduceBenchmark_remote {
 			excludeFile = "data/lusearchexcludefileshort.txt";
 			testFile = "data/dacapotestfile.txt";
 			break;
-		case "pmd_short"://
-			mainClassName = "Benchmark";
+		case "pmd_short":
+			mainClassName = "GUI";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/pmdtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
@@ -243,26 +232,26 @@ public class ReproduceBenchmark_remote {
 			testFile = "data/sunflowtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
 			break;
-		case "tomcat_short"://
+		case "tomcat_short":
 			mainClassName = "ExpressionDemo";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tomcatexcludefileshort.txt";
 			break;
 		case "tradebeans_short":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradebeansexcludefileshort.txt";
 			break;
 		case "tradesoap_short":
-			mainClassName = "";
+			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradesoapexcludefileshort.txt";
 			break;
-		case "xalan_short"://
-			mainClassName = "Process";
+		case "xalan_short":
+			mainClassName = "XSLProcessorVersion";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
@@ -335,8 +324,10 @@ public class ReproduceBenchmark_remote {
 				changedNodes.add(next);
 			}
 		}
-		if(PropagationCallGraphBuilder.totaltime >= 3600000)//7200000  5400000
+		if(totaltime >= 5400000){//7200000  5400000
+			totaltime = 0;
 			return false;
+		}
 		return true;
 	}
 
@@ -370,12 +361,14 @@ public class ReproduceBenchmark_remote {
 				ptachanges = false;
 			}
 			long deldetect_start_time = System.currentTimeMillis();
-			engine.setDelete(true);
-			Set<ITIDEBug> bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
-			engine.setDelete(false);
-
 			long ptadelete_time = (deldetect_start_time - delete_start_time);
-			long deldetect_time = (System.currentTimeMillis() - deldetect_start_time);
+			long deldetect_time = 0;
+			if(!benchmark.contains("fop")){
+				engine.setDelete(true);
+				Set<ITIDEBug> bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
+				engine.setDelete(false);
+				deldetect_time = (System.currentTimeMillis() - deldetect_start_time);
+			}
 
 			builder.system.clearChanges();
 			ps.print(ptadelete_time+" ");
@@ -420,10 +413,12 @@ public class ReproduceBenchmark_remote {
 				ptachanges = false;
 			}
 			long adddetect_start_time = System.currentTimeMillis();
-			HashSet<ITIDEBug> bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
-
 			long ptaadd_time = (adddetect_start_time-add_start_time);
-			long adddetect_time = (System.currentTimeMillis() - adddetect_start_time);
+			long adddetect_time = 0;
+			if(!benchmark.contains("fop")){
+				HashSet<ITIDEBug> bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
+				adddetect_time = (System.currentTimeMillis() - adddetect_start_time);
+			}
 
 			builder.system.clearChanges();
 			ps.print(ptaadd_time+" ");
