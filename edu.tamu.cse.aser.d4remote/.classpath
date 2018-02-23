@@ -72,6 +72,6 @@
 	<classpathentry kind="lib" path="lib/com.ibm.wala.ide_1.3.4.201802201451.jar"/>
 	<classpathentry kind="lib" path="lib/com.ibm.wala.ide.jdt_1.3.4.201802201451.jar"/>
 	<classpathentry kind="lib" path="lib/com.ibm.wala.shrike_1.3.4.201802201451.jar"/>
-	<classpathentry kind="lib" path="lib/com.ibm.wala.util_1.3.4.201802201451.jar"/>
+	<classpathentry kind="lib" path="lib/com.ibm.wala.util_1.3.4.201802231508.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

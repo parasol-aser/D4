@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  edu.tamu.cse.aser.benchmarks;bundle-version="1.3.4",
  com.google.guava
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: edu.tamu.aser.tide.engine,
  edu.tamu.aser.tide.plugin.handlers

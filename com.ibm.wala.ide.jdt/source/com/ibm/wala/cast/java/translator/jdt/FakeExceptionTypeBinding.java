@@ -467,10 +467,9 @@ public class FakeExceptionTypeBinding implements ITypeBinding {
 //    return null;
 //  }
 //
-//  @Override
-//  public boolean isIntersectionType() {
-//    // TODO Auto-generated method stub
-//    return false;
-//  }
+  public boolean isIntersectionType() {
+    // TODO Auto-generated method stub
+    return false;
+  }
 
 }
