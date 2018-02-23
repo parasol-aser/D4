@@ -7,6 +7,8 @@ com.google.guava/.svn/
 com.ibm.wala.cast/bin/
 com.ibm.wala.cast.java/bin/
 com.ibm.wala.core/bin/
+com.ibm.wala.core.testdata/bin/
+com.ibm.wala.core.tests/bin/
 com.ibm.wala.eclipse/bin/
 com.ibm.wala.ide/bin/
 com.ibm.wala.ide.jdt/bin/
@@ -21,6 +23,8 @@ libs.akka/bin/
 com.ibm.wala.cast/.svn/
 com.ibm.wala.cast.java/.svn/
 com.ibm.wala.core/.svn/
+com.ibm.wala.core.testdata/.svn/
+com.ibm.wala.core.tests/.svn/
 com.ibm.wala.eclipse/.svn/
 com.ibm.wala.ide/.svn/
 com.ibm.wala.ide.jdt/.svn/
