@@ -78,9 +78,17 @@ public class ReproduceBenchmarks {
 	static String testFile = null;
 	static String excludeFile = "data/DefaultExclusions.txt";
 
+    static String[] benchmark_names_short= new String[] { "avrora_short", "batik_short", "eclipse_short", "fop_short",
+			"h2_short", "jython_short", "luindex_short", "lusearch_short", "pmd_short",
+			"sunflow_short", "tomcat_short", "tradebeans_short", "tradesoap_short",
+			"xalan_short"};
+
+    static String[] benchmark_names = new String[] { "avrora", "batik", "eclipse", "fop", "h2", "jython",
+			"luindex", "lusearch", "pmd", "sunflow", "tomcat", "tradebeans", "tradesoap",
+			"xalan"};
 
 	public static void main(String[] args) throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException {
-		if(args.length == 0 || args.length > 1){
+		if(args.length == 0 || args.length > 2){
 			throw new IllegalArgumentException("Wrong number of arguments. Please enter the benchmark name.");
 		}
 
@@ -163,7 +171,12 @@ public class ReproduceBenchmarks {
 			testFile = "data/xalantestfile.txt";
 			break;
 		case "all":
-			iterateAllBenchmarks();
+			if(args.length == 2){
+				String arg2 = args[1];
+				iterateAllBenchmarksMultithread(arg2);
+			}else{
+				iterateAllBenchmarks();
+			}
 			break;
 
 	    //short version
@@ -252,55 +265,145 @@ public class ReproduceBenchmarks {
 			excludeFile = "data/ShortDefaultExclusions.txt";
 			break;
 		case "all_short":
-			iterateAllBenchmarksShort();
+			if(args.length == 2){
+				String arg2 = args[1];
+				iterateAllBenchmarksShortMultithread(arg2);
+			}else{
+				iterateAllBenchmarksShort();
+			}
 			break;
 
 		default:
 			throw new IllegalArgumentException("Invalid argument: " + arg);
 		}
 
-		//start
-		print("Benchmark: " + arg, true);
-		runD4_1();
-		System.out.println();
-		runD4_48();
-		System.out.println();
+		if(args.length == 2){
+			String arg2 = args[1];
+			print("Benchmark: " + arg, true);
+			int numOfWorkers = Integer.parseInt(arg2);
+			runD4_multithreads(numOfWorkers);
+			System.out.println();
+		}else{
+			//start
+			print("Benchmark: " + arg, true);
+			runD4_1();
+			System.out.println();
+			runD4_48();
+			System.out.println();
+		}
 	}
 
+	private static void iterateAllBenchmarksShortMultithread(String arg2)
+			throws ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException, IOException{
+		System.out.println("RUNNING SHORT TESTS FOR ALL BENCHMARKS WITH " + arg2 + " ON A SINGLE MACHINE.\n");
+
+		for (int i = 0; i < benchmark_names_short.length; i++) {
+			String[] arg = new String[]{benchmark_names_short[i], arg2};
+			main(arg);
+		}
+
+		System.out.println("\n COMPLETE SHORT TESTING ALL BENCHMARKS ON A SINGLE MACHINE.");
+	}
 
 	private static void iterateAllBenchmarksShort()
 			throws ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException, IOException{
-		String[] args = new String[] { "avrora_short", "batik_short", "eclipse_short", "fop_short",
-				"h2_short", "jython_short", "luindex_short", "lusearch_short", "pmd_short",
-				"sunflow_short", "tomcat_short", "tradebeans_short", "tradesoap_short",
-				"xalan_short"};
-
 		System.out.println("RUNNING SHORT TESTS FOR ALL BENCHMARKS.\n");
 
-		for (int i = 0; i < args.length; i++) {
-			String[] arg = new String[]{args[i]};
+		for (int i = 0; i < benchmark_names_short.length; i++) {
+			String[] arg = new String[]{benchmark_names_short[i]};
 			main(arg);
 		}
 
 		System.out.println("\n COMPLETE SHORT TESTING ALL BENCHMARKS.");
 	}
 
+	private static void iterateAllBenchmarksMultithread(String arg2)
+			throws ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException, IOException {
+		System.out.println("RUNNING FULL TESTS FOR ALL BENCHMARKS WITH " + arg2 + " ON A SINGLE MACHINE.\n");
+
+		for (int i = 0; i < benchmark_names.length; i++) {
+			String[] arg = new String[]{benchmark_names[i], arg2};
+			main(arg);
+		}
+
+		System.out.println("\n COMPLETE FULL TESTING ALL BENCHMARKS ON A SINGLE MACHINE.");
+	}
 
 	private static void iterateAllBenchmarks() throws ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException, IOException {
-		String[] args = new String[] { "avrora", "batik", "eclipse", "fop", "h2", "jython",
-				"luindex", "lusearch", "pmd", "sunflow", "tomcat", "tradebeans", "tradesoap",
-				"xalan"};
-
 		System.out.println("RUNNING FULL TESTS FOR ALL BENCHMARKS.\n");
 
-		for (int i = 0; i < args.length; i++) {
-			String[] arg = new String[]{args[i]};
+		for (int i = 0; i < benchmark_names.length; i++) {
+			String[] arg = new String[]{benchmark_names[i]};
 			main(arg);
 		}
 
 		System.out.println("\n COMPLETE FULL TESTING ALL BENCHMARKS.");
 	}
 
+
+
+	private static void runD4_multithreads(int numOfWorkers)
+			throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException{
+		print("D4 with " + numOfWorkers + " threads on a single machine", true);
+		System.out.println("Running Exhaustive Points-to Analysis ... ");
+		AnalysisScope scope = CallGraphTestUtil.makeJ2SEAnalysisScope(testFile, excludeFile);
+		ClassHierarchy cha = ClassHierarchy.make(scope);
+		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
+		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
+
+		SSAPropagationCallGraphBuilder builder = Util.makeZeroOneContainerCFABuilder(options, new AnalysisCache(), cha, scope);
+
+		long start_time = System.currentTimeMillis();
+		CallGraph cg  = builder.makeCallGraph(options, null);
+		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
+		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time) + "ms");
+		int numofCGNodes = cg.getNumberOfNodes();
+		int totalInstanceKey = pta.getInstanceKeys().size();
+		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
+		int totalPointerEdge = 0;
+		int totalClass=cha.getNumberOfClasses();
+		Iterator<PointerKey> iter = pta.getPointerKeys().iterator();
+		while(iter.hasNext()){
+			PointerKey key = iter.next();
+			int size = pta.getPointsToSet(key).size();
+			totalPointerEdge+=size;
+		}
+		System.out.println("#Class: "+totalClass);
+		System.out.println("#Method: "+numofCGNodes);
+		System.out.println("#Pointer: "+totalPointerKey);
+		System.out.println("#Object: "+totalInstanceKey);
+		System.out.println("#Edges: "+totalPointerEdge);
+		System.out.println();
+		ps.println();
+
+		System.out.println("Running Exhaustive Detection ... ");
+		//detector
+		ActorSystem akkasys = ActorSystem.create();
+		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, numOfWorkers), "bughub");
+		start_time = System.currentTimeMillis();
+		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
+		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
+
+//		System.out.println("EXHAUSTIVE DETECTION >>>");
+		int race = 0;
+		int dl = 0;
+		for(ITIDEBug bug : bugs){
+			if(bug instanceof TIDERace){
+				race++;
+			}else if (bug instanceof TIDEDeadlock){
+				dl++;
+			}
+		}
+		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
+//		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
+//		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
+//		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
+
+		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
+		builder.getPropagationSystem().initializeAkkaSys(numOfWorkers);
+		incrementalTest(builder, cg);
+	}
 
 	public static void runD4_1()
 			throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException{
