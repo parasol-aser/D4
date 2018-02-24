@@ -21,6 +21,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
+import edu.tamu.aser.tide.plugin.handlers.TriggerCheckHandler;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -37,6 +38,7 @@ public class Activator extends AbstractUIPlugin {
 
 //	public static IJavaProject project;
 	private ConvertHandler chandler;
+	private TriggerCheckHandler tHandler;
 	/**
 	 * The constructor
 	 */
@@ -96,10 +98,18 @@ public class Activator extends AbstractUIPlugin {
 		return this.chandler;
 	}
 
+	public TriggerCheckHandler getTriggerCheckHandler(){
+		return this.tHandler;
+	}
 
 	public void setCHandler(ConvertHandler convertHandler) {
 
 		this.chandler = convertHandler;
+	}
+
+	public void setTHandler(TriggerCheckHandler triggerCheckHandler) {
+
+		this.tHandler = triggerCheckHandler;
 	}
 
 	public static ImageDescriptor getImageDescriptor(String name) {

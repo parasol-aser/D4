@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -156,11 +158,19 @@ import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.ReporterChanges;
 import edu.tamu.aser.tide.trace.StartNode;
 import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.views.EchoDLView;
+import edu.tamu.aser.tide.views.EchoRaceView;
+import edu.tamu.aser.tide.views.EchoReadWriteView;
+import edu.tamu.aser.tide.views.ExcludeView;
 import scala.collection.immutable.Nil;
 
 public class ConvertHandler extends AbstractHandler {
 
 	public static final String DESC_MAIN = "([Ljava/lang/String;)V";
+//	public ExcludeView excludeView;
+	public EchoRaceView echoRaceView;
+	public EchoReadWriteView echoRWView;
+	public EchoDLView echoDLView;
 //	private static String EXCLUSIONS =
 //			//wala
 ////			"java\\/awt\\/.*\n" +
@@ -195,6 +205,18 @@ public class ConvertHandler extends AbstractHandler {
 		Activator.getDefault().setCHandler(this);
 	}
 
+	public EchoRaceView getEchoRaceView(){
+		return echoRaceView;
+	}
+
+	public EchoDLView getEchoDLView(){
+		return echoDLView;
+	}
+
+	public EchoReadWriteView getEchoReadWriteView(){
+		return echoRWView;
+	}
+
 	private HashMap<IJavaProject,TIDECGModel> modelMap = new HashMap<IJavaProject,TIDECGModel>();
 	private TIDECGModel currentModel;
 //	private IFile currentFile;
@@ -219,6 +241,177 @@ public class ConvertHandler extends AbstractHandler {
 	public IJavaProject getCurrentProject(){
 		return currentProject;
 	}
+
+	/**
+	 * consider ignored functions back
+	 * @param javaProject
+	 * @param file
+	 * @param consider_method
+	 */
+	public void handleConsiderMethod(IJavaProject javaProject, IFile file, ChangedItem consider_method) {
+		considerNodes.clear();
+		TIDECGModel model = modelMap.get(javaProject);
+		if(model == null)
+			return;
+		IClassHierarchy cha = model.getClassHierarchy();
+
+		try{
+			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
+			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
+
+			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
+			List<Module> modules = new LinkedList<Module>();
+			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
+			cl.init(modules);
+			Iterator<IClass> iter = cl.iterateAllClasses();
+			while(iter.hasNext()){
+				IClass javaClass = iter.next();
+				String className = javaClass.getName().getClassName().toString();
+				Atom apackage = javaClass.getName().getPackage();
+				String apackage_s = null;
+				if(apackage != null){
+					apackage_s = apackage.toString().replace('/', '.');
+				}
+
+				if((apackage==null&&consider_method.packageName.isEmpty())
+						||apackage!=null&&apackage_s.equals(consider_method.packageName)){
+
+					if(className.contains(consider_method.className)){
+
+						for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
+							String mName = m.getName().toString();//JEFF TODO
+
+							if(mName.equals(consider_method.methodName)){
+								TypeName typeName = m.getDeclaringClass().getName();
+								IClass class_old = loader_old.lookupClass(typeName);
+								//									System.out.println("class_old hash: " + System.identityHashCode(class_old)) ;
+								if(class_old==null)
+									return;//TODO: other kinds of changes
+
+								com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
+								CGNode node = model.getOldCGNode(m_old);
+								considerNodes.add(node);
+							}
+						}
+					}
+				}
+			}
+			if(considerNodes.size() != 0){
+				letUsConsider(file, model);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * ignore function/method
+	 * @param ignore_method
+	 */
+	public void handleIgnoreMethod(IJavaProject javaProject, IFile file, ChangedItem ignore_method) {
+		ignoreNodes.clear();
+		TIDECGModel model = modelMap.get(javaProject);
+		if(model == null)
+			return;
+		IClassHierarchy cha = model.getClassHierarchy();
+
+		try{
+			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
+			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
+
+			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
+			List<Module> modules = new LinkedList<Module>();
+			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
+			cl.init(modules);
+			Iterator<IClass> iter = cl.iterateAllClasses();
+			while(iter.hasNext()){
+				IClass javaClass = iter.next();
+				String className = javaClass.getName().getClassName().toString();
+				Atom apackage = javaClass.getName().getPackage();
+				String apackage_s = null;
+				if(apackage != null){
+					apackage_s = apackage.toString().replace('/', '.');
+				}
+
+				if((apackage==null&&ignore_method.packageName.isEmpty())
+						||apackage!=null&&apackage_s.equals(ignore_method.packageName)){
+
+					if(className.contains(ignore_method.className)){
+
+						for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
+							String mName = m.getName().toString();//JEFF TODO
+
+							if(mName.equals(ignore_method.methodName)){
+								TypeName typeName = m.getDeclaringClass().getName();
+								IClass class_old = loader_old.lookupClass(typeName);
+								//									System.out.println("class_old hash: " + System.identityHashCode(class_old)) ;
+								if(class_old==null)
+									return;//TODO: other kinds of changes
+
+								com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
+								CGNode node = model.getOldCGNode(m_old);
+								ignoreNodes.add(node);
+							}
+						}
+					}
+				}
+			}
+			if(ignoreNodes.size() != 0){
+				letUsIgnore(file, model);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * TriggerCheckHandler
+	 * @param javaProject
+	 * @param collectedFiles
+	 * @param sigChanges
+	 */
+	public void handleMethodChanges(IJavaProject javaProject, HashMap<String, IFile> sigFiles,
+			HashMap<String, ArrayList<ChangedItem>> sigChanges) {
+		//see the changes
+//		for (ArrayList<ChangedItem> changedItems : sigChanges.values()) {
+//			for (ChangedItem changedItem : changedItems) {
+//				System.out.println("CHANGED ITEM: " + changedItem.packageName + " " + changedItem.className + " " + changedItem.methodName);
+//			}
+//		}
+
+		changedNodes.clear();
+		changedModifiers.clear();
+
+		TIDECGModel model = modelMap.get(javaProject);
+		if(model == null)
+			return;
+
+		IFile file0 = null;
+		Set<String> sigs = sigChanges.keySet();
+		for (String sig : sigs) {
+			IFile file = sigFiles.get(sig);
+			if(file0 == null)
+				file0 = file;
+			ArrayList<ChangedItem> changedItems = sigChanges.get(sig);
+			discoverChangedCGNodes(javaProject, file, changedItems);
+		}
+
+		boolean ptachanges = !AbstractFixedPointSolver.changes.isEmpty();
+		if(!changedNodes.isEmpty() || ptachanges || !changedModifiers.isEmpty()){//hChanges.isEmpty()
+			//process further check when lock/start changes or pts changes
+			letUsRock2(javaProject, file0, model, ptachanges, true);
+		}
+
+		try {
+			Thread.currentThread().sleep(10);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 
 	/**
 	 * handle program changes
@@ -443,7 +636,47 @@ public class ConvertHandler extends AbstractHandler {
 		}).start();
 	}
 
+	private void letUsIgnore(IFile file, TIDECGModel model) {
+		if(num_of_detection <= 0){
+			return;
+		}
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				HashSet<ITIDEBug> removedbugs = model.ignoreCGNodes(ignoreNodes);
+				//update UI
+				//remove the marker from editor
+				model.removeBugMarkersForIgnore(removedbugs);
+				//remove the bug from echoview
+				model.updateEchoViewForIgnore();
+				System.err.println("Total Time: "+(System.currentTimeMillis()-start_time));
+			}
+		}).start();
+	}
 
+
+
+	private void letUsConsider(IFile file, TIDECGModel model) {
+		if(num_of_detection <= 0){
+			return;
+		}
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				HashSet<ITIDEBug> addbugs = model.considerCGNodes(considerNodes);
+				//update UI
+				//remove the marker from editor
+				try {
+					model.addBugMarkersForConsider(addbugs, file);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+				//remove the bug from echoview
+				model.updateEchoViewForConsider();
+				System.err.println("Total Time: "+(System.currentTimeMillis()-start_time));
+			}
+		}).start();
+	}
 
 
 	@Override
@@ -503,6 +736,10 @@ public class ConvertHandler extends AbstractHandler {
 			modelMap.put(javaProject, model);
 //			excludeView.setProgramInfo(cu, selection);
 			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(cu.getPath());
+			//set echoview to menuhandler
+			echoRaceView = model.getEchoRaceView();
+			echoRWView = model.getEchoRWView();
+			echoDLView = model.getEchoDLView();
 			//set current model
 			currentModel = model;
 //			currentFile = file;

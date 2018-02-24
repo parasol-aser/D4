@@ -2431,20 +2431,21 @@ public class TIDEEngine {
 				return handleRunnable(instKey, param, useNode);
 			}else{
 				//because: assignments + ssa; array references
-				int new_param = findDefsInDataFlowFor(useNode, param, creation.iindex);
-				if(new_param != -1){
-					node = handleRunnable(instKey, new_param, useNode);
-					if(node != null)
-						return node;
-				}
-				if(creation instanceof SSAArrayLoadInstruction){
-					new_param = ((SSAArrayLoadInstruction)creation).getArrayRef();
-				}
-				while (node == null){
-					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
-					node = handleRunnable(instKey, new_param, useNode);
-				}
-				return node;
+//				int new_param = findDefsInDataFlowFor(useNode, param, creation.iindex);
+//				if(new_param != -1){
+//					node = handleRunnable(instKey, new_param, useNode);
+//					if(node != null)
+//						return node;
+//				}
+//				if(creation instanceof SSAArrayLoadInstruction){
+//					new_param = ((SSAArrayLoadInstruction)creation).getArrayRef();
+//				}
+//				while (node == null){
+//					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
+//					node = handleRunnable(instKey, new_param, useNode);
+//				}
+//				return node;
+				return null;
 			}
 		}
 		return null;
@@ -3923,7 +3924,7 @@ public class TIDEEngine {
 									}
 									if(exist == null){//new threadnode
 										threadNodes.add(node);
-									}else{
+									}else if(oldkids.contains(tempid)){
 										oldkids.remove(oldkids.indexOf(tempid));
 									}
 									int tid_child = node.getGraphNodeId();
@@ -4010,8 +4011,10 @@ public class TIDEEngine {
 									if(mapOfJoinNode.containsKey(tid_child)){
 										//dup run nodes
 										CGNode threadNode = dupStartJoinTidMap.get(tid_child);
-										tid_child = threadNode.getGraphNodeId();
-										node = threadNode;
+										if(threadNode != null){
+											tid_child = threadNode.getGraphNodeId();
+											node = threadNode;
+										}
 									}
 									JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
 									curTrace.addJ(jNode, inst);
@@ -5103,7 +5106,7 @@ public class TIDEEngine {
 								}
 								if(exist == null){//new threadnode
 									threadNodes.add(node);
-								}else{
+								}else if(oldkids.contains(tempid)){
 									oldkids.remove(oldkids.indexOf(tempid));
 								}
 								int tid_child = node.getGraphNodeId();
@@ -5198,8 +5201,10 @@ public class TIDEEngine {
 								if(mapOfJoinNode.containsKey(tid_child)){
 									//dup run nodes
 									CGNode threadNode = dupStartJoinTidMap.get(tid_child);
-									tid_child = threadNode.getGraphNodeId();
-									node = threadNode;
+									if(threadNode != null){
+										tid_child = threadNode.getGraphNodeId();
+										node = threadNode;
+									}
 								}
 								JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
 								curTrace.add2J(jNode, inst, tid_child);

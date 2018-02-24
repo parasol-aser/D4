@@ -525,11 +525,11 @@ public class ReproduceBenchmarks {
 				dl++;
 			}
 		}
-		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
 //		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
 		master.awaitRemoteComplete();
+		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
 		incrementalDistTest(master, builder, cg);

@@ -7,6 +7,35 @@
             name="ECHO"
             id="edu.tamu.aser.tide.plugin.convert">
       </command>
+      <command
+            name="Ignore This Variable"
+            id="edu.tamu.aser.tide.plugin.ignorevariable">
+      </command>
+      <command
+            name="Consider This Variable"
+            id="edu.tamu.aser.tide.plugin.considervariable">
+      </command>
+      <command
+            name="Ignore This Method"
+            id="edu.tamu.aser.tide.plugin.ignorefunction">
+      </command>
+      <command
+            name="Consider This Method"
+            id="edu.tamu.aser.tide.plugin.considerfunction">
+      </command>
+      <command
+            name="Trigger Incremental Check"
+            id="edu.tamu.aser.tide.plugin.triggercheck">
+      </command>
+      <command
+            id="edu.tamu.aser.tide.plugin.echomode"
+            name="ECHO Mode">
+      </command>
+      
+<!--      <command
+            name="Ignore This Bug"
+            id="edu.tamu.aser.tide.plugin.ignorebug">
+      </command>-->
    </extension>
 
    <extension
@@ -114,6 +143,34 @@
             commandId="edu.tamu.aser.tide.plugin.convert"
             class="edu.tamu.aser.tide.plugin.handlers.ConvertHandler">
       </handler>
+      <handler
+            commandId="edu.tamu.aser.tide.plugin.ignorevariable"
+            class="edu.tamu.aser.tide.plugin.handlers.IgnoreVariableHandler">
+      </handler>
+      <handler
+            commandId="edu.tamu.aser.tide.plugin.considervariable"
+            class="edu.tamu.aser.tide.plugin.handlers.IgnoreVariableHandler">
+      </handler>
+      <handler
+      		commandId="edu.tamu.aser.tide.plugin.ignorefunction"
+      		class="edu.tamu.aser.tide.plugin.handlers.IgnoreFunctionHandler">
+      </handler>
+      <handler
+      		commandId="edu.tamu.aser.tide.plugin.considerfunction"
+      		class="edu.tamu.aser.tide.plugin.handlers.IgnoreFunctionHandler">
+      </handler>
+      <handler
+      		commandId="edu.tamu.aser.tide.plugin.triggercheck"
+      		class="edu.tamu.aser.tide.plugin.handlers.TriggerCheckHandler">
+      </handler>
+       <handler
+      		commandId="edu.tamu.aser.tide.plugin.echomode"
+      		class="edu.tamu.aser.tide.plugin.handlers.ChooseModeHandler">
+      </handler>
+<!--       <handler
+            commandId="edu.tamu.aser.tide.plugin.ignorebug"
+            class="edu.tamu.aser.tide.plugin.handlers.IgnoreBugHandler"> 
+      </handler>-->
    </extension>
       
 	<extension
@@ -127,6 +184,216 @@
      </propertyTester>
    </extension>
    
+   <!-- add another trigger button in the main toolbar-->
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+               locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar
+                  id="edu.tamu.aser.tide.plugin.toobarbutton">
+               <command
+                     commandId="edu.tamu.aser.tide.plugin.triggercheck"
+                     icon="icons/runFindbugs.png"
+                     id="toobarbutton1"
+                     label="CHECK"
+                     mode="FORCE_TEXT"
+                     style="push"
+                     tooltip="%toolbar.tooltip">
+               </command>
+            </toolbar>
+     </menuContribution>
+     
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="edu.tamu.cse.aser.echo.modebutton">
+            <command
+                  commandId="edu.tamu.aser.tide.plugin.echomode"
+                  icon="icons/runFindbugs.png"
+                  id="edu.tamu.aser.tide.plugin.echomodedropdown"
+                  label="ECHO MODE"
+                  mode="FORCE_TEXT"
+                  style="pulldown">
+            </command>
+         </toolbar>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:edu.tamu.aser.tide.plugin.echomodedropdown">
+         <command
+               commandId="edu.tamu.aser.tide.plugin.echomode"
+               label="Cmd+Save Mode"
+               style="push">
+         </command>
+         <command
+               commandId="edu.tamu.aser.tide.plugin.echomode"
+               label="Button Mode"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+  
+
+<!-- add right click menu item to ignore a function -->
+<extension point="org.eclipse.ui.menus">
+   <menuContribution
+	   allPopups="true"
+	   locationURI="popup:org.eclipse.jdt.ui.outline?after=additions"> 
+	   <menu label="ECHO">
+		   <command commandId="edu.tamu.aser.tide.plugin.ignorefunction">
+			  <visibleWhen
+				checkEnabled="false">
+				  <with variable="activeMenuSelection">
+					<and>
+					  <iterate ifEmpty="false" operator="or">
+					  <or>
+						  <instanceof
+							value="org.eclipse.jdt.core.IMethod">
+						  </instanceof>
+					  </or>
+					  </iterate>
+					  </and>
+				  </with>
+			  </visibleWhen>
+		   </command>
+		   <command commandId="edu.tamu.aser.tide.plugin.considerfunction">
+			  <visibleWhen
+				checkEnabled="false">
+				  <with variable="activeMenuSelection">
+					<and>
+					  <iterate ifEmpty="false" operator="or">
+					  <or>
+						  <instanceof
+							value="org.eclipse.jdt.core.IMethod">
+						  </instanceof>
+					  </or>
+					  </iterate>
+					  </and>
+				  </with>
+			  </visibleWhen>
+		   </command>
+	   </menu>
+   </menuContribution>
+</extension>
+   
+<extension point="org.eclipse.ui.menus">
+   <menuContribution
+	   allPopups="true"
+	   locationURI="popup:org.eclipse.jdt.ui.outline?after=additions"> 
+	   <menu label="ECHO">
+		   <command commandId="edu.tamu.aser.tide.plugin.ignorevariable">
+			  <visibleWhen
+				checkEnabled="false">
+				  <with variable="activeMenuSelection">
+					<and>
+					  <iterate ifEmpty="false" operator="or">
+					  <or>
+						  <instanceof
+							value="org.eclipse.jdt.core.IField">
+						  </instanceof>
+					  </or>
+					  </iterate>
+					  </and>
+				  </with>
+			  </visibleWhen>
+		   </command>
+		   <command commandId="edu.tamu.aser.tide.plugin.considervariable">
+			  <visibleWhen
+				checkEnabled="false">
+				  <with variable="activeMenuSelection">
+					<and>
+					  <iterate ifEmpty="false" operator="or">
+					  <or>
+						  <instanceof
+							value="org.eclipse.jdt.core.IField">
+						  </instanceof>
+					  </or>
+					  </iterate>
+					  </and>
+				  </with>
+			  </visibleWhen>
+		   </command>
+	   </menu>
+   </menuContribution>
+</extension>   
+
+<extension 
+        point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI= "popup:edu.tamu.aser.tide.views.echomenu?after=additions">
+            <menu
+                  label="ECHO Bug Choice">
+                  <command
+                      commandId="edu.tamu.aser.tide.plugin.ignorevariable">
+                  <visibleWhen
+                    checkEnabled="false">
+                      <with variable="activeMenuSelection">
+                        <and>
+                          <iterate ifEmpty="false" operator="or">
+                          <or>
+                              <instanceof
+                                value="edu.tamu.aser.tide.views.RaceNode">
+                              </instanceof>
+<!--                              <instanceof
+                                value="edu.tamu.aser.tide.views.DeadlockNode">
+                              </instanceof>         -->
+                              <instanceof
+                                value="edu.tamu.aser.tide.views.RWRelationNode">
+                              </instanceof>
+                          </or>
+                          </iterate>
+                          </and>
+                      </with>
+                  </visibleWhen>
+                  </command>
+                  <command
+                      commandId="edu.tamu.aser.tide.plugin.considervariable">
+                  <visibleWhen
+                    checkEnabled="false">
+                      <with variable="activeMenuSelection">
+                        <and>
+                          <iterate ifEmpty="false" operator="or">
+                          <or>
+                              <instanceof
+                                value="edu.tamu.aser.tide.views.RaceNode">
+                              </instanceof>
+<!--                              <instanceof
+                                value="edu.tamu.aser.tide.views.DeadlockNode">
+                              </instanceof>         -->
+                              <instanceof
+                                value="edu.tamu.aser.tide.views.RWRelationNode">
+                              </instanceof>
+                          </or>
+                          </iterate>
+                          </and>
+                      </with>
+                  </visibleWhen>
+                  </command>
+<!--                  <command
+                      commandId="edu.tamu.aser.tide.plugin.ignorebug">
+                  <visibleWhen
+                    checkEnabled="false">
+                      <with variable="activeMenuSelection">
+                        <and>
+                          <iterate ifEmpty="false" operator="or">
+                          <or>
+                              <instanceof
+                                value="edu.tamu.aser.tide.views.RaceNode">
+                              </instanceof>
+                              <instanceof
+                                value="edu.tamu.aser.tide.views.DeadlockNode">
+                              </instanceof>
+                          </or>
+                          </iterate>
+                          </and>
+                      </with>
+                  </visibleWhen>
+                  </command>  -->
+            </menu>
+      </menuContribution>
+    </extension> 
+
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
@@ -180,11 +447,11 @@
 		  icon="icons/buggy-tiny.png"
 		  id="edu.tamu.aser.tide.views.echotableview"
 		  name="ECHO Concurrent Relations" />
-        <view 
+<!--        <view 
 		  id="edu.tamu.aser.tide.views.excludeview"
 		  name="Excluded Packages/Classes/Methods"
 		  class="edu.tamu.aser.tide.views.ExcludeView"
-		  icon="icons/warning.png"/>
+		  icon="icons/warning.png"/>   -->
    </extension>
    
 

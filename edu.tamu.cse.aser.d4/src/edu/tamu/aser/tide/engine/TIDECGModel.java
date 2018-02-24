@@ -75,7 +75,6 @@ import com.ibm.wala.util.intset.OrdinalSet;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import edu.tamu.aser.tide.akkasys.BugHub;
 import edu.tamu.aser.tide.graph.LockSetEngine;
 import edu.tamu.aser.tide.graph.ReachabilityEngine;
 import edu.tamu.aser.tide.graph.SHBEdge;
@@ -97,6 +96,12 @@ import edu.tamu.aser.tide.trace.LockPair;
 import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.StartNode;
 import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.views.BugDetail;
+import edu.tamu.aser.tide.views.EchoDLView;
+import edu.tamu.aser.tide.views.EchoRaceView;
+import edu.tamu.aser.tide.views.EchoReadWriteView;
+import edu.tamu.aser.tide.views.ExcludeView;
+import edu.tamu.aser.tide.akkasys.BugHub;
 import scala.collection.script.Start;
 
 public class TIDECGModel extends WalaProjectCGModel {
@@ -114,8 +119,25 @@ public class TIDECGModel extends WalaProjectCGModel {
 	public TIDECGModel(IJavaProject project, String exclusionsFile, String mainMethodSignature) throws IOException, CoreException {
 		super(project, exclusionsFile);
 		this.entrySignature = mainMethodSignature;
+		echoRaceView = (EchoRaceView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+				.getActivePage().showView("edu.tamu.aser.tide.views.echoraceview");
+		echoDLView = (EchoDLView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+				.getActivePage().showView("edu.tamu.aser.tide.views.echodlview");
+		echoRWView = (EchoReadWriteView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+				.getActivePage().showView("edu.tamu.aser.tide.views.echotableview");
 	}
 
+	public EchoRaceView getEchoRaceView(){
+		return echoRaceView;
+	}
+
+	public EchoReadWriteView getEchoRWView(){
+		return echoRWView;
+	}
+
+	public EchoDLView getEchoDLView(){
+		return echoDLView;
+	}
 
 	public TIDEEngine getEngine(){
 		return bugEngine;
@@ -128,6 +150,10 @@ public class TIDECGModel extends WalaProjectCGModel {
 	public static TIDEEngine bugEngine;
 	private static ClassLoader ourClassLoader = ActorSystem.class.getClassLoader();
 	private final static boolean DEBUG = false;// true;
+	//gui view
+	public EchoRaceView echoRaceView;
+	public EchoDLView echoDLView;
+	public EchoReadWriteView echoRWView;
 
 	public HashSet<ITIDEBug> detectBug() {
 	    Thread.currentThread().setContextClassLoader(ourClassLoader);
@@ -188,6 +214,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 						showDeadlock(fullPath,(TIDEDeadlock) bug);
 				}
 				//
+				initialEchoView(bugs);
 			}else{
 				if(bugEngine.removedbugs.isEmpty() && bugEngine.addedbugs.isEmpty())
 					return;
@@ -224,6 +251,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 					else
 						showDeadlock(fullPath,(TIDEDeadlock) add);
 				}
+				updateEchoView();
 			}
 
 		}catch (Exception e) {
@@ -266,6 +294,183 @@ public class TIDECGModel extends WalaProjectCGModel {
 			}
 			bug_marker_map.remove(key);
 		}
+	}
+
+	private void initialEchoView(Set<ITIDEBug> bugs) {
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {System.err.println(e);}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							echoRaceView.initialGUI(bugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {System.err.println(e);}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							echoDLView.initialGUI(bugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {System.err.println(e);}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							echoRWView.initialGUI(bugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+	}
+
+	private void updateEchoView() {
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoRaceView.updateGUI(bugEngine.addedbugs, bugEngine.removedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoDLView.updateGUI(bugEngine.addedbugs, bugEngine.removedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoRWView.updateGUI(bugEngine.addedbugs, bugEngine.removedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+	}
+
+	public void updateEchoViewForIgnore() {
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoRaceView.ignoreBugs(bugEngine.removedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoRWView.ignoreBugs(bugEngine.removedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(100);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoDLView.ignoreBugs(bugEngine.removedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+	}
+
+	public void updateEchoViewForConsider() {
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(200);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoRaceView.considerBugs(bugEngine.addedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(200);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoRWView.considerBugs(bugEngine.addedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try { Thread.sleep(200);} catch (Exception e) {e.printStackTrace();}
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							//do update
+							echoDLView.considerBugs(bugEngine.addedbugs);
+						}
+					});
+					break;
+				}
+			}
+		}).start();
 	}
 
 
