@@ -34,4 +34,8 @@ Import-Package: com.ibm.wala.cast.ir.ssa,
  com.ibm.wala.eclipse.cg.model
 Export-Package: edu.tamu.aser.tide.engine,
  edu.tamu.aser.tide.plugin.handlers
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ akka-actor_2.11-2.4.17.jar,
+ config-1.3.0.jar,
+ scala-java8-compat_2.11-0.7.0.jar,
+ scala-library-2.11.8.jar

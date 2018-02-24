@@ -107,6 +107,7 @@ import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.NormalAllocationInNode;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
+import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
@@ -136,6 +137,8 @@ import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.Atom;
 import com.ibm.wala.util.strings.StringStuff;
 
+import edu.tamu.aser.tide.akkasys.BugHub;
+import edu.tamu.aser.tide.akkasys.BugWorker;
 import edu.tamu.aser.tide.engine.AnalysisUtils;
 import edu.tamu.aser.tide.engine.BasicAnalysisData;
 import edu.tamu.aser.tide.engine.ITIDEBug;
@@ -233,10 +236,6 @@ public class ConvertHandler extends AbstractHandler {
 	public TIDECGModel getCurrentModel(){
 		return currentModel;
 	}
-
-//	public IFile getCurrentFile(){
-//		return currentFile;
-//	}
 
 	public IJavaProject getCurrentProject(){
 		return currentProject;
@@ -709,32 +708,16 @@ public class ConvertHandler extends AbstractHandler {
 		try{
 			IJavaProject javaProject = cu.getJavaProject();
 			String mainSig = getSignature(cu);
-			//excluded in text file
-//			TIDECGModel model = new TIDECGModel(javaProject, "EclipseDefaultExclusions.txt", mainSig);
-			//excluded in String
-//			String deafaultDefined = excludeView.getDefaultText();
-//			String userDefined = excludeView.getChangedText();
-//			String new_exclusions = null;
-//			if(userDefined.length() > 0){
-//	            //append new added in excludeview
-//				StringBuilder stringBuilder = new StringBuilder();
-//				stringBuilder.append(deafaultDefined);
-//				stringBuilder.append(userDefined);
-//				new_exclusions = stringBuilder.toString();//combined
-//				//write back to EclipseDefaultExclusions.txt
-//				java.io.File file = new java.io.File("/Users/Bozhen/Documents/Eclipse2/Test_both_copy/edu.tamu.cse.aser.echo/data/EclipseDefaultExclusions.txt");
-//				FileWriter fileWriter = new FileWriter(file, false);
-//				BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-//				bufferedWriter.write(new_exclusions);
-//				bufferedWriter.close();
-//			}
 			TIDECGModel model = new TIDECGModel(javaProject, "EclipseDefaultExclusions.txt", mainSig);
-//			System.out.println("model is " + System.identityHashCode(model));
-//			long start_time = System.currentTimeMillis();
 			model.buildGraph();
-			System.err.println("Call Graph Construction Time: "+(System.currentTimeMillis()-start_time));
+			System.err.println("Exhaustive Construction Time: "+(System.currentTimeMillis()-start_time));
 			modelMap.put(javaProject, model);
-//			excludeView.setProgramInfo(cu, selection);
+			//set parameter
+			BugHub.setPlugin(true);
+			BugWorker.setPlugin(true);
+			((SSAPropagationCallGraphBuilder)model.getEngine().builder_echo).getPropagationSystem().initializeAkkaSys(8);
+			model.getBugEngine().setPlugin(true);
+			//
 			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(cu.getPath());
 			//set echoview to menuhandler
 			echoRaceView = model.getEchoRaceView();

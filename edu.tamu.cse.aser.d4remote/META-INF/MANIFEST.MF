@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Tarp
-Bundle-SymbolicName: edu.tamu.aser.tide.plugin;singleton:=true
-Bundle-Version: 1.3.4.qualifier
+Bundle-SymbolicName: edu.tamu.aser.tide.d4remoteplugin;singleton:=true
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: edu.tamu.aser.tide.plugin.Activator
 Bundle-Vendor: ASER
 Require-Bundle: org.eclipse.ui,

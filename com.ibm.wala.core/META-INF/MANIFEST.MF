@@ -68,8 +68,8 @@ Export-Package: .,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Eclipse-BuddyPolicy: registered
 Bundle-ClassPath: .,
- akka-actor_2.12-2.4.16.jar,
- scala-java8-compat_2.12-0.8.0.jar,
- scala-library-2.12.1.jar,
- config-1.3.1.jar
+ akka-actor_2.11-2.4.17.jar,
+ config-1.3.0.jar,
+ scala-java8-compat_2.11-0.7.0.jar,
+ scala-library-2.11.8.jar
 Import-Package: org.eclipse.core.resources

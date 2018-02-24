@@ -178,8 +178,6 @@ public class PropagationSystem extends DefaultFixedPointSolver<PointsToSetVariab
     if (PointsToSetVariable.PARANOID) {
       PointsToSetVariable.instanceKeys = instanceKeys;
     }
-
-
   }
 
   public void initializeAkkaSys(int nrOfWorkers){

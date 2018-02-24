@@ -43,8 +43,11 @@ import edu.tamu.aser.tide.trace.WriteNode;
 
 public class BugWorker extends UntypedActor{
 
-//	private final static boolean DEBUG = true;
+	private static boolean PLUGIN = false;
 
+	public static void setPlugin(boolean b){
+		PLUGIN = b;
+	}
 
 	@Override
 	public void onReceive(Object message) throws Throwable {
@@ -86,14 +89,14 @@ public class BugWorker extends UntypedActor{
 	private void processIncreCheckDeadlock(IncreCheckDeadlock job) {
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 		DLockNode check = job.getCheckLock();
-		TIDEEngine engine = ReproduceBenchmarks.engine;
-//		if(DEBUG){
-//			engine = Test.engine;
-//		}else{
-//			engine = TIDECGModel.bugEngine;
-//		}
+		TIDEEngine engine;
+		if(PLUGIN){
+			engine = TIDECGModel.bugEngine;
+		}else{
+			engine = ReproduceBenchmarks.engine;
+		}
 		//collect dlpair including check
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
+		SHBGraph shb = engine.shb;
 //		if(DEBUG){
 //			shb = Test.engine.shb;
 //		}else{
@@ -150,11 +153,11 @@ public class BugWorker extends UntypedActor{
 			}
 		}
 		if(bugs.size() > 0){
-			ReproduceBenchmarks.engine.addBugsBack(bugs);
-//			if(DEBUG)
-//				Test.engine.addBugsBack(bugs);
-//			else
-//				TIDECGModel.bugEngine.addBugsBack(bugs);
+//			ReproduceBenchmarks.engine.addBugsBack(bugs);
+			if(PLUGIN)
+				TIDECGModel.bugEngine.addBugsBack(bugs);
+			else
+				ReproduceBenchmarks.engine.addBugsBack(bugs);
 		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
@@ -171,11 +174,12 @@ public class BugWorker extends UntypedActor{
 			for(Integer tid2: tids){
 				if(tid2!=tid1){
 					ArrayList<DLLockPair> dLLockPairs2;
-					dLLockPairs2 = ReproduceBenchmarks.engine.threadDLLockPairs.get(tid2);
-//					if(DEBUG)
-//						dLLockPairs2 = Test.engine.threadDLLockPairs.get(tid2);
-//					else
-//						dLLockPairs2 = TIDECGModel.bugEngine.threadDLLockPairs.get(tid2);
+//					dLLockPairs2 = ReproduceBenchmarks.engine.threadDLLockPairs.get(tid2);
+					if(PLUGIN)
+						dLLockPairs2 = TIDECGModel.bugEngine.threadDLLockPairs.get(tid2);
+					else
+						dLLockPairs2 = ReproduceBenchmarks.engine.threadDLLockPairs.get(tid2);
+
 					for(int j=0;j<dLLockPairs2.size();j++){
 						DLLockPair dllp2 = dLLockPairs2.get(j);
 						HashSet<String> l11sig = dllp1.lock1.getLockSig();
@@ -213,11 +217,11 @@ public class BugWorker extends UntypedActor{
 			}
 		}
 		if(bugs.size() > 0){
-			ReproduceBenchmarks.engine.addBugsBack(bugs);
-//			if(DEBUG)
-//				Test.engine.addBugsBack(bugs);
-//			else
-//				TIDECGModel.bugEngine.addBugsBack(bugs);
+//			ReproduceBenchmarks.engine.addBugsBack(bugs);
+			if(PLUGIN)
+				TIDECGModel.bugEngine.addBugsBack(bugs);
+			else
+				ReproduceBenchmarks.engine.addBugsBack(bugs);
 		}
 		getSender().tell(new ReturnResult(), getSelf());
 
@@ -243,13 +247,12 @@ public class BugWorker extends UntypedActor{
 //			System.out.println();
 //		}
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
-		//
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
+		SHBGraph shb ;
+		if(PLUGIN){
+			shb = TIDECGModel.bugEngine.shb;
+		}else{
+			shb = ReproduceBenchmarks.engine.shb;
+		}
 	    for (WriteNode wnode : writes) {
 	    	//check read & write
 	    	Trace wTrace = shb.getTrace(wnode.getBelonging());
@@ -298,12 +301,12 @@ public class BugWorker extends UntypedActor{
 	    }
 
 	    if(bugs.size() > 0){
-			ReproduceBenchmarks.engine.addBugsBack(bugs);
-//			if (DEBUG) {
-//				Test.engine.addBugsBack(bugs);
-//			}else{
-//				TIDECGModel.bugEngine.addBugsBack(bugs);
-//			}
+//			ReproduceBenchmarks.engine.addBugsBack(bugs);
+			if (PLUGIN) {
+				TIDECGModel.bugEngine.addBugsBack(bugs);
+			}else{
+				ReproduceBenchmarks.engine.addBugsBack(bugs);
+			}
 		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
@@ -313,12 +316,12 @@ public class BugWorker extends UntypedActor{
 		HashSet<ReadNode> reads = job.getReads();
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 		String sig = job.getSig();
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
+		SHBGraph shb ;
+		if(PLUGIN){
+			shb = TIDECGModel.bugEngine.shb;
+		}else{
+			shb = ReproduceBenchmarks.engine.shb;
+		}
 
 		for(WriteNode wnode : writes){
 			ArrayList<Integer> wtids = shb.getTrace(wnode.getBelonging()).getTraceTids();
@@ -355,12 +358,12 @@ public class BugWorker extends UntypedActor{
 		}
 
 		if(bugs.size() > 0){
-			ReproduceBenchmarks.engine.addBugsBack(bugs);
-//			if (DEBUG) {
-//				Test.engine.addBugsBack(bugs);
-//			}else{
-//				TIDECGModel.bugEngine.addBugsBack(bugs);
-//			}
+//			ReproduceBenchmarks.engine.addBugsBack(bugs);
+			if (PLUGIN) {
+				TIDECGModel.bugEngine.addBugsBack(bugs);
+			}else{
+				ReproduceBenchmarks.engine.addBugsBack(bugs);
+			}
 		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
@@ -369,12 +372,12 @@ public class BugWorker extends UntypedActor{
 	private void processIncreRemoveLocalJob(IncreRemoveLocalJob job) {
 		//update later
 		String check = job.getCheckSig();
-		TIDEEngine engine = ReproduceBenchmarks.engine;
-//		if(DEBUG){
-//			engine = Test.engine;
-//		}else{
-//			engine = TIDECGModel.bugEngine;
-//		}
+		TIDEEngine engine;
+		if(PLUGIN){
+			engine = TIDECGModel.bugEngine;
+		}else{
+			engine = ReproduceBenchmarks.engine;
+		}
 		HashMap<String, HashSet<ReadNode>> sigReadNodes = new HashMap<String, HashSet<ReadNode>>();
 		HashMap<String, HashSet<WriteNode>> sigWriteNodes = new HashMap<String, HashSet<WriteNode>>();
 		ArrayList<Trace> alltraces = engine.shb.getAllTraces();
@@ -407,26 +410,26 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
-		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
-//		if(DEBUG){
-//			Test.engine.addSigReadNodes(sigReadNodes);
-//			Test.engine.addSigWriteNodes(sigWriteNodes);
-//		}else{
-//			TIDECGModel.bugEngine.addSigReadNodes(sigReadNodes);
-//			TIDECGModel.bugEngine.addSigWriteNodes(sigWriteNodes);
-//		}
+//		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
+//		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
+		if(PLUGIN){
+			TIDECGModel.bugEngine.addSigReadNodes(sigReadNodes);
+			TIDECGModel.bugEngine.addSigWriteNodes(sigWriteNodes);
+		}else{
+			ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
+			ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
+		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
 	private void processRemoveLocalJob(RemoveLocalJob job) {
 		ArrayList<Trace> team = job.getTeam();
-		HashSet<String> sharedFields = ReproduceBenchmarks.engine.sharedFields;
-//		if(DEBUG){
-//			sharedFields = Test.engine.sharedFields;
-//		}else{
-//			sharedFields = TIDECGModel.bugEngine.sharedFields;
-//		}
+		HashSet<String> sharedFields ;
+		if(PLUGIN){
+			sharedFields = TIDECGModel.bugEngine.sharedFields;
+		}else{
+			sharedFields = ReproduceBenchmarks.engine.sharedFields;
+		}
 		HashMap<String, HashSet<ReadNode>> sigReadNodes = new HashMap<String, HashSet<ReadNode>>();
 		HashMap<String, HashSet<WriteNode>> sigWriteNodes = new HashMap<String, HashSet<WriteNode>>();
 
@@ -462,15 +465,15 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
-		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
-//		if(DEBUG){
-//			Test.engine.addSigReadNodes(sigReadNodes);
-//			Test.engine.addSigWriteNodes(sigWriteNodes);
-//		}else{
-//			TIDECGModel.bugEngine.addSigReadNodes(sigReadNodes);
-//			TIDECGModel.bugEngine.addSigWriteNodes(sigWriteNodes);
-//		}
+//		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
+//		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
+		if(PLUGIN){
+			TIDECGModel.bugEngine.addSigReadNodes(sigReadNodes);
+			TIDECGModel.bugEngine.addSigWriteNodes(sigWriteNodes);
+		}else{
+			ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
+			ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
+		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
@@ -490,22 +493,22 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-		ReproduceBenchmarks.engine.addSharedVars(sharedFields);
-//		if (DEBUG) {
-//			Test.engine.addSharedVars(sharedFields);
-//		}else{
-//			TIDECGModel.bugEngine.addSharedVars(sharedFields);
-//		}
+//		ReproduceBenchmarks.engine.addSharedVars(sharedFields);
+		if (PLUGIN) {
+			TIDECGModel.bugEngine.addSharedVars(sharedFields);
+		}else{
+			ReproduceBenchmarks.engine.addSharedVars(sharedFields);
+		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
 	private boolean checkLockSetAndHappensBefore(Integer wtid, WriteNode wnode, Integer xtid, MemNode xnode) {//ReachabilityEngine reachEngine,
-		TIDEEngine engine = ReproduceBenchmarks.engine;
-//		if(DEBUG){
-//			engine = Test.engine;
-//		}else{
-//			engine = TIDECGModel.bugEngine;
-//		}
+		TIDEEngine engine;
+		if(PLUGIN){
+			engine = TIDECGModel.bugEngine;
+		}else{
+			engine = ReproduceBenchmarks.engine;
+		}
 		if(wtid != xtid){
 			if(!hasCommonLock(xtid, xnode, wtid, wnode)){
 				return hasHBRelation(wtid, wnode, xtid, xnode);
@@ -517,12 +520,12 @@ public class BugWorker extends UntypedActor{
 	}
 
 	private void processIncreRecheckCommonLocks(IncreRecheckCommonLock job){
-		TIDEEngine engine = ReproduceBenchmarks.engine;
-//		if(DEBUG){
-//			engine = Test.engine;
-//		}else{
-//			engine = TIDECGModel.bugEngine;
-//		}
+		TIDEEngine engine;
+		if(PLUGIN){
+			engine = TIDECGModel.bugEngine;
+		}else{
+			engine = ReproduceBenchmarks.engine;
+		}
 		HashSet<TIDERace> group = job.getGroup();
 		//has common lock, update the race inside lock
 		HashSet<TIDERace> recheckRaces = engine.recheckRaces;
@@ -571,12 +574,12 @@ public class BugWorker extends UntypedActor{
 	private HashMap<String, ArrayList<LockPair>> collectAllLockPairsFor(int tid, INode node,
 			HashMap<LockPair, INode> pair_edge_locations) {
 		HashMap<String, ArrayList<LockPair>> allPairs = new HashMap<>();
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
+		SHBGraph shb;
+		if(PLUGIN){
+			shb = TIDECGModel.bugEngine.shb;
+		}else{
+			shb = ReproduceBenchmarks.engine.shb;
+		}
 		//current; recursive
 		int round = 5;//can be changed
 		while(round >= 0){
@@ -632,12 +635,12 @@ public class BugWorker extends UntypedActor{
 
 	private boolean doesHaveLockBetween(INode check, ArrayList<LockPair> pairs,
 			HashMap<LockPair, INode> pair_edge_locations) {
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
+		SHBGraph shb;
+		if(PLUGIN){
+			shb = TIDECGModel.bugEngine.shb;
+		}else{
+			shb = ReproduceBenchmarks.engine.shb;
+		}
 		for (LockPair pair : pairs) {
 			INode node = pair_edge_locations.get(pair);
 			DLockNode lock = (DLockNode) pair.lock;
@@ -658,12 +661,12 @@ public class BugWorker extends UntypedActor{
 
 
 	private StartNode sameParent(int tid1, int tid2) {
-		HashMap<Integer, StartNode> mapOfStartNode = ReproduceBenchmarks.engine.mapOfStartNode;
-//		if(DEBUG){
-//			mapOfStartNode = Test.engine.mapOfStartNode;
-//		}else{
-//			mapOfStartNode = TIDECGModel.bugEngine.mapOfStartNode;
-//		}
+		HashMap<Integer, StartNode> mapOfStartNode;
+		if(PLUGIN){
+			mapOfStartNode = TIDECGModel.bugEngine.mapOfStartNode;
+		}else{
+			mapOfStartNode = ReproduceBenchmarks.engine.mapOfStartNode;
+		}
 		Iterator<Integer> iter_thread = mapOfStartNode.keySet().iterator();
 		while(iter_thread.hasNext()){
 			int t = iter_thread.next();
@@ -678,12 +681,12 @@ public class BugWorker extends UntypedActor{
 	}
 
 	private ArrayList<StartNode> shareGrandParent(int earlier, int later) {
-		HashMap<Integer, StartNode> mapOfStartNode = ReproduceBenchmarks.engine.mapOfStartNode;
-//		if(DEBUG){
-//			mapOfStartNode = Test.engine.mapOfStartNode;
-//		}else{
-//			mapOfStartNode = TIDECGModel.bugEngine.mapOfStartNode;
-//		}
+		HashMap<Integer, StartNode> mapOfStartNode;
+		if(PLUGIN){
+			mapOfStartNode = TIDECGModel.bugEngine.mapOfStartNode;
+		}else{
+			mapOfStartNode = ReproduceBenchmarks.engine.mapOfStartNode;
+		}
 		int parentoflater = mapOfStartNode.get(later).getParentTID();
 		int grandpoflater = mapOfStartNode.get(parentoflater).getParentTID();
 		if(grandpoflater == -1){
@@ -702,129 +705,34 @@ public class BugWorker extends UntypedActor{
 
 	private boolean checkReachabilityof(int tid1, DLLockPair dllp1, int tid2, DLLockPair dllp2) {//replaced
 		HashMap<Integer, StartNode> mapOfStartNode;
-		boolean isDeadlock = false;
-//		int tid1 = dllp1.lock1.getTID();
-//		int tid2 = dllp2.lock1.getTID();
-		//new
-		isDeadlock = hasHBRelation(tid1, dllp1.lock1, tid2, dllp2.lock1);
-//		if (!isDeadlock) {
-//			TIDEEngine engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
-//			//has common lock, update the race inside lock
-//			if (engine.bugs.size() > 0 && engine.change) {
-//				HashSet<TIDERace> removes = new HashSet<>();
-//				for (ITIDEBug bug : engine.bugs) {
-//					if(bug instanceof TIDERace){
-//						TIDERace exist = (TIDERace) bug;
-//						MemNode exist1 = exist.node1;
-//						MemNode exist2 = exist.node2;
-//						if () {
-//							removes.add(exist);
-//						}
-//					}
-//				}
-//				if (removes.size() > 0) {
-//					engine.removeBugs(removes);
-//				}
-//			}
-//		}
-
-		//find out parent
-//		StartNode startNode1 = mapOfStartNode.get(tid1);
-//		MutableIntSet kids1 = startNode1.getTID_Child();
-//		StartNode startNode2 = mapOfStartNode.get(tid2);
-//		MutableIntSet kids2 = startNode2.getTID_Child();
-//		if(kids1.contains(tid2)){
-//			//tid1 is parent of tid2
-//			if(trace.indexOf(startNode2) < trace.indexOf(dllp1.lock1)){
-//				isDeadlock = true;
-//			}
-//		}else if(kids2.contains(tid1)) {
-//			//tid2 is parent of tid1
-//			if(trace.indexOf(startNode1) < trace.indexOf(dllp2.lock1)){
-//				isDeadlock = true;
-//			}
-//		}else{
-//			StartNode sNode = sameParent(tid1, tid2);
-//			if(sNode != null){
-//				//same parent thread
-//				isDeadlock = true;
-//			}else{
-//				//other conditions
-//				int earlier;
-//				int later;
-//				if(trace.indexOf(startNode1) < trace.indexOf(startNode2)){
-//					//wtid starts early
-//					earlier = tid1;
-//					later = tid2;
-//					//					System.out.println("earlier: "+earlier + "  later: "+later);
-//					//check relation
-//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
-//					if(relatives == null){
-//						isDeadlock = false;
-//					}else {
-//						StartNode parenStart = relatives.get(1);
-//						if(trace.indexOf(dllp1.lock1) > trace.indexOf(parenStart)){
-//							isDeadlock = true;
-//						}
-//					}
-//				}else{
-//					earlier = tid2;
-//					later = tid1;
-//					//					System.out.println("earlier: "+earlier + "  later: "+later);
-//					//check relation
-//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
-//					if(relatives == null){
-//						isDeadlock = false;
-//					}else{
-//						StartNode parenStart = relatives.get(1);
-//						if(trace.indexOf(dllp2.lock1) > trace.indexOf(parenStart)){
-//							isDeadlock = true;
-//						}
-//					}
-//				}
-//			}
-//		}
+		boolean isDeadlock = hasHBRelation(tid1, dllp1.lock1, tid2, dllp2.lock1);
 		return isDeadlock;
 	}
 
 
 	private boolean hasHBRelation(int erTID, INode comper, int eeTID, INode compee){
 		boolean donothave = false;
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
-//		if (comper instanceof MemNode) {
-//			PointerKey keyer = ((MemNode) comper).getPointer();
-//			PointerKey keyee = ((MemNode) compee).getPointer();
-//			if (keyer != null && keyee != null) {
-//				OrdinalSet<InstanceKey> erVariable = Test.engine.pointerAnalysis.getPointsToSet(keyer);
-//				OrdinalSet<InstanceKey> eeVariable = Test.engine.pointerAnalysis.getPointsToSet(keyee);
-//				System.out.println();
-//			}
-//		}
-		StartNode erStartNode = ReproduceBenchmarks.engine.mapOfStartNode.get(erTID);
-		StartNode eeStartNode =ReproduceBenchmarks.engine.mapOfStartNode.get(eeTID);
-		JoinNode erJoinNode =ReproduceBenchmarks.engine.mapOfJoinNode.get(erTID);
-		JoinNode eeJoinNode =ReproduceBenchmarks.engine.mapOfJoinNode.get(eeTID);
-//		if(DEBUG){
-//			erStartNode = Test.engine.mapOfStartNode.get(erTID);
-//			eeStartNode = Test.engine.mapOfStartNode.get(eeTID);
-//			erJoinNode = Test.engine.mapOfJoinNode.get(erTID);
-//			eeJoinNode = Test.engine.mapOfJoinNode.get(eeTID);
-//		}else{
-//			erStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(erTID);
-//			eeStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(eeTID);
-//			erJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(erTID);
-//			eeJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(eeTID);
-//		}
+		SHBGraph shb;
+		if(PLUGIN){
+			shb = TIDECGModel.bugEngine.shb;
+		}else{
+			shb = ReproduceBenchmarks.engine.shb;
+		}
+		StartNode erStartNode ;
+		StartNode eeStartNode ;
+		JoinNode erJoinNode ;
+		JoinNode eeJoinNode ;
+		if(PLUGIN){
+			erStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(erTID);
+			eeStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(eeTID);
+			erJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(erTID);
+			eeJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(eeTID);
+		}else{
+			erStartNode = ReproduceBenchmarks.engine.mapOfStartNode.get(erTID);
+			eeStartNode = ReproduceBenchmarks.engine.mapOfStartNode.get(eeTID);
+			erJoinNode = ReproduceBenchmarks.engine.mapOfJoinNode.get(erTID);
+			eeJoinNode = ReproduceBenchmarks.engine.mapOfJoinNode.get(eeTID);
+		}
 
 		if (erStartNode == null || eeStartNode == null) {
 			return false;//should not be?? the startnode has been removed, but the rwnode still got collected.
@@ -904,14 +812,5 @@ public class BugWorker extends UntypedActor{
 		return donothave;
 	}
 
-
-
-
-
-//	private int compare(SyncNode syncNode, INode comper) {
-//
-//
-//		return 0;
-//	}
 
 }

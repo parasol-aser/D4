@@ -146,7 +146,7 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 		traverseAndPrint(delta);
 	}
 
-	public boolean work = false;
+	public boolean work = true;//default work mode
 	public void work(boolean work) {
 		this.work = work;
 	}

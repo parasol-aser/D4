@@ -173,48 +173,31 @@ public class TIDEEngine {
 	protected PropagationGraph propagationGraph;
 	private int maxGraphNodeID;
 
-
 	public long timeForDetectingRaces = 0;
 	public long timeForDetectingDL = 0;
 
-//	private HashMap<CGNode, INode> inst_start_map = new HashMap<>();
 	//globalized
 	public HashSet<String> sharedFields = new HashSet<String>();
 
-//	public HashMap<Integer, LinkedList<SyncNode>> threadSyncNodes = new HashMap<Integer, LinkedList<SyncNode>>();//?
-//	public LockSetEngine lockEngine = new LockSetEngine();
 	public HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 	public HashSet<ITIDEBug> removedbugs = new HashSet<ITIDEBug>();
 	public HashSet<ITIDEBug> addedbugs = new HashSet<ITIDEBug>();
 
-
 	//added
 	public ActorRef bughub;
 	public SHBGraph shb;
-	//	public HashMap<CGNode, HashSet<ArrayList<Integer>>> method_idx_map = new HashMap<>();
 	//	//to track changes from pta
 	public HashMap<PointerKey, HashSet<MemNode>> pointer_rwmap = new HashMap<>();
 	public HashMap<PointerKey, HashSet<SyncNode>> pointer_lmap = new HashMap<>();
 
-	//	public HashMap<CGNode, ArrayList<Integer>> method_gid_map = new HashMap<>();
-	//idx [start,end][start,end]...
-
-//	public HashMap<Integer,Set<String>> tid2Receivers = new HashMap<>();//?
-//	public Set<String> curReceivers;//?
 	public int curTID;
 	public HashMap<CGNode, Integer> astCGNode_ntid_map = new HashMap<>();//HashMap<CGNode, hashset<Integer>>??
- 	//	public int curGID;
-
-	//	public int getIncrementGID(){
-	//		curGID++;
-	//		return curGID;
-	//	}
-	//
-	//	public int getGapGID(){
-	//		curGID = curGID + 40;
-	//		return curGID;
-	//	}
 	public boolean useMayAlias = true;//false => lockObject.size == 1
+	private static boolean PLUGIN = false;
+
+	public static void setPlugin(boolean b){
+		PLUGIN = b;
+	}
 
 	String special = "";
 
@@ -5806,9 +5789,6 @@ public class TIDEEngine {
 		}
 	}
 
-
-
-
 	public void detectBothBugsAgain(HashSet<CGNode> changedNodes, HashSet<CGNode> changedModifiers, long start_time, PrintStream ps) {
 		//indicate if we need to check race/lock/both
 		boolean lock = false;
@@ -5861,7 +5841,9 @@ public class TIDEEngine {
 			recheckLock();
 		}
 		long incre_dl_time = System.currentTimeMillis() - race_end_time;
-        ps.print(incre_race_time+" "+incre_dl_time+" ");
+		if(!PLUGIN){
+			ps.print(incre_race_time+" "+incre_dl_time+" ");
+		}
 
 //		System.err.println("total size: " + bugs.size());
 //

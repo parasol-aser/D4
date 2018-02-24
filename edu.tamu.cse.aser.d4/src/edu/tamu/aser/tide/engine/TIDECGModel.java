@@ -139,7 +139,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 		return echoDLView;
 	}
 
-	public TIDEEngine getEngine(){
+	public TIDEEngine getBugEngine(){
 		return bugEngine;
 	}
 
@@ -149,11 +149,15 @@ public class TIDECGModel extends WalaProjectCGModel {
 	public ActorRef bughub;
 	public static TIDEEngine bugEngine;
 	private static ClassLoader ourClassLoader = ActorSystem.class.getClassLoader();
-	private final static boolean DEBUG = false;// true;
+	private static boolean PLUGIN = false;
 	//gui view
 	public EchoRaceView echoRaceView;
 	public EchoDLView echoDLView;
 	public EchoReadWriteView echoRWView;
+
+	public static void setPlugin(boolean b){
+		PLUGIN = b;
+	}
 
 	public HashSet<ITIDEBug> detectBug() {
 	    Thread.currentThread().setContextClassLoader(ourClassLoader);
@@ -720,11 +724,11 @@ public class TIDECGModel extends WalaProjectCGModel {
 	private LinkedList<String> obtainTraceOfINode(int tid, INode rw1, ITIDEBug bug, int idx) {
 		LinkedList<String> trace = new LinkedList<>();
 		HashSet<INode> traversed = new HashSet<>();
-		SHBGraph shb = ReproduceBenchmarks.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
+		SHBGraph shb = TIDECGModel.bugEngine.shb;
+//		if(PLUGIN){
 //			shb = TIDECGModel.bugEngine.shb;
+//		}else{
+//			shb = ReproduceBenchmarks.engine.shb;
 //		}
 		boolean check = writeDownMyInfo(trace, rw1, bug);
 		CGNode node = rw1.getBelonging();
@@ -744,12 +748,12 @@ public class TIDECGModel extends WalaProjectCGModel {
 		}
 		while(parent != null){
 			boolean intoJDK = writeDownMyInfo(trace, parent, bug);
-			if(check){
-				if(!intoJDK){
-					replaceRootCauseForRace(trace, parent, bug, idx);
-					check = false;
-				}
-			}
+//			if(check){
+//				if(!intoJDK){
+//					replaceRootCauseForRace(trace, parent, bug, idx);
+//					check = false;
+//				}
+//			}
 			CGNode node_temp = parent.getBelonging();
 			if(node_temp != null){
 				//this is a kid thread start node

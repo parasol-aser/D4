@@ -297,7 +297,7 @@
 				  </with>
 			  </visibleWhen>
 		   </command>
-		   <command commandId="edu.tamu.aser.tide.plugin.considervariable">
+<!--		   <command commandId="edu.tamu.aser.tide.plugin.considervariable">
 			  <visibleWhen
 				checkEnabled="false">
 				  <with variable="activeMenuSelection">
@@ -312,7 +312,7 @@
 					  </and>
 				  </with>
 			  </visibleWhen>
-		   </command>
+		   </command>  -->
 	   </menu>
    </menuContribution>
 </extension>   
@@ -347,7 +347,7 @@
                       </with>
                   </visibleWhen>
                   </command>
-                  <command
+<!--                  <command
                       commandId="edu.tamu.aser.tide.plugin.considervariable">
                   <visibleWhen
                     checkEnabled="false">
@@ -358,9 +358,6 @@
                               <instanceof
                                 value="edu.tamu.aser.tide.views.RaceNode">
                               </instanceof>
-<!--                              <instanceof
-                                value="edu.tamu.aser.tide.views.DeadlockNode">
-                              </instanceof>         -->
                               <instanceof
                                 value="edu.tamu.aser.tide.views.RWRelationNode">
                               </instanceof>
@@ -369,7 +366,7 @@
                           </and>
                       </with>
                   </visibleWhen>
-                  </command>
+                  </command>  -->
 <!--                  <command
                       commandId="edu.tamu.aser.tide.plugin.ignorebug">
                   <visibleWhen

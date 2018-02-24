@@ -3,13 +3,13 @@
 <plugin>
    <extension
          point="org.eclipse.ui.commands">
-      <command
+<!--      <command
             name="ECHO"
             id="edu.tamu.aser.tide.plugin.convert">
-      </command>
+      </command>  -->
    </extension>
 
-   <extension
+<!--   <extension
          id="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScariest"
          name="FindBugs Problem (Scariest)"
          point="org.eclipse.core.resources.markers">
@@ -18,31 +18,31 @@
       <super type="org.eclipse.core.resources.textmarker"/>
       <super type="org.eclipse.jdt.core.problem"/>
       <persistent value="true"/>
-   </extension>
+   </extension>   -->
       <!-- specify custom icon for findbugsMarker -->
    <extension point="org.eclipse.ui.editors.annotationTypes">
-      <type
+<!--      <type
             name="edu.umd.cs.findbugs.plugin.eclipse.findbugsWarningAnnotationScariest"
             super="org.eclipse.ui.workbench.texteditor.warning"
             markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScariest"/>
       <type
             name="edu.umd.cs.findbugs.plugin.eclipse.findbugsWarningAnnotationScary"
             super="org.eclipse.ui.workbench.texteditor.warning"
-            markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScary"/>
+            markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScary"/>  -->
   </extension>
    <extension
       point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
+ <!--     <markerResolutionGenerator
             markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScariest"
             class="edu.tamu.aser.tide.engine.BugResolutionGenerator"/>
       <markerResolutionGenerator
             class="edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator"
             markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScary">
-      </markerResolutionGenerator>
+      </markerResolutionGenerator>  -->
    </extension>
    <extension
       point="org.eclipse.ui.ide.markerImageProviders">
-      <imageprovider
+<!--      <imageprovider
          icon="icons/buggy-tiny-green.png"
          id="de.tobject.findbugs.imageprovider"
          markertype="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScariest">
@@ -51,10 +51,10 @@
          icon="icons/buggy-tiny-orange.png"
          id="de.tobject.findbugs.imageprovider"
          markertype="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScary">
-      </imageprovider>
+      </imageprovider>  -->
    </extension>
    <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-      <specification
+<!--      <specification
             annotationType="edu.umd.cs.findbugs.plugin.eclipse.findbugsWarningAnnotationScariest"
             colorPreferenceKey="findbugs.scariest.color"
             colorPreferenceValue="212,6,28"
@@ -93,10 +93,10 @@
             textStylePreferenceKey="findbugs.scary.textstyle"
             textStylePreferenceValue="UNDERLINE"
             verticalRulerPreferenceKey="findbugs.scary.vertical"
-            verticalRulerPreferenceValue="true"/>
+            verticalRulerPreferenceValue="true"/>  -->
    </extension>
    <extension point="org.eclipse.ui.editors.markerUpdaters">
-          <updater
+<!--          <updater
                 id="edu.tamu.aser.tide.marker.RaceMarkerUpdater"
                 class="edu.tamu.aser.tide.marker.RaceMarkerUpdater"
                 markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScariest">
@@ -105,31 +105,31 @@
                 id="edu.tamu.aser.tide.marker.DLMarkerUpdater"
                 class="edu.tamu.aser.tide.marker.DLMarkerUpdater"
                 markerType="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScary">
-          </updater>
-   </extension>
+          </updater>  -->
+   </extension> 
 
    <extension
          point="org.eclipse.ui.handlers">
-      <handler
+<!--      <handler
             commandId="edu.tamu.aser.tide.plugin.convert"
             class="edu.tamu.aser.tide.plugin.handlers.ConvertHandler">
-      </handler>
+      </handler>  -->
    </extension>
       
 	<extension
         point="org.eclipse.core.expressions.propertyTesters">
-     <propertyTester
+<!--     <propertyTester
         class="edu.tamu.aser.tide.plugin.MyPropTester"
            id="MyPropTesterMain"
            namespace="edu.tamu.aser.tide.plugin"
            properties="checkMain"
            type="org.eclipse.jdt.core.ICompilationUnit">
-     </propertyTester>
+     </propertyTester>  -->
    </extension>
    
    <extension
          point="org.eclipse.ui.menus">
-      <menuContribution
+<!--      <menuContribution
             allPopups="true"
             locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
          <menu
@@ -146,13 +146,7 @@
                   							type="org.eclipse.core.resources.IResource">
                   							<test property="org.eclipse.core.resources.contentTypeId"
                   							value="org.eclipse.jdt.core.javaSource"/>
-                  							<!-- org.eclipse.jdt.core.ICompilationUnit -->
-                  							<!-- <test property="org.eclipse.core.resources.name"
-                								value="*.java"/>-->
-                							<!-- <test   forcePluginActivation="true"
-            										property="edu.tamu.aser.tide.plugin.checkMain"
-             										value="true">
-     										</test>	-->
+                  			 
                   						</adapt>
                   				</iterate>
                   				</and>
@@ -160,12 +154,12 @@
                   </visibleWhen>
             </command>
          </menu>
-      </menuContribution>
+      </menuContribution>   -->
    </extension>
    
    <extension
       point="org.eclipse.ui.views">
-        <view 
+<!--        <view 
           id="edu.tamu.aser.tide.views.echoraceview"
           class="edu.tamu.aser.tide.views.EchoRaceView"
           icon="icons/buggy-tiny.png"
@@ -184,7 +178,7 @@
 		  id="edu.tamu.aser.tide.views.excludeview"
 		  name="Excluded Packages/Classes/Methods"
 		  class="edu.tamu.aser.tide.views.ExcludeView"
-		  icon="icons/warning.png"/>
+		  icon="icons/warning.png"/>   -->
    </extension>
    
 

@@ -133,6 +133,10 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
     return roots;
   }
 
+  public AbstractAnalysisEngine getEngine(){
+    return engine;
+  }
+
   abstract protected Iterable<Entrypoint> getEntrypoints(AnalysisScope scope, IClassHierarchy cha);
 
   abstract protected Collection inferRoots(CallGraph cg) throws WalaException;
