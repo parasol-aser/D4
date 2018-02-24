@@ -83,7 +83,7 @@ We don't expect absolute values to match with the paper, due to the hardware dif
 ### Running D4 with Your Own Application 
 We provide an Eclipse plugin that implements the techniques in D4. You can launch the plugin by following:  ````/edu.tamu.cse.aser.d4```` -> ````MANIFEST.MF```` -> Testing -> Launch an Eclipse application. 
 
-In the launched Eclipse workspace, you can create a new project or import your existing project. You can start the plugin by right-clicking the main class that you want to test, choose "ASER" and "ECHO", then, the initial detection starts to run. You can go to Window -> Show View -> Others to select our views (i.e. ECHO Concurrent Relations, ECHO Race List, ECHO Deadlock List) that report all the detected bugs. 
+In the launched Eclipse workspace, you can create a new project or import your existing project. We provide an example code in ````edu.tamu.cse.aser.plugintests````. You can start the plugin by right-clicking the main class that you want to test, choose "ASER" and "ECHO", then, the initial detection starts to run. You can go to Window -> Show View -> Others to select our views (i.e. ECHO Concurrent Relations, ECHO Race List, ECHO Deadlock List) that report all the detected bugs. 
 
 Then, you can make some changes in your program to fix the bugs and save the program. The plugin will run our incremental techniques to update the views according to the added/fixed bugs.
 
