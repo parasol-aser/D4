@@ -15,7 +15,8 @@ For the static happens-before analysis and parallel incremental detection, the c
 ### Build D4 in Eclipse
 We provide the source code of D4. You can use Eclipse to import, build and run the source code. 
 
-Since we have several large jar files in this github as benchmarks and dependencies, please install Git Large File Storage (LFS) by following the instructions on [https://github.com/git-lfs/git-lfs/wiki/Installation](https://github.com/git-lfs/git-lfs/wiki/Installation).
+**Important**: this project contains several large jar files (as benchmarks and dependencies), to download them, you need to install the Git Large File Storage (LFS) before git clone the project:
+````git lfs install````.
 
 After ````git clone git@github.com:parasol-aser/D4.git````, you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.7. All the benchmark names from Dacapo-9.12 are listed below:
 
@@ -26,7 +27,7 @@ For each benchmark, we will evaluate the performance of D4-1 and then D4-48.
 ### D4 Evaluation
 
 #### 1. A Full Version
-To reproduce the full data of D4-1 in the paper, in folder ````edu.tamu.cse.aser.d4````, please run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all```` in Run Configuration. To reproduce individual benchmark data, please run the main method with the benchmark name as the program argument.
+To reproduce the full data of D4-1 in the paper, in folder ````edu.tamu.cse.aser.d4````, run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all```` in Run Configuration. To reproduce individual benchmark data, please run the main method with the benchmark name as the program argument.
 
 To reproduce the full data of D4-48 (distributed) in the paper, please update the ````master.conf```` (in ````/edu.tamu.cse.aser.d4/src/master.conf````) and ````worker.conf```` (````/edu.tamu.cse.aser.d4remote/src/worker.conf````) with the local machine and remote server hostnames. For example, ````master.conf```` is shown below. You need to change the ````hostname```` and ````port```` under ````#local pc```` to your local machine's, and change the address under ````#remote server```` to your remote server's name and port.
 
@@ -64,7 +65,7 @@ Reproducing the whole experiment results in the paper may require about 10 days,
 To evaluate D4-1 and D4-48, please run ````ReproduceBenchmarks.java```` with program argument ````all_short````. For each benchmark, please run the main method with the benchmark name + ````_short````, for example, ````avrora_short````.
 
 #### 3. Running D4 on a Single Machine
-You can also evaluate D4 using multi-threads on a single machine. Please run ````ReproduceBenchmarks.java```` with program argument ````all_short```` and the number of threads you would like to test. For example, ````all_short 8```` and ````avrora_short 8````.
+You can also evaluate D4 using multi-threads on a single machine. In folder ````edu.tamu.cse.aser.d4````, run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all_short```` and the number of threads you would like to test. For example, ````all_short 8```` or ````avrora_short 8````.
 
 ### ECHO Evaluation
 We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). The jars are in ````/echo_jars/````. To reproduce the full data of ECHO, please run the jar with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
