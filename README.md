@@ -15,8 +15,7 @@ For the static happens-before analysis and parallel incremental detection, the c
 ### Build D4 in Eclipse
 We provide the source code of D4. You can use Eclipse to import, build and run the source code. 
 
-Since we have several large jar files in this github as benchmarks and dependencies, please install Git Large File Storage (LFS) with the command before you git clone the project:
-````git lfs install````.
+Since we have several large jar files in this github as benchmarks and dependencies, please install Git Large File Storage (LFS) by following the instructions on [https://github.com/git-lfs/git-lfs/wiki/Installation](https://github.com/git-lfs/git-lfs/wiki/Installation).
 
 After ````git clone git@github.com:parasol-aser/D4.git````, you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.7. All the benchmark names from Dacapo-9.12 are listed below:
 
