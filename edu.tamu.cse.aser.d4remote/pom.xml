@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.tamu.cse.aser.echo</groupId>
   <artifactId>edu.tamu.cse.aser.echo</artifactId>
-  <version>1.3.4-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>parapta</name>
   <description>parallel and incremental pta in cluster</description>
