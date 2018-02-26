@@ -13,7 +13,6 @@ package com.ibm.wala.akkaTaskScheduler;
 import java.util.ArrayList;
 
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
-import com.ibm.wala.util.intset.MutableSharedBitVectorIntSet;
 import com.ibm.wala.util.intset.MutableSparseIntSet;
 
 public class ResetResult {

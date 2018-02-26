@@ -13,11 +13,9 @@ package com.ibm.wala.ipa.callgraph.propagation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.ibm.wala.fixedpoint.impl.GeneralStatement;
 import com.ibm.wala.fixpoint.AbstractOperator;
@@ -33,7 +31,6 @@ import com.ibm.wala.util.collections.CompoundIterator;
 import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.Filter;
 import com.ibm.wala.util.collections.FilterIterator;
-import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.SmallMap;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.debug.UnimplementedError;
@@ -45,8 +42,6 @@ import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.NumberedNodeManager;
 import com.ibm.wala.util.graph.impl.DelegatingNumberedNodeManager;
 import com.ibm.wala.util.graph.impl.SparseNumberedEdgeManager;
-import com.ibm.wala.util.graph.traverse.BFSPathFinder;
-import com.ibm.wala.util.graph.traverse.SCCIterator;
 import com.ibm.wala.util.graph.traverse.Topological;
 import com.ibm.wala.util.heapTrace.HeapTracer;
 import com.ibm.wala.util.intset.BasicNaturalRelation;
@@ -54,7 +49,6 @@ import com.ibm.wala.util.intset.IBinaryNaturalRelation;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntPair;
 import com.ibm.wala.util.intset.IntSet;
-import com.sun.javafx.scene.paint.GradientUtils.Point;
 
 /**
  * A dataflow graph implementation specialized for propagation-based pointer analysis

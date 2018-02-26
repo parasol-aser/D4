@@ -21,9 +21,6 @@
  */
 package edu.tamu.aser.tide.engine;
 
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;

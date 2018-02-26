@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
-import com.ibm.wala.ssa.IR;
 
 public class HandlerChanges {
 

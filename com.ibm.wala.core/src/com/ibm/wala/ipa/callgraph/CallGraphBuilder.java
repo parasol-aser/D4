@@ -12,15 +12,11 @@ package com.ibm.wala.ipa.callgraph;
 
 
 import java.util.Map;
-import java.util.Set;
 
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToMap;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder.ConstraintVisitor;
-import com.ibm.wala.ssa.DefUse;
-import com.ibm.wala.ssa.IR;
-import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.MonitorUtil.IProgressMonitor;
 
 /**

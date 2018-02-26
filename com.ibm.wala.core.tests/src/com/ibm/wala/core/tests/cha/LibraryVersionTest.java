@@ -12,8 +12,6 @@ package com.ibm.wala.core.tests.cha;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import com.ibm.wala.core.tests.ir.DeterministicIRTest;
@@ -22,6 +20,8 @@ import com.ibm.wala.core.tests.util.WalaTestCase;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.io.FileProvider;
+
+import junit.framework.Assert;
 
 /**
  * Test code that attempts to find the library version from

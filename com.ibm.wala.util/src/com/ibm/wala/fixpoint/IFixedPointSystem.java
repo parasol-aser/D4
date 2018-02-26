@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.ibm.wala.fixpoint;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 

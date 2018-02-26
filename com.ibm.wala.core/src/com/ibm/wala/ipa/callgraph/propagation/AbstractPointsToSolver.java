@@ -12,7 +12,6 @@ package com.ibm.wala.ipa.callgraph.propagation;
 
 
 import java.util.Map;
-import java.util.Set;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.util.CancelException;

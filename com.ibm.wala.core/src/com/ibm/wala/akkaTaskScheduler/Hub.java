@@ -11,7 +11,6 @@
 package com.ibm.wala.akkaTaskScheduler;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;

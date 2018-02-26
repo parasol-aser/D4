@@ -25,7 +25,6 @@ import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysisImpl;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationGraph;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder.ConstraintVisitor;
@@ -37,8 +36,6 @@ import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.config.AnalysisScopeReader;
-import com.ibm.wala.util.io.FileProvider;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -46,9 +43,7 @@ import akka.actor.Props;
 import edu.tamu.aser.tide.akkasys.BugHub;
 import edu.tamu.aser.tide.engine.AnalysisUtils;
 import edu.tamu.aser.tide.engine.ITIDEBug;
-import edu.tamu.aser.tide.engine.TIDEDeadlock;
 import edu.tamu.aser.tide.engine.TIDEEngine;
-import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
 
 public class ReproduceBenchmark_remote {

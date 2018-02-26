@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFile;
 
 import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.trace.DLLockPair;
-import edu.tamu.aser.tide.trace.DLockNode;
 
 public class CheckDeadlock implements ITIDEBug{
 

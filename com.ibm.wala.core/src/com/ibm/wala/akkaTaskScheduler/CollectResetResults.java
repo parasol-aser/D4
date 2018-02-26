@@ -10,13 +10,7 @@
  *******************************************************************************/
 package com.ibm.wala.akkaTaskScheduler;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-
-import com.ibm.wala.fixpoint.AbstractStatement;
-import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
-import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 
 public class CollectResetResults {
   private static HashSet<ResetResult> results;

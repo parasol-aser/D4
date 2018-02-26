@@ -3,7 +3,6 @@ package edu.tamu.aser.tide.akkasys;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import akka.actor.ActorRef;
@@ -11,15 +10,12 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.routing.BalancingPool;
 import edu.tamu.aser.tide.engine.ITIDEBug;
-import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.graph.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 import edu.tamu.aser.tide.trace.DLLockPair;
 import edu.tamu.aser.tide.trace.DLockNode;
-import edu.tamu.aser.tide.trace.INode;
-import edu.tamu.aser.tide.trace.MemNode;
 import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.WriteNode;
 

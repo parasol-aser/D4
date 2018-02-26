@@ -4,21 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 
-import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ssa.SSAInstruction;
 
 import edu.tamu.aser.tide.trace.INode;
 import edu.tamu.aser.tide.trace.JoinNode;
 import edu.tamu.aser.tide.trace.LockPair;
-import edu.tamu.aser.tide.trace.MemNode;
 import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.StartNode;
-import edu.tamu.aser.tide.trace.SyncNode;
 import edu.tamu.aser.tide.trace.WriteNode;
-import scala.collection.mutable.ArrayBuilder.ofBoolean;
 
 public class Trace {
 

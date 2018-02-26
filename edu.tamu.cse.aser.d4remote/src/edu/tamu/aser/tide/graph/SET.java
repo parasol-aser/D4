@@ -41,9 +41,9 @@ package edu.tamu.aser.tide.graph;
  *
  *************************************************************************/
 
-import java.util.TreeSet;
 import java.util.Iterator;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 

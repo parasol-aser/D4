@@ -3,8 +3,6 @@ package edu.tamu.aser.tide.views;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import org.eclipse.swt.graphics.Image;
-
 public abstract class TreeNode implements ITreeNode{
 	protected TreeNode parent;
 	protected boolean isNewest = false;

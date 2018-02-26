@@ -10,8 +10,6 @@
  *******************************************************************************/
 package edu.tamu.aser.tide.dist.remote.master;
 
-import java.util.Random;
-
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.event.Logging;

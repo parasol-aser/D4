@@ -7,11 +7,9 @@ import java.util.LinkedList;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 
-import akka.io.Tcp.Write;
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.Activator;
 import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.WriteNode;
 
 public class CSuperWriteNode extends TreeNode{

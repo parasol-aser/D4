@@ -1,6 +1,5 @@
 package edu.tamu.aser.tide.dist.remote.master;
 
-import edu.tamu.aser.tide.dist.remote.master.Classification;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 

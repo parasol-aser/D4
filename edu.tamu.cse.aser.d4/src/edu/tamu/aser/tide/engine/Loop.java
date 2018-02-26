@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.ibm.wala.ssa.SSACFG.BasicBlock;
-import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.graph.Graph;
 

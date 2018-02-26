@@ -1,30 +1,21 @@
 package edu.tamu.aser.tide.akkasys;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
-import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
-import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.util.intset.MutableIntSet;
-import com.ibm.wala.util.intset.OrdinalSet;
 
 import akka.actor.UntypedActor;
-import akka.dispatch.Foreach;
 import edu.tamu.aser.tide.engine.AstCGNode2;
 import edu.tamu.aser.tide.engine.ITIDEBug;
-import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.engine.TIDEDeadlock;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.graph.LockSetEngine;
 import edu.tamu.aser.tide.graph.SHBEdge;
 import edu.tamu.aser.tide.graph.SHBGraph;
 import edu.tamu.aser.tide.graph.Trace;
@@ -38,7 +29,6 @@ import edu.tamu.aser.tide.trace.LockPair;
 import edu.tamu.aser.tide.trace.MemNode;
 import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.StartNode;
-import edu.tamu.aser.tide.trace.SyncNode;
 import edu.tamu.aser.tide.trace.WriteNode;
 
 public class BugWorker extends UntypedActor{

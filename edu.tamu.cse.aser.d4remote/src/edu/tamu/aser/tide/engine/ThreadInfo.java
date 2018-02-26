@@ -3,7 +3,6 @@ package edu.tamu.aser.tide.engine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 
 public class ThreadInfo {

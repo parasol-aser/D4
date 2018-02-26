@@ -10,11 +10,12 @@
  *******************************************************************************/
 package com.ibm.wala.eclipse.cg.model;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.*;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
 
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;

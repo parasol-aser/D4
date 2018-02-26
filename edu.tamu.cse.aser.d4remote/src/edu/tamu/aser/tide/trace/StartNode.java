@@ -6,8 +6,6 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 
-import edu.tamu.aser.tide.engine.AstCGNode2;
-
 public class StartNode extends SyncNode{
 
 	final int parentTID;

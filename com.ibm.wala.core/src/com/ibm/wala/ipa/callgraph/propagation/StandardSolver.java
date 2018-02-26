@@ -11,12 +11,8 @@
 package com.ibm.wala.ipa.callgraph.propagation;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import com.ibm.wala.fixedpoint.impl.AbstractFixedPointSolver;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAInstruction;

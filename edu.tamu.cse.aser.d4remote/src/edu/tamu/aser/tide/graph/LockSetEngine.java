@@ -5,24 +5,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
 
-import edu.tamu.aser.tide.engine.Locknode;
-import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 import edu.tamu.aser.tide.trace.DLockNode;
 import edu.tamu.aser.tide.trace.DUnlockNode;
 import edu.tamu.aser.tide.trace.INode;
 import edu.tamu.aser.tide.trace.LockPair;
 import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.SyncNode;
 import edu.tamu.aser.tide.trace.WriteNode;
-import scala.collection.generic.BitOperations.Int;
 
 /**
  * Engine for computing the Lockset algorithm

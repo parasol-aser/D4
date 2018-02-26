@@ -10,8 +10,6 @@
  *******************************************************************************/
 package com.ibm.wala.akkaTaskScheduler;
 
-import com.ibm.wala.fixedpoint.impl.AbstractFixedPointSolver;
-
 import akka.actor.UntypedActor;
 
 public class ResultLisenter extends UntypedActor{

@@ -13,8 +13,6 @@ package com.ibm.wala.core.tests.callGraph;
 import java.io.IOException;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import com.ibm.wala.core.tests.util.TestConstants;
@@ -32,6 +30,8 @@ import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.CancelException;
+
+import junit.framework.Assert;
 
 /**
  * Check handling of class constants (test for part of 1.5 support)

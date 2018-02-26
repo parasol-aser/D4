@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.Activator;

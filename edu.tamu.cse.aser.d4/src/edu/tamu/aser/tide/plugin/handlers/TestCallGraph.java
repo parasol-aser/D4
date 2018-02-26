@@ -1,27 +1,17 @@
 package edu.tamu.aser.tide.plugin.handlers;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.jdt.core.IJavaProject;
 
-import com.ibm.wala.cast.java.client.JDTJavaSourceAnalysisEngine;
-import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope;
 import com.ibm.wala.client.AbstractAnalysisEngine;
-import com.ibm.wala.ide.util.EclipseProjectPath;
-import com.ibm.wala.ide.util.JavaEclipseProjectPath;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.config.FileOfClasses;
-import com.ibm.wala.util.debug.Assertions;
-import com.ibm.wala.util.io.FileProvider;
 
 import edu.tamu.aser.tide.engine.EclipseProjectAnalysisEngine;
 

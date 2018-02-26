@@ -1,7 +1,5 @@
 package edu.tamu.aser.tide.graph;
 
-import java.util.ArrayList;
-
 import com.ibm.wala.ipa.callgraph.CGNode;
 
 import edu.tamu.aser.tide.trace.INode;

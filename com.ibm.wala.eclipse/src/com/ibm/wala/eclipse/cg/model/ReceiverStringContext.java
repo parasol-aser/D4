@@ -1,6 +1,5 @@
 package com.ibm.wala.eclipse.cg.model;
 
-import com.ibm.wala.eclipse.cg.model.KObjectSensitiveContextSelector;
 import com.ibm.wala.ipa.callgraph.Context;
 import com.ibm.wala.ipa.callgraph.ContextItem;
 import com.ibm.wala.ipa.callgraph.ContextKey;

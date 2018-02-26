@@ -11,8 +11,6 @@
 
 package com.ibm.wala.core.tests.basic;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import com.ibm.wala.util.collections.IteratorUtil;
@@ -20,6 +18,8 @@ import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.impl.ExtensionGraph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.graph.traverse.SCCIterator;
+
+import junit.framework.Assert;
 
 public class ExtensionGraphTest {
 

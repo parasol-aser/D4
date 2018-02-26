@@ -1,7 +1,5 @@
 package edu.tamu.aser.tide.trace;
 
-import java.util.HashSet;
-
 import org.eclipse.core.resources.IFile;
 
 import com.ibm.wala.ipa.callgraph.CGNode;

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package com.ibm.wala.classLoader;
 
-import org.eclipse.core.resources.IFile;
-
 import com.ibm.wala.ipa.callgraph.ContextItem;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.Descriptor;

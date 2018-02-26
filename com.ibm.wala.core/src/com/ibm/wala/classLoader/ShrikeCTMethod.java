@@ -13,8 +13,6 @@ package com.ibm.wala.classLoader;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.eclipse.core.resources.IFile;
-
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrikeBT.Decoder;
 import com.ibm.wala.shrikeBT.IndirectionData;

@@ -16,14 +16,13 @@ import java.util.Collection;
 
 import org.eclipse.jface.window.ApplicationWindow;
 
-import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.WalaException;
+import com.ibm.wala.ide.ui.SWTTreeViewer;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.graph.Graph;
-import com.ibm.wala.util.io.FileProvider;
-import com.ibm.wala.ide.ui.SWTTreeViewer;
 
 abstract public class WalaJarFileCGModel implements WalaCGModel {
 

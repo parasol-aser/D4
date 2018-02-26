@@ -5,8 +5,6 @@ import java.util.LinkedList;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 
-import edu.tamu.aser.tide.plugin.Activator;
-
 public class EventNode extends TreeNode{
 	protected String name;
 

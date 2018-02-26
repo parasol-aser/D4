@@ -1,16 +1,12 @@
 package edu.tamu.aser.tide.trace;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 import org.eclipse.core.resources.IFile;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ssa.SSAInstruction;
-
-import akka.io.Tcp.Write;
 
 public abstract class MemNode implements INode {
 	final int TID;

@@ -28,7 +28,9 @@
  ******************************************************************************/
 package edu.tamu.aser.tide.graph;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /*
  * property: never call addEdge after canReach

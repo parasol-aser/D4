@@ -10,11 +10,9 @@
  *******************************************************************************/
 package com.ibm.wala.ipa.callgraph.propagation;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,15 +22,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import com.ibm.wala.akkaTaskScheduler.Hub;
-import com.ibm.wala.akkaTaskScheduler.ResultLisenter;
-import com.ibm.wala.akkaTaskScheduler.SchedulerForSpecial;
 import com.ibm.wala.akkaTaskScheduler.SchedulerForResetSetAndRecompute;
-import com.ibm.wala.akkaTaskScheduler.WorkStart;
+import com.ibm.wala.akkaTaskScheduler.SchedulerForSpecial;
 import com.ibm.wala.classLoader.ArrayClass;
 import com.ibm.wala.classLoader.IClass;
-import com.ibm.wala.classLoader.IField;
-import com.ibm.wala.classLoader.NewSiteReference;
-import com.ibm.wala.fixedpoint.impl.AbstractFixedPointSolver;
 import com.ibm.wala.fixedpoint.impl.DefaultFixedPointSolver;
 import com.ibm.wala.fixedpoint.impl.Worklist;
 import com.ibm.wala.fixpoint.AbstractOperator;
@@ -41,23 +34,16 @@ import com.ibm.wala.fixpoint.IFixedPointSystem;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.fixpoint.UnaryOperator;
 import com.ibm.wala.fixpoint.UnaryStatement;
-import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder.FilterOperator;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder.MutableBoolean;
 import com.ibm.wala.ipa.callgraph.threadpool.ThreadHub;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyWarning;
-import com.ibm.wala.model.java.lang.reflect.Array;
-import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeReference;
-import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.MonitorUtil.IProgressMonitor;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Iterator2Collection;
 import com.ibm.wala.util.collections.MapUtil;
-import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.debug.VerboseAction;
 import com.ibm.wala.util.graph.Graph;
@@ -68,26 +54,15 @@ import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetAction;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
-import com.ibm.wala.util.intset.MutableIntSetFactory;
 import com.ibm.wala.util.intset.MutableMapping;
 import com.ibm.wala.util.intset.MutableSharedBitVectorIntSet;
 import com.ibm.wala.util.intset.MutableSharedBitVectorIntSetFactory;
-import com.ibm.wala.util.intset.MutableSparseIntSet;
-import com.ibm.wala.util.intset.MutableSparseIntSetFactory;
-import com.ibm.wala.util.intset.OrdinalSet;
 import com.ibm.wala.util.ref.ReferenceCleanser;
 import com.ibm.wala.util.warnings.Warnings;
-import com.sun.javafx.scene.paint.GradientUtils.Point;
 
-import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
-import scala.collection.generic.BitOperations.Int;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
 
 /**
  * System of constraints that define propagation for call graph construction

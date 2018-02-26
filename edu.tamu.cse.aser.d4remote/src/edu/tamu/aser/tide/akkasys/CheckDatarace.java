@@ -2,7 +2,6 @@ package edu.tamu.aser.tide.akkasys;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 import org.eclipse.core.resources.IFile;
 

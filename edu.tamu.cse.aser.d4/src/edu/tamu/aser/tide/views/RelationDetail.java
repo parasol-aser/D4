@@ -2,17 +2,12 @@ package edu.tamu.aser.tide.views;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.Activator;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
 
 public class RelationDetail extends TreeNode{
 	protected String name;

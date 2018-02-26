@@ -12,13 +12,10 @@
 package com.ibm.wala.examples.analysis.dataflow;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.ibm.wala.classLoader.IClass;
-import com.ibm.wala.classLoader.IField;
-import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.dataflow.IFDS.ICFGSupergraph;
 import com.ibm.wala.dataflow.IFDS.IFlowFunction;
 import com.ibm.wala.dataflow.IFDS.IMergeFunction;
@@ -45,7 +42,6 @@ import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.MutableMapping;
 import com.ibm.wala.util.intset.MutableSparseIntSet;
@@ -170,7 +166,7 @@ public class StaticInitializer {
         }
       } else if(instruction instanceof SSAGetInstruction) {
         final SSAGetInstruction getInstr = (SSAGetInstruction) instruction;
-        if (getInstr.isStatic()) { //Auf konstante überprüfen
+        if (getInstr.isStatic()) { //Auf konstante ï¿½berprï¿½fen
           return new IUnaryFlowFunction() {
 
             public IntSet getTargets(int d1) {

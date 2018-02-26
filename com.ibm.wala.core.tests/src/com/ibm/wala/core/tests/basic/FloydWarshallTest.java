@@ -16,8 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import com.ibm.wala.util.graph.INodeWithNumberedEdges;
@@ -29,6 +27,8 @@ import com.ibm.wala.util.graph.traverse.FloydWarshall.GetPaths;
 import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
+
+import junit.framework.Assert;
 
 public class FloydWarshallTest {
 

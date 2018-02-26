@@ -12,8 +12,6 @@ package com.ibm.wala.core.tests.cha;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import com.ibm.wala.classLoader.IClass;
@@ -29,6 +27,8 @@ import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.Atom;
+
+import junit.framework.Assert;
 
 public class DupFieldsTest extends WalaTestCase {
 

@@ -1,9 +1,6 @@
 package edu.tamu.aser.tide.akkasys;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-
-import edu.tamu.aser.tide.trace.INode;
 
 public class IncreRemoveLocalVar {
 

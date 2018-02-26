@@ -1,8 +1,6 @@
 package edu.tamu.aser.tide.views;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.eclipse.jface.resource.ImageDescriptor;

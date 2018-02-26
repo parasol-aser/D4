@@ -5,10 +5,7 @@ import java.util.HashMap;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 
 public class NewestBugLabelProvider extends CellLabelProvider{
 	private HashMap<ImageDescriptor, Image> imageCache = new HashMap<>(11);

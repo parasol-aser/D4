@@ -3,7 +3,6 @@ package edu.tamu.aser.tide.akkasys;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import akka.actor.ActorRef;
@@ -18,11 +17,8 @@ import edu.tamu.aser.tide.graph.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmarks;
 import edu.tamu.aser.tide.trace.DLLockPair;
 import edu.tamu.aser.tide.trace.DLockNode;
-import edu.tamu.aser.tide.trace.INode;
-import edu.tamu.aser.tide.trace.MemNode;
 import edu.tamu.aser.tide.trace.ReadNode;
 import edu.tamu.aser.tide.trace.WriteNode;
-import scala.reflect.internal.Trees.This;
 
 public class BugHub extends UntypedActor{
 

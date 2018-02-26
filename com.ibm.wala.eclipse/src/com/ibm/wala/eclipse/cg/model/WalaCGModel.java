@@ -10,12 +10,11 @@
  *******************************************************************************/
 package com.ibm.wala.eclipse.cg.model;
 
-import java.io.File;
 import java.util.Collection;
 
+import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
-import com.ibm.wala.ipa.callgraph.CallGraph;
 
 
 public interface WalaCGModel {

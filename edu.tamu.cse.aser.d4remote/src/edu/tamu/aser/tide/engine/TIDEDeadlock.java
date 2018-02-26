@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import org.eclipse.core.resources.IFile;
 
 import edu.tamu.aser.tide.trace.DLLockPair;
-import edu.tamu.aser.tide.trace.MemNode;
 
 public class TIDEDeadlock implements ITIDEBug {
 

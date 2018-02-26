@@ -1,38 +1,22 @@
 package com.ibm.wala.akkaTaskScheduler;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.fixedpoint.impl.AbstractFixedPointSolver;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.fixpoint.AbstractStatement;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.fixpoint.UnaryStatement;
-import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.propagation.AssignOperator;
-import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
-import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder.FilterOperator;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
-import com.ibm.wala.ipa.slicer.Statement;
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.util.collections.Pair;
-import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSetAction;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.intset.MutableSharedBitVectorIntSet;
 import com.ibm.wala.util.intset.MutableSharedBitVectorIntSetFactory;
-import com.ibm.wala.util.intset.MutableSparseIntSet;
-import com.ibm.wala.util.intset.MutableSparseIntSetFactory;
-import com.sun.javafx.scene.paint.GradientUtils.Point;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import akka.actor.UntypedActor;
 

@@ -10,19 +10,14 @@
  *******************************************************************************/
 package com.ibm.wala.fixedpoint.impl;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
 
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.fixpoint.AbstractStatement;
-import com.ibm.wala.fixpoint.BasicUnaryStatement;
 import com.ibm.wala.fixpoint.FixedPointConstants;
 import com.ibm.wala.fixpoint.IFixedPointSolver;
 import com.ibm.wala.fixpoint.IFixedPointStatement;
@@ -32,11 +27,8 @@ import com.ibm.wala.fixpoint.UnaryStatement;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.MonitorUtil;
 import com.ibm.wala.util.MonitorUtil.IProgressMonitor;
-import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.debug.VerboseAction;
 import com.ibm.wala.util.intset.MutableIntSet;
-
-import sun.print.resources.serviceui;
 /**
  * Represents a set of {@link IFixedPointStatement}s to be solved by a {@link IFixedPointSolver}
  *

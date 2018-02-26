@@ -1,6 +1,5 @@
 package edu.tamu.aser.tide.trace;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 

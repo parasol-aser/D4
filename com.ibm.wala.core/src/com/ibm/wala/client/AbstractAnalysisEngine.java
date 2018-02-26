@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.jar.JarFile;
 
 import com.ibm.wala.analysis.pointers.BasicHeapGraph;

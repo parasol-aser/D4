@@ -1,9 +1,7 @@
 package edu.tamu.aser.tide.akkasys;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
-import edu.tamu.aser.tide.trace.DLLockPair;
 import edu.tamu.aser.tide.trace.DLockNode;
 
 public class IncrementalDeadlock {
