@@ -18,7 +18,7 @@ We provide the source code of D4. You can use Eclipse to import, build and run t
 **Important**: this project contains several large jar files (as benchmarks and dependencies), to download them, you need to install the Git Large File Storage (LFS) before git clone the project:
 ````git lfs install````.
 
-After ````git clone git@github.com:parasol-aser/D4.git````, you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.7. All the benchmark names from Dacapo-9.12 are listed below:
+After ````git clone git@github.com:parasol-aser/D4.git```` (may take a couple of minutes depending on the network speed), you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.8. All the benchmark names from Dacapo-9.12 are listed below:
 
 ````avrora, batik, eclipse, fop, h2, jython, luindex, lusearch, pmd, sunflow, tomcat, tradebeans, tradesoap, xalan````.
 
@@ -65,7 +65,7 @@ Reproducing the whole experiment results in the paper may require about 10 days,
 To evaluate D4-1 and D4-48, please run ````ReproduceBenchmarks.java```` with program argument ````all_short````. For each benchmark, please run the main method with the benchmark name + ````_short````, for example, ````avrora_short````.
 
 #### 3. Running D4 on a Single Machine
-You can also evaluate D4 using multi-threads on a single machine. In folder ````edu.tamu.cse.aser.d4````, run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all_short```` and the number of threads you would like to test. For example, ````all_short 8```` or ````avrora_short 8````.
+You can also evaluate D4 using multi-threads on a single machine. In folder ````edu.tamu.cse.aser.d4````, run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all_short```` and the number of threads you would like to test. For example, ````all_short 8```` or ````avrora_short 8```` (this took a couple of hours on our machine).
 
 ### ECHO Evaluation
 We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). The jars are in ````/echo_jars/````. To reproduce the full data of ECHO, please run the jar with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
@@ -74,8 +74,25 @@ We also prepared a short version to evaluate ECHO by using the argument ````all_
 
 Example:
 ````java 
-java -jar echo.jar eclipse_short
+java -Xmx15g -jar echo.jar h2_short
 ````
+The above took around five minutes on our machine. You will see similar outputs from the terminal:
+
+```
+Benchmark: h2_short
+Running Exhaustive Points-to Analysis ... 
+Exhaustive Points-to Analysis Time: 123705ms
+#Class: 28912
+#Method: 25240
+#Pointer: 267897
+#Object: 5885
+#Edges: 11328144
+
+Running Exhaustive Detection ... 
+Exhaustive Detection Time: 13ms
+Running Incremental Points-to Analysis and Detection ... 
+Reset-Rcompute
+```
 
 ### About Evaluation Results
 We don't expect absolute values to match with the paper, due to the hardware difference and the stability of the wireless connection. But we expect a similar trend of D4 performance metrics as presented in the paper.
