@@ -32,3 +32,6 @@ com.ibm.wala.shrike/.svn/
 com.ibm.wala.util/.svn/
 edu.tamu.cse.aser.d4/.svn/
 edu.tamu.cse.aser.d4remote/.svn/
+RemoteSystemsTempFiles/
+log_*
+Eclipse.app/
