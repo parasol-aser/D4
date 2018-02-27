@@ -9,7 +9,7 @@ For the static happens-before analysis and parallel incremental detection, the c
 ### Software Dependencies
 - Java 1.8 to compile
 - a core subset of wala (1.3.4), already included
-- Eclipse Mars
+- Eclipse
 - Akka 2.4.17, already included
 
 ### Build D4 in Eclipse
@@ -18,7 +18,9 @@ We provide the source code of D4. You can use Eclipse to import, build and run t
 **Important**: this project contains several large jar files (as benchmarks and dependencies), to download them, you need to install the Git Large File Storage (LFS) before git clone the project:
 ````git lfs install````.
 
-After ````git clone git@github.com:parasol-aser/D4.git```` (may take a couple of minutes depending on the network speed), you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.8. All the benchmark names from Dacapo-9.12 are listed below:
+After ````git clone git@github.com:parasol-aser/D4.git```` (may take a couple of minutes depending on the network speed), you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.8. This project is an Eclipse plugin project, if you encounter a lot of compile errors, please goto Eclipse -> Help -> Eclipse Marketplace, search "Eclipse PDE" and install. Then, rebuild the whole project to remove the errors.
+
+All the benchmark names from Dacapo-9.12 are listed below:
 
 ````avrora, batik, eclipse, fop, h2, jython, luindex, lusearch, pmd, sunflow, tomcat, tradebeans, tradesoap, xalan````.
 
