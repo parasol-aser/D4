@@ -5549,7 +5549,6 @@ public class TIDEEngine {
 	}
 
 	private void updatePTA(Set<CGNode> keys) {
-		////// did not replace siglist in nodes
 		HashSet<IVariable> changes = AbstractFixedPointSolver.changes;
 		//find node from instSig
 		for (IVariable v : changes) {
@@ -5802,11 +5801,6 @@ public class TIDEEngine {
 		if(!PLUGIN){
 			ps.print(incre_race_time+" "+incre_dl_time+" ");
 		}
-
-//		System.err.println("total size: " + bugs.size());
-//
-//		System.out.println("Removed bugs ============================ " + removedbugs.size());
-//		System.out.println("Added bugs ============================ " + addedbugs.size());
 
 		bugs.removeAll(removedbugs);
 		bugs.addAll(addedbugs);

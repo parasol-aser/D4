@@ -63,6 +63,7 @@ public class ReproduceBenchmarks {
 	static String mainMethodSig = null;
 	static String testFile = null;
 	static String excludeFile = "data/DefaultExclusions.txt";
+	static long scheduletime = 5400000;
 
     static String[] benchmark_names_short= new String[] { "avrora_short", "batik_short", "eclipse_short", "fop_short",
 			"h2_short", "jython_short", "luindex_short", "lusearch_short", "pmd_short",
@@ -171,84 +172,98 @@ public class ReproduceBenchmarks {
 			mainMethodSig = "avrora.Main" + mainSignature;
 			testFile = "data/avroratestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "batik_short":
 			mainClassName = "rasterizer/Main";
 			mainMethodSig = "rasterizer.Main" + mainSignature;
 			testFile = "data/batiktestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "eclipse_short":
 			mainClassName = "EclipseStarter";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/eclipsetestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "fop_short": //no detection
 			mainClassName = "TTFFile";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/foptestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "h2_short":
 			mainClassName = "Shell";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/h2testfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "jython_short":
 			mainClassName = "jython";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/jythontestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "luindex_short":
 			mainClassName = "IndexFiles";
 			mainMethodSig = mainClassName + mainSignature;
 			excludeFile = "data/luindexexcludefileshort.txt";
 			testFile = "data/dacapotestfile.txt";
+			scheduletime = 900000;
 			break;
 		case "lusearch_short":
 			mainClassName = "IndexHTML";
 			mainMethodSig = mainClassName + mainSignature;
 			excludeFile = "data/lusearchexcludefileshort.txt";
 			testFile = "data/dacapotestfile.txt";
+			scheduletime = 900000;
 			break;
 		case "pmd_short":
 			mainClassName = "GUI";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/pmdtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "sunflow_short":
 			mainClassName = "Benchmark";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/sunflowtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "tomcat_short":
 			mainClassName = "ExpressionDemo";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tomcatexcludefileshort.txt";
+			scheduletime = 900000;
 			break;
 		case "tradebeans_short":
 			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradebeansexcludefileshort.txt";
+			scheduletime = 900000;
 			break;
 		case "tradesoap_short":
 			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradesoapexcludefileshort.txt";
+			scheduletime = 900000;
 			break;
 		case "xalan_short":
 			mainClassName = "XSLProcessorVersion";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "all_short":
 			if(args.length == 2){
@@ -384,7 +399,6 @@ public class ReproduceBenchmarks {
 		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
-//		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
 		builder.getPropagationSystem().initializeAkkaSys(numOfWorkers);
@@ -429,12 +443,11 @@ public class ReproduceBenchmarks {
 		//detector
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
-		start_time = System.currentTimeMillis();
+//		start_time = System.currentTimeMillis();
 		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
 		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
 		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
 
-//		System.out.println("EXHAUSTIVE DETECTION >>>");
 		int race = 0;
 		int dl = 0;
 		for(ITIDEBug bug : bugs){
@@ -444,10 +457,9 @@ public class ReproduceBenchmarks {
 				dl++;
 			}
 		}
-		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
+		System.out.println("Exhaustive Points-to Analysis + Detection Time: " + (System.currentTimeMillis() - start_time) + "ms\n");
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
-//		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
 		builder.getPropagationSystem().initializeAkkaSys(1);
@@ -496,7 +508,7 @@ public class ReproduceBenchmarks {
 		//detector
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
-		start_time = System.currentTimeMillis();
+//		start_time = System.currentTimeMillis();
 		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
 		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
 		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
@@ -513,9 +525,8 @@ public class ReproduceBenchmarks {
 		}
 //		System.err.println("Exhaustive Race Detection Time: " + engine.timeForDetectingRaces);
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
-//		System.out.println("#Race: " + race + "  #Deadlock: " + dl);
+		System.out.println("Exhaustive Points-to Analysis + Detection Time: " + (System.currentTimeMillis() - start_time) + "ms\n");
 		master.awaitRemoteComplete();
-		System.out.println("Exhaustive Detection Time: " + (System.currentTimeMillis() - start_time) + "ms");
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
 		incrementalDistTest(master, builder, cg);
@@ -599,6 +610,9 @@ public class ReproduceBenchmarks {
 				if(ir == null)
 					continue;
 
+				if(totaltime >= scheduletime)//900000  5400000
+					break;
+
 				DefUse du = new DefUse(ir);
 				ConstraintVisitor v = builder.makeVisitor(n);
 				v.setIR(ir);
@@ -608,14 +622,12 @@ public class ReproduceBenchmarks {
 				SSAInstruction[] insts = ir.getInstructions();
 				int size = insts.length;
 				changedNodes.add(n);
-//				System.out.println("DETECTION AGAIN >>> " + n.getMethod().toString());
 				for(int i=size;i>0;i--){
 					SSAInstruction inst = insts[i-1];
 
 					if(inst==null)
 						continue;//skip null
 
-//					System.out.println("INST:      "+ inst.toString());
 					ISSABasicBlock bb = cfg.getBlockForInstruction(inst.iindex);
 					//delete
 					try{
@@ -647,6 +659,8 @@ public class ReproduceBenchmarks {
 							bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
 							engine.setDelete(false);
 							deldetect_time = (delete_end_time - deldetect_start_time);
+						}else{
+							ps.print(0+" "+0+" ");
 						}
 
 						builder.system.clearChanges();
@@ -671,7 +685,10 @@ public class ReproduceBenchmarks {
 						if(!benchmark.contains("fop")){
 							bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
 							adddetect_time = (add_end_time - adddetect_start_time);
+						}else{
+							ps.print(0+" "+0+" ");
 						}
+
 						builder.system.clearChanges();
 						ps.print(ptadelete_time+" "+ptaadd_time+" ");
 						//incre_race_time+" "+incre_dl_time+" "+ptadelete_time+" "+ptaadd_time+" "
@@ -684,8 +701,6 @@ public class ReproduceBenchmarks {
 				changedNodes.clear();
 				ps.println();
 			}
-			if(totaltime >= 5400000)//7200000  5400000
-				break;
 		}
 		totaltime = 0;
 

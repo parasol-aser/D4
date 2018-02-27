@@ -59,6 +59,7 @@ public class ReproduceBenchmark_remote {
 	static String mainMethodSig = null;
 	static String testFile = null;
 	static String excludeFile = "data/DefaultExclusions.txt";
+	static long scheduletime = 5400000;
 
 	static SSAPropagationCallGraphBuilder builder;
 	static CallGraph cg;
@@ -172,84 +173,98 @@ public class ReproduceBenchmark_remote {
 			mainMethodSig = "avrora.Main" + mainSignature;
 			testFile = "data/avroratestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "batik_short":
 			mainClassName = "rasterizer/Main";
 			mainMethodSig = "rasterizer.Main" + mainSignature;
 			testFile = "data/batiktestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "eclipse_short":
 			mainClassName = "EclipseStarter";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/eclipsetestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "fop_short": //no detection
 			mainClassName = "TTFFile";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/foptestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "h2_short":
 			mainClassName = "Shell";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/h2testfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "jython_short":
 			mainClassName = "jython";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/jythontestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "luindex_short":
 			mainClassName = "IndexFiles";
 			mainMethodSig = mainClassName + mainSignature;
 			excludeFile = "data/luindexexcludefileshort.txt";
 			testFile = "data/dacapotestfile.txt";
+			scheduletime = 900000;
 			break;
 		case "lusearch_short":
 			mainClassName = "IndexHTML";
 			mainMethodSig = mainClassName + mainSignature;
 			excludeFile = "data/lusearchexcludefileshort.txt";
 			testFile = "data/dacapotestfile.txt";
+			scheduletime = 900000;
 			break;
 		case "pmd_short":
 			mainClassName = "GUI";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/pmdtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "sunflow_short":
 			mainClassName = "Benchmark";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/sunflowtestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 		case "tomcat_short":
 			mainClassName = "ExpressionDemo";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tomcatexcludefileshort.txt";
+			scheduletime = 900000;
 			break;
 		case "tradebeans_short":
 			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradebeansexcludefileshort.txt";
+			scheduletime = 900000;
 			break;
 		case "tradesoap_short":
 			mainClassName = "REUtil";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/dacapotestfile.txt";
 			excludeFile = "data/tradesoapexcludefileshort.txt";
+			scheduletime = 900000;
 			break;
 		case "xalan_short":
 			mainClassName = "XSLProcessorVersion";
 			mainMethodSig = mainClassName + mainSignature;
 			testFile = "data/xalantestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
+			scheduletime = 900000;
 			break;
 
 
@@ -266,17 +281,6 @@ public class ReproduceBenchmark_remote {
 
 		cg  = builder.makeCallGraph(options, null);
 		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
-		int numofCGNodes = cg.getNumberOfNodes();
-		int totalInstanceKey = pta.getInstanceKeys().size();
-		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
-		int totalPointerEdge = 0;
-		int totalClass=cha.getNumberOfClasses();
-		Iterator<PointerKey> iter = pta.getPointerKeys().iterator();
-		while(iter.hasNext()){
-			PointerKey key = iter.next();
-			int size = pta.getPointsToSet(key).size();
-			totalPointerEdge+=size;
-		}
 		System.out.println();
 		ps.println();
 
@@ -316,7 +320,7 @@ public class ReproduceBenchmark_remote {
 				locate = true;
 			}
 		}
-		if(totaltime >= 5400000){//7200000  5400000
+		if(totaltime >= scheduletime){//900000  5400000
 			totaltime = 0;
 			return 0;
 		}
@@ -363,6 +367,8 @@ public class ReproduceBenchmark_remote {
 				Set<ITIDEBug> bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
 				engine.setDelete(false);
 				deldetect_time = (System.currentTimeMillis() - deldetect_start_time);
+			}else{
+				ps.print(0+" "+0+" ");
 			}
 
 			builder.system.clearChanges();
@@ -413,6 +419,8 @@ public class ReproduceBenchmark_remote {
 			if(!benchmark.contains("fop")){
 				HashSet<ITIDEBug> bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
 				adddetect_time = (System.currentTimeMillis() - adddetect_start_time);
+			}else{
+				ps.print(0+" "+0+" ");
 			}
 
 			builder.system.clearChanges();
