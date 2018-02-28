@@ -28,7 +28,7 @@ For each benchmark, we will evaluate the performance of D4-1 and then D4-48.
 
 ### D4 Docker Image
 We provide a docker image running D4 on a local machine with a user-defined number of threads. To download the image, please run 
-````docker pull aprildocker/d4_ubuntu_java8```` 
+````docker pull aprildocker/d4_ubuntu_java8:firsttry```` 
 in your terminal. If you see an error: ````Please login prior to pull: Login with your Docker ID to push and pull images from Docker Hub.````, please goto [https://hub.docker.com/](https://hub.docker.com/) to register an account and login.
 
 ### D4 Evaluation
@@ -75,7 +75,7 @@ To evaluate D4-1 and D4-48, please run ````ReproduceBenchmarks.java```` with pro
 You can also evaluate D4 using multi-threads on a single machine. In folder ````edu.tamu.cse.aser.d4````, run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all_short```` and the number of threads you would like to test. For example, ````all_short 8```` or ````avrora_short 8```` (this took a couple of hours on our machine).
 
 #### 4. Running D4 on the Docker Image
-To run D4 in the image, please run ````docker run -it d4_ubuntu_java8 $tool_name $benchmark_name $num_of_threads```` in your terminal. For example, ````docker run -it d4_ubuntu_java8 d4 fop_short 4```` will run D4 on benchmark ````fop_short```` with 4 threads. ````docker run -it d4_ubuntu_java8 echo sunflow_short 1```` will run ECHO on benchmark ````sunflow_short```` with 1 threads. Currently, ECHO can only run with 1 threads.
+To run D4 in the image, please run ````docker run -it d4_ubuntu_java8:firsttry $tool_name $benchmark_name $num_of_threads```` in your terminal. For example, ````docker run -it d4_ubuntu_java8:firsttry d4 fop_short 4```` will run D4 on benchmark ````fop_short```` with 4 threads. ````docker run -it d4_ubuntu_java8:firsttry echo sunflow_short 1```` will run ECHO on benchmark ````sunflow_short```` with 1 threads. Currently, ECHO can only run with 1 threads.
 
 ### ECHO Evaluation
 We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). The jars are in ````/echo_jars/````. To reproduce the full data of ECHO, please run the jar with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
