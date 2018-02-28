@@ -27,7 +27,7 @@ All the benchmark names from Dacapo-9.12 are listed below:
 For each benchmark, we will evaluate the performance of D4-1 and then D4-48. 
 
 ### D4 Docker Image
-We provide a docker image that running D4 on a local machine with a user-defined number of threads. To download the image, please run 
+We provide a docker image running D4 on a local machine with a user-defined number of threads. To download the image, please run 
 ````docker pull aprildocker/d4_ubuntu_java8```` 
 in your terminal. If you see an error: ````Please login prior to pull: Login with your Docker ID to push and pull images from Docker Hub.````, please goto [https://hub.docker.com/](https://hub.docker.com/) to register an account and login.
 
