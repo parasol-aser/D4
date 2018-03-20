@@ -15,12 +15,9 @@ For the static happens-before analysis and parallel incremental detection, the c
 ### Build D4 in Eclipse
 We provide the source code of D4. You can use Eclipse to import, build and run the source code. 
 
-**Important**: this project contains several large jar files (as benchmarks and dependencies), to download them, you need to install the Git Large File Storage (LFS) before git clone the project:
-````git lfs install````.
-
 After ````git clone git@github.com:parasol-aser/D4.git```` (may take a couple of minutes depending on the network speed), you can import all the projects into Eclipse (all the required dependencies/libraries are included in the github), compile and build using Java 1.8. This project is an Eclipse plugin project, if you encounter a lot of compile errors, please goto Eclipse -> Help -> Eclipse Marketplace, search "Eclipse PDE" and install. Then, rebuild the whole project to remove the errors.
 
-All the benchmark names from Dacapo-9.12 are listed below:
+We use Dacapo-9.12 as our benchmarks, please goto [sourceforge](https://sourceforge.net/projects/dacapobench/files/archive/9.12-bach/dacapo-9.12-bach.jar/download) or [googledrive](https://drive.google.com/drive/folders/1FGBEIvjSSbS4-wXnxmOlKaOBC-u46vEM?usp=sharing) to download the pre-built jar file and put it under ````edu.tamu.cse.aser.benchmarks/dacapo/````. All the benchmark names are listed below:
 
 ````avrora, batik, eclipse, fop, h2, jython, luindex, lusearch, pmd, sunflow, tomcat, tradebeans, tradesoap, xalan````.
 
@@ -75,10 +72,10 @@ To evaluate D4-1 and D4-48, please run ````ReproduceBenchmarks.java```` with pro
 You can also evaluate D4 using multi-threads on a single machine. In folder ````edu.tamu.cse.aser.d4````, run the main method in class ````src/edu/tamu/aser/tide/tests/ReproduceBenchmarks.java```` with program argument ````all_short```` and the number of threads you would like to test. For example, ````all_short 8```` or ````avrora_short 8```` (this took a couple of hours on our machine).
 
 #### 4. Running D4 on the Docker Image
-To run D4 in the image, please run ````docker run -it aprildocker/d4_ubuntu_java8:firsttry $tool_name $benchmark_name $num_of_threads```` in your terminal. For example, ````docker run -it aprildocker/d4_ubuntu_java8:firsttry d4 fop_short 4```` will run D4 on benchmark ````fop_short```` with 4 threads. ````docker run -it aprildocker/d4_ubuntu_java8:firsttry echo sunflow_short 1```` will run ECHO on benchmark ````sunflow_short```` with 1 threads. Currently, ECHO can only run with 1 threads.
+To run D4 in the image, please run ````docker run -it aprildocker/d4_ubuntu_java8:firsttry $tool_name $benchmark_name $num_of_threads```` in your terminal. For example, ````docker run -it aprildocker/d4_ubuntu_java8:firsttry d4 fop_short 4```` will run D4 on benchmark ````fop_short```` with 4 threads. ````docker run -it aprildocker/d4_ubuntu_java8:firsttry echo sunflow_short 1```` will run ECHO on benchmark ````sunflow_short```` with 1 threads. Currently, ECHO can only run with 1 threads. 
 
 ### ECHO Evaluation
-We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). The jars are in ````/echo_jars/````. To reproduce the full data of ECHO, please run the jar with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
+We provided runnable jars to evaluate the ECHO performance (including the Reset-Recompute algorithm, Reachability-based algorithm, and its race detection). Due to the file size limit of github, we moved the folder ````echo_jars```` to [here](https://drive.google.com/drive/folders/1FGBEIvjSSbS4-wXnxmOlKaOBC-u46vEM?usp=sharing) for download. To reproduce the full data of ECHO, please run ````echo.jar```` with argument ````all````. To reproduce individual benchmark data, please run the main method with the benchmark name. 
 
 We also prepared a short version to evaluate ECHO by using the argument ````all_short```` or the benchmark name + ````_short````. The generated statistics of ECHO will be shown in terminal.
 
