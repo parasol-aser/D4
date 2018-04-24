@@ -23,20 +23,20 @@ in your terminal. If you see an error: ````Please login prior to pull: Login wit
 
 ### Running D4
 #### Run D4 on a local machine
-To perform the analysis for benchmark ````sunflow```` with a short version of exclused packages using 8 threads, we run the main method of class ````ReproduceBenchmarks```` in ````edu.tamu.cse.aser.d4```` with the program argument ````sunflow_short 8````.
+To perform the analysis for benchmark ````sunflow```` using 8 threads with a list of exclused packages, run the main method of class ````ReproduceBenchmarks```` in ````edu.tamu.cse.aser.d4```` with the program argument ````sunflow_short 8````.
 
-The exclused packages can be modified by adding/removing package names in ````ShortDefaultExclusions.txt```` of ````edu.tamu.cse.aser.d4````.
+The exclused packages can be modified by adding/removing package names in ````ShortDefaultExclusions.txt```` from ````edu.tamu.cse.aser.d4````.
 
 #### Run D4 both on a local machine and a server
-##### 1. Pack the jar running on server
-Replace the hostnames of the local pc (labeled with #local pc) and remote server (labeled with #local pc) in ````master.conf```` and ````worker.conf```` in ````edu.tamu.cse.aser.d4```` and ````edu.tamu.cse.aser.d4remote```` by your pc and server addresses.
+##### Pack the jar running on server
+Replace the hostnames of the local pc (labeled with #local pc) and remote server (labeled with #local pc) in ````master.conf```` (in ````edu.tamu.cse.aser.d4````) and ````worker.conf```` (in ````edu.tamu.cse.aser.d4remote````) with your pc and server IP addresses.
 
 Generate a runnable jar of ````BackendStart```` in ````edu.tamu.cse.aser.d4remote```` with all the dependencies copied to a sub-folder.
 
 Transfer the jar, its dependency folder and the data folder of ````edu.tamu.cse.aser.d4remote```` to the remote server. For example, you can use FileZilla.
 
-##### 2. Run D4 
-To perform the analysis for benchmark ````sunflow```` with a short version of exclusion packages, we need to run the remote jar with the command: ````java -Dconfig.file=worker.conf -jar backend.jar sunflow_short````. Then, run the main of class ````ReproduceBenchmarks```` in ````edu.tamu.cse.aser.d4```` with the program argument ````sunflow_short````. The analysis is performed with a default thread number of 48. 
+##### Start D4 on both sides
+To perform the analysis for benchmark ````sunflow```` with a list of exclusion packages, run the remote jar with the command: ````java -Dconfig.file=worker.conf -jar backend.jar sunflow_short````. Then, run the main method of class ````ReproduceBenchmarks```` in ````edu.tamu.cse.aser.d4```` with the program argument ````sunflow_short````. The analysis is performed with a default thread number of 48. 
 
 A video demo is available at [YouTube]().
 
