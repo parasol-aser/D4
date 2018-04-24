@@ -15,7 +15,7 @@ public class RelationDetail extends TreeNode{
 
 	public RelationDetail(TreeNode parent) {
 		super(parent);
-		this.name = "Concurrent Read/Write Relation Details";
+		this.name = "Concurrent Read/Write Relations";
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class RelationDetail extends TreeNode{
 
 	@Override
 	public ImageDescriptor getImage() {
-		return Activator.getImageDescriptor("folder_icon.gif");
+		return Activator.getImageDescriptor("parallel.png");
 	}
 
 	@Override

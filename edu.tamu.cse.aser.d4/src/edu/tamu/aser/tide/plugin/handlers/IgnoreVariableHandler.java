@@ -6,8 +6,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.internal.core.SourceField;
+import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -69,10 +75,9 @@ public class IgnoreVariableHandler extends AbstractHandler {
 		ISelection sel = HandlerUtil.getActiveMenuSelection(event);
 		TreeSelection treeSel = (TreeSelection) sel;
 		//ifile:
-//		TreePath path = treeSel.getPaths()[0];
-//		IPath ipath = ((SourceType)path.getSegment(0)).getParent().getPath();
-//		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(ipath);
-		//
+		TreePath path = treeSel.getPaths()[0];
+		IPath ipath = ((SourceType)path.getSegment(0)).getParent().getPath();
+		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(ipath);
 		Object element = treeSel.getFirstElement();
 		HashSet<ITIDEBug> all = new HashSet<>();
 		//option from echoviews
@@ -135,14 +140,14 @@ public class IgnoreVariableHandler extends AbstractHandler {
 			echoRWView.ignoreBugs(all);
 			System.out.println("Ignore variable bugs removed ");
 		}else{
-//			try {
-//				cHandler.getCurrentModel().addBugMarkersForConsider(all, file);
-//			} catch (CoreException e) {
-//				e.printStackTrace();
-//			}
-//			echoRaceView.considerBugs(all);
-//			echoRWView.considerBugs(all);
-//			System.out.println("Consider variable bugs back ");
+			try {
+				cHandler.getCurrentModel().addBugMarkersForConsider(all, file);
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+			echoRaceView.considerBugs(all);
+			echoRWView.considerBugs(all);
+			System.out.println("Consider variable bugs back ");
 		}
 		return null;
 	}

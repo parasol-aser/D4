@@ -54,7 +54,6 @@ import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.propagation.HeapModel;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
-import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -63,15 +62,13 @@ import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.Atom;
 
-import edu.tamu.aser.tide.akkasys.BugHub;
-import edu.tamu.aser.tide.akkasys.BugWorker;
 import edu.tamu.aser.tide.engine.BasicAnalysisData;
 import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.KeshmeshCGModel;
 import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.plugin.Activator;
 import edu.tamu.aser.tide.plugin.ChangedItem;
-import edu.tamu.aser.tide.plugin.MyJavaElementChangeCollector;
+//import edu.tamu.aser.tide.plugin.MyJavaElementChangeCollector;
 import edu.tamu.aser.tide.views.EchoDLView;
 import edu.tamu.aser.tide.views.EchoRaceView;
 import edu.tamu.aser.tide.views.EchoReadWriteView;
@@ -145,6 +142,10 @@ public class ConvertHandler extends AbstractHandler {
 	public TIDECGModel getCurrentModel(){
 		return currentModel;
 	}
+
+//	public IFile getCurrentFile(){
+//		return currentFile;
+//	}
 
 	public IJavaProject getCurrentProject(){
 		return currentProject;
@@ -535,9 +536,9 @@ public class ConvertHandler extends AbstractHandler {
 		        model.clearChanges();
 				//update UI
 				model.updateGUI(javaProject, file, bugs, false);
-				if(trigger){
-					Activator.getDefault().getDefaultCollector().resetCollectedChanges();
-				}
+//				if(trigger){
+//					Activator.getDefault().getDefaultCollector().resetCollectedChanges();
+//				}
 				System.err.println("Incremental Time: "+(System.currentTimeMillis()-start_time));
 				System.out.println();
 			}
@@ -617,16 +618,33 @@ public class ConvertHandler extends AbstractHandler {
 		try{
 			IJavaProject javaProject = cu.getJavaProject();
 			String mainSig = getSignature(cu);
+			//excluded in text file
+//			TIDECGModel model = new TIDECGModel(javaProject, "EclipseDefaultExclusions.txt", mainSig);
+			//excluded in String
+//			String deafaultDefined = excludeView.getDefaultText();
+//			String userDefined = excludeView.getChangedText();
+//			String new_exclusions = null;
+//			if(userDefined.length() > 0){
+//	            //append new added in excludeview
+//				StringBuilder stringBuilder = new StringBuilder();
+//				stringBuilder.append(deafaultDefined);
+//				stringBuilder.append(userDefined);
+//				new_exclusions = stringBuilder.toString();//combined
+//				//write back to EclipseDefaultExclusions.txt
+//				java.io.File file = new java.io.File("/Users/Bozhen/Documents/Eclipse2/Test_both_copy/edu.tamu.cse.aser.echo/data/EclipseDefaultExclusions.txt");
+//				FileWriter fileWriter = new FileWriter(file, false);
+//				BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+//				bufferedWriter.write(new_exclusions);
+//				bufferedWriter.close();
+//			}
 			TIDECGModel model = new TIDECGModel(javaProject, "EclipseDefaultExclusions.txt", mainSig);
+
+//			System.out.println("model is " + System.identityHashCode(model));
+//			long start_time = System.currentTimeMillis();
 			model.buildGraph();
-			System.err.println("Exhaustive Construction Time: "+(System.currentTimeMillis()-start_time));
+			System.err.println("Call Graph Construction Time: "+(System.currentTimeMillis()-start_time));
 			modelMap.put(javaProject, model);
-			//set parameter
-			BugHub.setPlugin(true);
-			BugWorker.setPlugin(true);
-			((SSAPropagationCallGraphBuilder)model.getEngine().builder_echo).getPropagationSystem().initializeAkkaSys(8);
-			model.getBugEngine().setPlugin(true);
-			//
+//			excludeView.setProgramInfo(cu, selection);
 			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(cu.getPath());
 			//set echoview to menuhandler
 			echoRaceView = model.getEchoRaceView();
@@ -640,8 +658,8 @@ public class ConvertHandler extends AbstractHandler {
 			letUsRock(javaProject, file, model);
 			Activator.getDefaultReporter().initialSubtree(cu, selection, javaProject);
 			//for trigger button
-			MyJavaElementChangeCollector collector = Activator.getDefault().getDefaultCollector();
-			collector.resetCollectedChanges();
+//			MyJavaElementChangeCollector collector = Activator.getDefault().getDefaultCollector();
+//			collector.resetCollectedChanges();
 
 		}catch(Exception e){
 			e.printStackTrace();

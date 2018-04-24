@@ -29,7 +29,8 @@ public class CReadNode extends TreeNode{
 		this.race = race;
 		this.event_ifile_map = race.event_ifile_map;
 		this.event_line_map = race.event_line_map;
-		createChild(idx);
+//		createChild(idx);
+		createChildNoSubTrace(idx);
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class CReadNode extends TreeNode{
 
 	@Override
 	public ImageDescriptor getImage() {
-		return Activator.getImageDescriptor("datasheet.gif");
+		return Activator.getImageDescriptor("read-icon.png");
 	}
 
 	@Override
@@ -50,9 +51,18 @@ public class CReadNode extends TreeNode{
 
 	@SuppressWarnings("unchecked")
 	private void createChild(int idx) {
-		String name = "Trace of " + this.name + " is :";
+		String name = "Trace of " + this.name + " :";
 		SubTraceNode subtrace = new SubTraceNode(this, name, race.traceMsg.get(idx - 1));
 		super.children.add(subtrace);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void createChildNoSubTrace(int idx) {
+		LinkedList<String> events = race.traceMsg.get(idx - 1);
+		for (String event : events) {
+			EventNode eventNode = new EventNode(this, event);
+			super.children.add(eventNode);
+		}
 	}
 
 //	@SuppressWarnings("unchecked")

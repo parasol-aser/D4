@@ -1,4 +1,3 @@
-package edu.tamu.aser.tide.views;
 //package edu.tamu.aser.tide.views;
 //
 //import java.util.ArrayList;

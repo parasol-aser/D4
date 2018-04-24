@@ -31,7 +31,7 @@ public class BugLabelProvider extends LabelProvider implements IColorProvider {
 		}
 		return image;
 	}
-
+	
 	public void dispose() {
 		for (Iterator i = imageCache.values().iterator(); i.hasNext();) {
 			((Image) i.next()).dispose();
@@ -51,7 +51,7 @@ public class BugLabelProvider extends LabelProvider implements IColorProvider {
 			((TreeNode) element).isNewest = false;
 			return RED;
 		} else {
-			return null;
+			return null; 
 		}
 	}
 

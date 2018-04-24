@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            name="ECHO"
+            name="D4"
             id="edu.tamu.aser.tide.plugin.convert">
       </command>
       <command
@@ -23,14 +23,14 @@
             name="Consider This Method"
             id="edu.tamu.aser.tide.plugin.considerfunction">
       </command>
-      <command
+<!--      <command
             name="Trigger Incremental Check"
             id="edu.tamu.aser.tide.plugin.triggercheck">
-      </command>
-      <command
+      </command> -->
+<!--      <command
             id="edu.tamu.aser.tide.plugin.echomode"
-            name="ECHO Mode">
-      </command>
+            name="D4 Mode">
+      </command> -->
       
 <!--      <command
             name="Ignore This Bug"
@@ -72,12 +72,12 @@
    <extension
       point="org.eclipse.ui.ide.markerImageProviders">
       <imageprovider
-         icon="icons/buggy-tiny-green.png"
+         icon="icons/circle-running-icon.png"
          id="de.tobject.findbugs.imageprovider"
          markertype="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScariest">
       </imageprovider>
       <imageprovider
-         icon="icons/buggy-tiny-orange.png"
+         icon="icons/lock-icon.png"
          id="de.tobject.findbugs.imageprovider"
          markertype="edu.umd.cs.findbugs.plugin.eclipse.findbugsMarkerScary">
       </imageprovider>
@@ -87,14 +87,14 @@
             annotationType="edu.umd.cs.findbugs.plugin.eclipse.findbugsWarningAnnotationScariest"
             colorPreferenceKey="findbugs.scariest.color"
             colorPreferenceValue="212,6,28"
-            icon="icons/buggy-tiny-green.png"
+            icon="icons/circle-running-icon.png"
             includeOnPreferencePage="true"
             isGoToNextNavigationTarget="true"
             isGoToNextNavigationTargetKey="findbugs.scariest.gotonext"
             label="FindBugs &apos;Scariest&apos; Warnings"
             overviewRulerPreferenceKey="findbugs.scariest.overview"
             overviewRulerPreferenceValue="true"
-            quickFixIcon="icons/buggy-tiny-green.png"
+            quickFixIcon="icons/circle-running-icon.png"
             showInNextPrevDropdownToolbarAction="true"
             showInNextPrevDropdownToolbarActionKey="findbugs.scariest.goto"
             textPreferenceKey="findbugs.scariest.text"
@@ -107,14 +107,14 @@
             annotationType="edu.umd.cs.findbugs.plugin.eclipse.findbugsWarningAnnotationScary"
             colorPreferenceKey="findbugs.scary.color"
             colorPreferenceValue="248,77,06"
-            icon="icons/buggy-tiny-orange.png"
+            icon="icons/lock-icon.png"
             includeOnPreferencePage="true"
             isGoToNextNavigationTarget="true"
             isGoToNextNavigationTargetKey="findbugs.scary.gotonext"
             label="FindBugs &apos;Scary&apos; Warnings"
             overviewRulerPreferenceKey="findbugs.scary.overview"
             overviewRulerPreferenceValue="true"
-            quickFixIcon="icons/buggy-tiny-orange.png"
+            quickFixIcon="icons/lock-icon.png"
             showInNextPrevDropdownToolbarAction="true"
             showInNextPrevDropdownToolbarActionKey="findbugs.scary.goto"
             textPreferenceKey="findbugs.scary.text"
@@ -163,10 +163,10 @@
       		commandId="edu.tamu.aser.tide.plugin.triggercheck"
       		class="edu.tamu.aser.tide.plugin.handlers.TriggerCheckHandler">
       </handler>
-       <handler
+<!--       <handler
       		commandId="edu.tamu.aser.tide.plugin.echomode"
       		class="edu.tamu.aser.tide.plugin.handlers.ChooseModeHandler">
-      </handler>
+      </handler> -->
 <!--       <handler
             commandId="edu.tamu.aser.tide.plugin.ignorebug"
             class="edu.tamu.aser.tide.plugin.handlers.IgnoreBugHandler"> 
@@ -185,7 +185,7 @@
    </extension>
    
    <!-- add another trigger button in the main toolbar-->
-   <extension point="org.eclipse.ui.menus">
+<!--    <extension point="org.eclipse.ui.menus">
       <menuContribution
                locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar
@@ -197,12 +197,12 @@
                      label="CHECK"
                      mode="FORCE_TEXT"
                      style="push"
-                     tooltip="%toolbar.tooltip">
+                     tooltip="Run incremental detection">
                </command>
             </toolbar>
      </menuContribution>
      
-      <menuContribution
+     <menuContribution
             allPopups="false"
             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
          <toolbar
@@ -211,9 +211,10 @@
                   commandId="edu.tamu.aser.tide.plugin.echomode"
                   icon="icons/runFindbugs.png"
                   id="edu.tamu.aser.tide.plugin.echomodedropdown"
-                  label="ECHO MODE"
+                  label="D4 MODE"
                   mode="FORCE_TEXT"
-                  style="pulldown">
+                  style="pulldown"
+                  tooltip="Choose how D4 is triggered in Eclipse">
             </command>
          </toolbar>
       </menuContribution>
@@ -230,8 +231,8 @@
                label="Button Mode"
                style="push">
          </command>
-      </menuContribution>
-   </extension>
+      </menuContribution> 
+   </extension> -->
   
 
 <!-- add right click menu item to ignore a function -->
@@ -239,7 +240,7 @@
    <menuContribution
 	   allPopups="true"
 	   locationURI="popup:org.eclipse.jdt.ui.outline?after=additions"> 
-	   <menu label="ECHO">
+	   <menu label="D4">
 		   <command commandId="edu.tamu.aser.tide.plugin.ignorefunction">
 			  <visibleWhen
 				checkEnabled="false">
@@ -280,7 +281,7 @@
    <menuContribution
 	   allPopups="true"
 	   locationURI="popup:org.eclipse.jdt.ui.outline?after=additions"> 
-	   <menu label="ECHO">
+	   <menu label="D4">
 		   <command commandId="edu.tamu.aser.tide.plugin.ignorevariable">
 			  <visibleWhen
 				checkEnabled="false">
@@ -297,7 +298,7 @@
 				  </with>
 			  </visibleWhen>
 		   </command>
-<!--		   <command commandId="edu.tamu.aser.tide.plugin.considervariable">
+		   <command commandId="edu.tamu.aser.tide.plugin.considervariable">
 			  <visibleWhen
 				checkEnabled="false">
 				  <with variable="activeMenuSelection">
@@ -312,7 +313,7 @@
 					  </and>
 				  </with>
 			  </visibleWhen>
-		   </command>  -->
+		   </command>
 	   </menu>
    </menuContribution>
 </extension>   
@@ -323,7 +324,7 @@
             allPopups="true"
             locationURI= "popup:edu.tamu.aser.tide.views.echomenu?after=additions">
             <menu
-                  label="ECHO Bug Choice">
+                  label="D4 Bug Choice">
                   <command
                       commandId="edu.tamu.aser.tide.plugin.ignorevariable">
                   <visibleWhen
@@ -347,7 +348,7 @@
                       </with>
                   </visibleWhen>
                   </command>
-<!--                  <command
+                  <command
                       commandId="edu.tamu.aser.tide.plugin.considervariable">
                   <visibleWhen
                     checkEnabled="false">
@@ -358,6 +359,9 @@
                               <instanceof
                                 value="edu.tamu.aser.tide.views.RaceNode">
                               </instanceof>
+<!--                              <instanceof
+                                value="edu.tamu.aser.tide.views.DeadlockNode">
+                              </instanceof>         -->
                               <instanceof
                                 value="edu.tamu.aser.tide.views.RWRelationNode">
                               </instanceof>
@@ -366,7 +370,7 @@
                           </and>
                       </with>
                   </visibleWhen>
-                  </command>  -->
+                  </command>
 <!--                  <command
                       commandId="edu.tamu.aser.tide.plugin.ignorebug">
                   <visibleWhen
@@ -432,18 +436,18 @@
         <view 
           id="edu.tamu.aser.tide.views.echoraceview"
           class="edu.tamu.aser.tide.views.EchoRaceView"
-          icon="icons/buggy-tiny.png"
-          name="ECHO Race List" />
+          icon="icons/circle-running-icon.png"
+          name="D4 Race List" />
         <view 
           id="edu.tamu.aser.tide.views.echodlview"
           class="edu.tamu.aser.tide.views.EchoDLView"
-          icon="icons/buggy-tiny.png"
-          name="ECHO Deadlock List" />
+          icon="icons/Lock-icon.png"
+          name="D4 Deadlock List" />
         <view
 		  class="edu.tamu.aser.tide.views.EchoReadWriteView"
-		  icon="icons/buggy-tiny.png"
+		  icon="icons/parallel.png"
 		  id="edu.tamu.aser.tide.views.echotableview"
-		  name="ECHO Concurrent Relations" />
+		  name="D4 Concurrent Relations" />
 <!--        <view 
 		  id="edu.tamu.aser.tide.views.excludeview"
 		  name="Excluded Packages/Classes/Methods"

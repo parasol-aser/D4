@@ -134,7 +134,7 @@ public class EchoRaceView extends ViewPart{
 				ISelection selection = treeViewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
 				if (obj instanceof EventNode) {
-					ITreeNode parent = ((EventNode) obj).getParent().getParent().getParent();
+					ITreeNode parent = ((EventNode) obj).getParent().getParent();
 					if(parent instanceof RaceNode){
 						RaceNode race = (RaceNode) parent;
 						HashMap<String, IFile> map = race.race.event_ifile_map;

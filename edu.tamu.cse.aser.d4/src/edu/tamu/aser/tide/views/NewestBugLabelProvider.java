@@ -30,5 +30,5 @@ public class NewestBugLabelProvider extends CellLabelProvider{
 		}
 		return image;
 	}
-
+	
 }

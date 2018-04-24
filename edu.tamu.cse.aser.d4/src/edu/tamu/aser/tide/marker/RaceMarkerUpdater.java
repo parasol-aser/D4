@@ -23,9 +23,10 @@ public class RaceMarkerUpdater implements IMarkerUpdater{
 	public boolean updateMarker(IMarker marker, IDocument doc, Position line) {
 		if(marker instanceof BugMarker){
 			BugMarker bugMarker = (BugMarker) marker;
-			return true;
+//			return true;
 		}
-		return false;
+//		return false;
+		return true;
 	}
 
 }

@@ -50,7 +50,7 @@ public class JoinNode extends SyncNode{
 //		return " "+TID+" join "+TID_end;
 		String pclassname = node.getMethod().getDeclaringClass().toString();
 		String pmethodname = node.getMethod().getName().toString();
-		return "Thread " + selfTID + " joins Thread" + parentTID + " in " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname + " on line " + line;
+		return "Child thread joined to " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname + " on line " + line;
 	}
 
 	@Override

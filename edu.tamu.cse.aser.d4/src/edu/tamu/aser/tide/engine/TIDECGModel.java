@@ -64,10 +64,12 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import edu.tamu.aser.tide.akkasys.BugHub;
+import edu.tamu.aser.tide.akkasys.BugWorker;
 import edu.tamu.aser.tide.graph.SHBEdge;
 import edu.tamu.aser.tide.graph.SHBGraph;
 import edu.tamu.aser.tide.marker.BugMarker;
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
+import edu.tamu.aser.tide.tests.ReproduceBenchmarks;
 import edu.tamu.aser.tide.trace.DLockNode;
 import edu.tamu.aser.tide.trace.INode;
 import edu.tamu.aser.tide.trace.MemNode;
@@ -79,6 +81,7 @@ import edu.tamu.aser.tide.trace.WriteNode;
 import edu.tamu.aser.tide.views.EchoDLView;
 import edu.tamu.aser.tide.views.EchoRaceView;
 import edu.tamu.aser.tide.views.EchoReadWriteView;
+import scala.collection.generic.BitOperations.Int;
 
 public class TIDECGModel extends WalaProjectCGModel {
 
@@ -125,15 +128,11 @@ public class TIDECGModel extends WalaProjectCGModel {
 	public ActorRef bughub;
 	public static TIDEEngine bugEngine;
 	private static ClassLoader ourClassLoader = ActorSystem.class.getClassLoader();
-	private static boolean PLUGIN = false;
+	private final static boolean DEBUG = false;// true;
 	//gui view
 	public EchoRaceView echoRaceView;
 	public EchoDLView echoDLView;
 	public EchoReadWriteView echoRWView;
-
-	public static void setPlugin(boolean b){
-		PLUGIN = b;
-	}
 
 	public HashSet<ITIDEBug> detectBug() {
 	    Thread.currentThread().setContextClassLoader(ourClassLoader);
@@ -146,6 +145,8 @@ public class TIDECGModel extends WalaProjectCGModel {
 		//initial bug engine
 		bughub = akkasys.actorOf(Props.create(BugHub.class, nrOfWorkers), "bughub");
 		bugEngine = new TIDEEngine(entrySignature, callGraph, flowgraph, engine.getPointerAnalysis(), bughub);
+		BugHub.setPlugin(true);
+		BugWorker.setPlugin(true);
 		bugEngine.setChange(false);
 		//detect bug
 		return bugEngine.detectBothBugs(null);
@@ -480,27 +481,56 @@ public class TIDECGModel extends WalaProjectCGModel {
 		bug.setBugInfo(deadlockMsg, traceMsg, fixMsg);
 //		System.out.println(traceMsg);
 
+//		IFile file11 = l11.getFile();
+//		if(file11 == null){
+//			file11 = getFileFromSig(fullPath,sig11,traceMsg.get(0));
+//		}
+//		IFile file12 = l12.getFile();
+//		if(file12 == null){
+//			file12 = getFileFromSig(fullPath,sig12,traceMsg.get(1));
+//		}
+//		IFile file21 = l21.getFile();
+//		if(file21 == null){
+//			file21 = getFileFromSig(fullPath,sig21,traceMsg.get(2));
+//		}
+//		IFile file22 = l22.getFile();
+//		if(file22 == null){
+//			file22 = getFileFromSig(fullPath,sig22,traceMsg.get(3));
+//		}
+//
+//		IMarker marker1 = createMarkerDL(file11,line11,deadlockMsg);
+//		IMarker marker2 = createMarkerDL(file12,line12,deadlockMsg);
+//		IMarker marker3 = createMarkerDL(file21,line21,deadlockMsg);
+//		IMarker marker4 = createMarkerDL(file22,line22,deadlockMsg);
+
+		IMarker marker1 = null;
+		IMarker marker2 = null;
+		IMarker marker3 = null;
+		IMarker marker4 = null;
 		IFile file11 = l11.getFile();
 		if(file11 == null){
-			file11 = getFileFromSig(fullPath,sig11);
+			marker1 = getFileFromSigDL(fullPath,sig11,traceMsg.get(0), line11, deadlockMsg);
+		}else{
+			marker1 = createMarkerDL(file11,line11,deadlockMsg);
 		}
 		IFile file12 = l12.getFile();
 		if(file12 == null){
-			file12 = getFileFromSig(fullPath,sig12);
+			marker2 = getFileFromSigDL(fullPath,sig12,traceMsg.get(1), line12, deadlockMsg);
+		}else{
+			marker2 = createMarkerDL(file12,line12,deadlockMsg);
 		}
 		IFile file21 = l21.getFile();
 		if(file21 == null){
-			file21 = getFileFromSig(fullPath,sig21);
+			marker3 = getFileFromSigDL(fullPath,sig21,traceMsg.get(2), line21, deadlockMsg);
+		}else{
+			marker3 = createMarkerDL(file21,line21,deadlockMsg);
 		}
 		IFile file22 = l22.getFile();
 		if(file22 == null){
-			file22 = getFileFromSig(fullPath,sig22);
+			marker4 = getFileFromSigDL(fullPath,sig22,traceMsg.get(3), line22, deadlockMsg);
+		}else{
+			marker4 = createMarkerDL(file22,line22,deadlockMsg);
 		}
-
-		IMarker marker1 = createMarkerDL(file11,line11,deadlockMsg);
-		IMarker marker2 = createMarkerDL(file12,line12,deadlockMsg);
-		IMarker marker3 = createMarkerDL(file21,line21,deadlockMsg);
-		IMarker marker4 = createMarkerDL(file22,line22,deadlockMsg);
 
 		//store
 		HashSet<IMarker> newMarkers = new HashSet<>();
@@ -527,17 +557,33 @@ public class TIDECGModel extends WalaProjectCGModel {
 		race.setBugInfo(raceMsg, traceMsg, fixMsg);
 //		System.out.println(traceMsg);
 
+//		IFile file1 = rnode.getFile();
+//		if(file1 == null){
+//			file1 = getFileFromSig(fullPath,rnode.getSig(),traceMsg.get(0));
+//		}
+//		IMarker marker1 = createMarkerRace(file1, rnode.getLine(), raceMsg);
+//
+//		IFile file2 = wnode.getFile();
+//		if(file2 == null){
+//			file2 = getFileFromSig(fullPath,wnode.getSig(),traceMsg.get(1));
+//		}
+//		IMarker marker2 = createMarkerRace(file2, wnode.getLine(), raceMsg);
+		IMarker marker1 = null;
 		IFile file1 = rnode.getFile();
 		if(file1 == null){
-			file1 = getFileFromSig(fullPath,rnode.getSig());
+			marker1 = getFileFromSigRace(fullPath,rnode.getSig(),traceMsg.get(0), rnode.getLine(), raceMsg);
+		}else{
+			marker1 = createMarkerRace(file1, rnode.getLine(), raceMsg);
 		}
-		IMarker marker1 = createMarkerRace(file1, rnode.getLine(), raceMsg);
 
+		IMarker marker2 = null;
 		IFile file2 = wnode.getFile();
 		if(file2 == null){
-			file2 = getFileFromSig(fullPath,wnode.getSig());
+			marker2 = getFileFromSigRace(fullPath,wnode.getSig(),traceMsg.get(1), wnode.getLine(), raceMsg);
+		}else{
+			marker2 = createMarkerRace(file2, wnode.getLine(), raceMsg);
 		}
-		IMarker marker2 = createMarkerRace(file2, wnode.getLine(), raceMsg);
+
 		//store bug -> markers
 		HashSet<IMarker> newMarkers = new HashSet<>();
 		newMarkers.add(marker1);
@@ -545,25 +591,6 @@ public class TIDECGModel extends WalaProjectCGModel {
 		bug_marker_map.put(raceMsg, newMarkers);
 	}
 
-	private IMarker createMarkerRace(IFile file, int line, String msg) throws CoreException {
-		Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put(IMarker.LINE_NUMBER, line);
-		attributes.put(IMarker.MESSAGE, msg);
-		IMarker newMarker = file.createMarker(BugMarker.TYPE_SCARIEST);
-		newMarker.setAttributes(attributes);
-		IMarker[] problems = file.findMarkers(BugMarker.TYPE_SCARIEST,true,IResource.DEPTH_INFINITE);
-		return newMarker;
-	}
-
-	private IMarker createMarkerDL(IFile file, int line, String msg) throws CoreException{
-		//for deadlock markers
-		Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put(IMarker.LINE_NUMBER, line);
-		attributes.put(IMarker.MESSAGE,msg);
-		IMarker newMarker = file.createMarker(BugMarker.TYPE_SCARY);
-		newMarker.setAttributes(attributes);
-		return newMarker;
-	}
 
 	private String obtainFixOfRace(TIDERace race) {
 		MemNode node1 = race.node1;
@@ -700,13 +727,14 @@ public class TIDECGModel extends WalaProjectCGModel {
 	private LinkedList<String> obtainTraceOfINode(int tid, INode rw1, ITIDEBug bug, int idx) {
 		LinkedList<String> trace = new LinkedList<>();
 		HashSet<INode> traversed = new HashSet<>();
-		SHBGraph shb = TIDECGModel.bugEngine.shb;
-//		if(PLUGIN){
-//			shb = TIDECGModel.bugEngine.shb;
-//		}else{
-//			shb = ReproduceBenchmarks.engine.shb;
-//		}
-		boolean check = writeDownMyInfo(trace, rw1, bug);
+		SHBGraph shb;
+		if(DEBUG){
+			shb = ReproduceBenchmarks.engine.shb;
+		}else{
+			shb = TIDECGModel.bugEngine.shb;
+		}
+//		boolean check = writeDownMyInfo(trace, rw1, bug);
+		writeDownMyInfo(trace, rw1, bug);
 		CGNode node = rw1.getBelonging();
 		SHBEdge edge = shb.getIncomingEdgeWithTid(node, tid);
 		INode parent = null;
@@ -723,7 +751,8 @@ public class TIDECGModel extends WalaProjectCGModel {
 			parent = edge.getSource();
 		}
 		while(parent != null){
-			boolean intoJDK = writeDownMyInfo(trace, parent, bug);
+			writeDownMyInfo(trace, parent, bug);
+//			boolean intoJDK = writeDownMyInfo(trace, parent, bug);
 //			if(check){
 //				if(!intoJDK){
 //					replaceRootCauseForRace(trace, parent, bug, idx);
@@ -845,17 +874,17 @@ public class TIDECGModel extends WalaProjectCGModel {
 	}
 
 	private boolean writeDownMyInfo(LinkedList<String> trace, INode node, ITIDEBug bug){
-		if(node instanceof MemNode){
-			if(node.toString().contains("Ljava/util/"))
-				return true;
-		}else if(node instanceof MethodNode){
-			MethodNode mnode = (MethodNode) node;
-			String caller = mnode.getBelonging().getMethod().getDeclaringClass().getName().getPackage().toString();
-			String callee = mnode.getTarget().getMethod().getDeclaringClass().getName().getPackage().toString();
-			if(callee.equals("java/util") && caller.equals("java/util")){
-				return true;
-			}
-		}
+//		if(node instanceof MemNode){
+//			if(node.toString().contains("Ljava/util/"))
+//				return true;
+//		}else if(node instanceof MethodNode){
+//			MethodNode mnode = (MethodNode) node;
+//			String caller = mnode.getBelonging().getMethod().getDeclaringClass().getName().getPackage().toString();
+//			String callee = mnode.getTarget().getMethod().getDeclaringClass().getName().getPackage().toString();
+//			if(callee.equals("java/util") && caller.equals("java/util")){
+//				return true;
+//			}
+//		}
 		String sub = null;
 		IFile file = null;
 		int line = 0;
@@ -885,12 +914,26 @@ public class TIDECGModel extends WalaProjectCGModel {
 		trace.addFirst(sub);
 		bug.addEventIFileToMap(sub, file);
 		bug.addEventLineToMap(sub, line);
-		return false;
+		return true;
 	}
 
-	private IFile getFileFromSig(IPath fullPath, String sig)//":"
-	{
-		String name = sig.substring(0,sig.indexOf(':'));
+	private IFile getFileFromSig(IPath fullPath, String sig, LinkedList<String> trace){//":"
+		if(sig.contains("java/util/")){
+			Object[] infos = trace.toArray();
+			for (int i = infos.length -1; i >= 0; i--) {
+				String info = (String) infos[i];
+				if(!info.contains("java/util/")){
+					String need = (String) infos[i+1];
+					int idx_start = need.lastIndexOf(" ") + 1;
+					int idx_end = need.lastIndexOf(".");
+					sig = need.substring(idx_start, idx_end);
+					break;
+				}
+			}
+		}
+		String name = sig;
+		if(sig.contains(":"))
+			name = sig.substring(0,sig.indexOf(':'));
 		if(name.contains("$"))
 			name=name.substring(0, name.indexOf("$"));
 		name=name+".java";
@@ -899,16 +942,114 @@ public class TIDECGModel extends WalaProjectCGModel {
 //			System.out.println("path "+path+"\n name: "+name);
 
 		IPath path = fullPath.append("src/").append(name);
-
+		//L/ProducerConsumer/src/pc/Consumer.java
 		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
 		return file;
+	}
+
+
+	private IMarker createMarkerRace(IFile file, int line, String msg) throws CoreException {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+		attributes.put(IMarker.LINE_NUMBER, line);
+		attributes.put(IMarker.MESSAGE, msg);
+		IMarker newMarker = file.createMarker(BugMarker.TYPE_SCARIEST);
+		newMarker.setAttributes(attributes);
+		IMarker[] problems = file.findMarkers(BugMarker.TYPE_SCARIEST,true,IResource.DEPTH_INFINITE);
+		return newMarker;
+	}
+
+	private IMarker createMarkerDL(IFile file, int line, String msg) throws CoreException{
+		//for deadlock markers
+		Map<String, Object> attributes = new HashMap<String, Object>();
+		attributes.put(IMarker.LINE_NUMBER, line);
+		attributes.put(IMarker.MESSAGE,msg);
+		IMarker newMarker = file.createMarker(BugMarker.TYPE_SCARY);
+		newMarker.setAttributes(attributes);
+		return newMarker;
+	}
+
+	private IMarker getFileFromSigRace(IPath fullPath, String sig, LinkedList<String> trace, int line, String msg) throws CoreException{//":"
+		if(sig.contains("java/util/")){
+			Object[] infos = trace.toArray();
+			for (int i = infos.length -1; i >= 0; i--) {
+				String info = (String) infos[i];
+				if(!info.contains("java/util/")){
+					String need = (String) infos[i+1];
+					int idx_start = need.lastIndexOf(" ") + 1;
+					int idx_end = need.lastIndexOf(".");
+					sig = need.substring(idx_start, idx_end);
+					int l_start = need.lastIndexOf("line ") + 5;
+					int l_end = need.indexOf(" ", l_start);
+					String l_str = need.substring(l_start, l_end);
+					line = Integer.parseInt(l_str);
+					break;
+				}
+			}
+		}
+		String name = sig;
+		if(sig.contains(":"))
+			name = sig.substring(0,sig.indexOf(':'));
+		if(name.contains("$"))
+			name=name.substring(0, name.indexOf("$"));
+		name=name+".java";
+
+//		IPath path = file.getFullPath();//file.getProjectRelativePath();
+//			System.out.println("path "+path+"\n name: "+name);
+
+		IPath path = fullPath.append("src/").append(name);
+		//L/ProducerConsumer/src/pc/Consumer.java
+		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+
+		Map<String, Object> attributes = new HashMap<String, Object>();
+		attributes.put(IMarker.LINE_NUMBER, line);
+		attributes.put(IMarker.MESSAGE, msg);
+		IMarker newMarker = file.createMarker(BugMarker.TYPE_SCARIEST);
+		newMarker.setAttributes(attributes);
+		IMarker[] problems = file.findMarkers(BugMarker.TYPE_SCARIEST,true,IResource.DEPTH_INFINITE);
+		return newMarker;
+	}
+
+	private IMarker getFileFromSigDL(IPath fullPath, String sig, LinkedList<String> trace, int line, String msg) throws CoreException{//":"
+		if(sig.contains("java/util/")){
+			Object[] infos = trace.toArray();
+			for (int i = infos.length -1; i >= 0; i--) {
+				String info = (String) infos[i];
+				if(!info.contains("java/util/")){
+					String need = (String) infos[i+1];
+					int idx_start = need.lastIndexOf(" ") + 1;
+					int idx_end = need.lastIndexOf(".");
+					sig = need.substring(idx_start, idx_end);
+					break;
+				}
+			}
+		}
+		String name = sig;
+		if(sig.contains(":"))
+			name = sig.substring(0,sig.indexOf(':'));
+		if(name.contains("$"))
+			name=name.substring(0, name.indexOf("$"));
+		name=name+".java";
+
+//		IPath path = file.getFullPath();//file.getProjectRelativePath();
+//			System.out.println("path "+path+"\n name: "+name);
+
+		IPath path = fullPath.append("src/").append(name);
+		//L/ProducerConsumer/src/pc/Consumer.java
+		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+
+		//for deadlock markers
+		Map<String, Object> attributes = new HashMap<String, Object>();
+		attributes.put(IMarker.LINE_NUMBER, line);
+		attributes.put(IMarker.MESSAGE,msg);
+		IMarker newMarker = file.createMarker(BugMarker.TYPE_SCARY);
+		newMarker.setAttributes(attributes);
+		return newMarker;
 	}
 
 	private Iterable<Entrypoint> entryPoints;
 	@Override
 	protected Iterable<Entrypoint> getEntrypoints(AnalysisScope analysisScope, IClassHierarchy classHierarchy) {
-		if(entryPoints==null)
-		{
+		if(entryPoints==null){
 			entryPoints = findEntryPoints(classHierarchy,entrySignature);
 		}
 		return entryPoints;

@@ -51,7 +51,7 @@ public class RWRelationNode extends TreeNode {
 
 	@Override
 	public ImageDescriptor getImage() {
-		return Activator.getImageDescriptor("buggy-tiny-green.png");
+		return Activator.getImageDescriptor("parallel.png");
 	}
 
 	@Override

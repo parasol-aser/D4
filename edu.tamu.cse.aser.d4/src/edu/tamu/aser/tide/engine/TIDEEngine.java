@@ -19,6 +19,7 @@ import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl.ConcreteJavaMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IBytecodeMethod;
+import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.IMethod.SourcePosition;
 import com.ibm.wala.fixedpoint.impl.AbstractFixedPointSolver;
@@ -49,6 +50,7 @@ import com.ibm.wala.ssa.SSANewInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
@@ -131,33 +133,49 @@ public class TIDEEngine {
 	protected PropagationGraph propagationGraph;
 	private int maxGraphNodeID;
 
+
 	public long timeForDetectingRaces = 0;
 	public long timeForDetectingDL = 0;
 
+//	private HashMap<CGNode, INode> inst_start_map = new HashMap<>();
 	//globalized
 	public HashSet<String> sharedFields = new HashSet<String>();
 
+//	public HashMap<Integer, LinkedList<SyncNode>> threadSyncNodes = new HashMap<Integer, LinkedList<SyncNode>>();//?
+//	public LockSetEngine lockEngine = new LockSetEngine();
 	public HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 	public HashSet<ITIDEBug> removedbugs = new HashSet<ITIDEBug>();
 	public HashSet<ITIDEBug> addedbugs = new HashSet<ITIDEBug>();
 
+
 	//added
 	public ActorRef bughub;
 	public SHBGraph shb;
+	//	public HashMap<CGNode, HashSet<ArrayList<Integer>>> method_idx_map = new HashMap<>();
 	//	//to track changes from pta
 	public HashMap<PointerKey, HashSet<MemNode>> pointer_rwmap = new HashMap<>();
 	public HashMap<PointerKey, HashSet<SyncNode>> pointer_lmap = new HashMap<>();
 
+	//	public HashMap<CGNode, ArrayList<Integer>> method_gid_map = new HashMap<>();
+	//idx [start,end][start,end]...
+
+//	public HashMap<Integer,Set<String>> tid2Receivers = new HashMap<>();//?
+//	public Set<String> curReceivers;//?
 	public int curTID;
 	public HashMap<CGNode, Integer> astCGNode_ntid_map = new HashMap<>();//HashMap<CGNode, hashset<Integer>>??
+
 	public boolean useMayAlias = true;//false => lockObject.size == 1
-	private static boolean PLUGIN = false;
 
-	public static void setPlugin(boolean b){
-		PLUGIN = b;
-	}
+	//hard write
+	private static Set<String> consideredJDKCollectionClass = HashSetFactory.make();
+	//currently considered jdk class
+	private static String ARRAYLIST = "<Primordial,Ljava/util/ArrayList>";
+	private static String LINKEDLIST = "<Primordial,Ljava/util/LinkedList>";
+	private static String HASHSET = "<Primordial,Ljava/util/HashSet>";
+	private static String HASHMAP = "<Primordial,Ljava/util/HashMap>";
+	private static String ARRAYS = "<Primordial,Ljava/util/Arrays>";
+	private static String STRING = "<Primordial,Ljava/util/String>";
 
-	String special = "";
 
 	public TIDEEngine(String entrySignature,CallGraph callGraph, PropagationGraph flowgraph, PointerAnalysis<InstanceKey> pointerAnalysis, ActorRef bughub){
 		this.callGraph = callGraph;//?update
@@ -165,28 +183,108 @@ public class TIDEEngine {
 		this.maxGraphNodeID = callGraph.getNumberOfNodes() + 1000;//? update
 		this.propagationGraph = flowgraph;//?update
 		this.bughub = bughub;
+
+		consideredJDKCollectionClass.add(ARRAYLIST);
+		consideredJDKCollectionClass.add(LINKEDLIST);
+		consideredJDKCollectionClass.add(HASHSET);
+		consideredJDKCollectionClass.add(HASHMAP);
+		consideredJDKCollectionClass.add(ARRAYS);
+		consideredJDKCollectionClass.add(STRING);
+
 		Collection<CGNode> cgnodes = callGraph.getEntrypointNodes();
 		for(CGNode n: cgnodes){
 			String sig = n.getMethod().getSignature();
 			//find the main node
 			if(sig.contains(entrySignature)){
 				mainEntryNodes.add(n);
-				if(sig.contains("net.sourceforge.pmd.cpd")){
-					special = "pmd";
-				}else if(sig.contains("org.codehaus.janino.samples.ExpressionDemo")){
-					special = "tomcat";
-				}else if(sig.contains("org.apache.xerces.impl.xpath.regex.REUtil")){
-					special = "trade";
-				}else if(sig.contains("org.apache.xalan.processor.XSLProcessorVersion")){
-					special = "xalan";
-				}
 			}else{
 				TypeName name  = n.getMethod().getDeclaringClass().getName();
 				threadSigNodeMap.put(name, n);
 			}
 		}
+
 	}
 
+
+
+	//	private boolean checkReachabilityof(DLLockPair dllp1, DLLockPair dllp2) {
+	//		boolean isDeadlock = false;
+	//		int tid1 = dllp1.lock1.getTID();
+	//		int tid2 = dllp2.lock1.getTID();
+	//		//find out parent
+	//		StartNode startNode1 = mapOfStartNode.get(tid1);
+	//		MutableIntSet kids1 = startNode1.getTID_Child();
+	//		StartNode startNode2 = mapOfStartNode.get(tid2);
+	//		MutableIntSet kids2 = startNode2.getTID_Child();
+	//		if(kids1.contains(tid2)){
+	//			//tid1 is parent of tid2
+	//			if(trace.indexOf(startNode2) < trace.indexOf(dllp1.lock1)){
+	//				isDeadlock = true;
+	//			}
+	//		}else if(kids2.contains(tid1)) {
+	//			//tid2 is parent of tid1
+	//			if(trace.indexOf(startNode1) < trace.indexOf(dllp2.lock1)){
+	//				isDeadlock = true;
+	//			}
+	//		}else{
+	//			StartNode sNode = sameParent(tid1, tid2);
+	//			if(sNode != null){
+	//				//same parent thread
+	//				isDeadlock = true;
+	//			}else{
+	//				//other conditions
+	//				int earlier;
+	//				int later;
+	//				if(trace.indexOf(startNode1) < trace.indexOf(startNode2)){
+	//					//wtid starts early
+	//					earlier = tid1;
+	//					later = tid2;
+	//					//					System.out.println("earlier: "+earlier + "  later: "+later);
+	//					//check relation
+	//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
+	//					if(relatives == null){
+	//						isDeadlock = false;
+	//					}else {
+	//						StartNode parenStart = relatives.get(1);
+	//						if(trace.indexOf(dllp1.lock1) > trace.indexOf(parenStart)){
+	//							isDeadlock = true;
+	//						}
+	//					}
+	//				}else{
+	//					earlier = tid2;
+	//					later = tid1;
+	//					//					System.out.println("earlier: "+earlier + "  later: "+later);
+	//					//check relation
+	//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
+	//					if(relatives == null){
+	//						isDeadlock = false;
+	//					}else{
+	//						StartNode parenStart = relatives.get(1);
+	//						if(trace.indexOf(dllp2.lock1) > trace.indexOf(parenStart)){
+	//							isDeadlock = true;
+	//						}
+	//					}
+	//				}
+	//			}
+	//		}
+	//		return isDeadlock;
+	//	}
+
+
+
+//	private StartNode sameParent(int tid1, int tid2) {
+//		Iterator<Integer> iter_thread = mapOfStartNode.keySet().iterator();
+//		while(iter_thread.hasNext()){
+//			int t = iter_thread.next();
+//			if(t != tid1 && t != tid2){
+//				MutableIntSet kids = mapOfStartNode.get(t).getTID_Child();
+//				if(kids.contains(tid1) && kids.contains(tid2)){
+//					return mapOfStartNode.get(t);
+//				}
+//			}
+//		}
+//		return null;
+//	}
 
 	private ArrayList<StartNode> shareGrandParent(int earlier, int later) {
 		int parentoflater = mapOfStartNode.get(later).getParentTID();
@@ -240,8 +338,8 @@ public class TIDEEngine {
 			astCGNode_ntid_map.clear();
 			shb = new SHBGraph();
 
-//			if(mainEntryNodes.size() >1 )
-//				System.err.println("MORE THAN 1 MAIN ENTRY!");
+			if(mainEntryNodes.size() >1 )
+				System.err.println("MORE THAN 1 MAIN ENTRY!");
 
 			//main
 			threadNodes.add(main);
@@ -284,22 +382,15 @@ public class TIDEEngine {
 			shb.mainCGNode(main);
 			shb.addEdge(mainstart, main);
 
-			if(special.equals("pmd") || special.equals("tomcat") || special.equals("trade") || special.equals("xalan")){
-				for (TypeName name : threadSigNodeMap.keySet()) {
-					CGNode kidnode = threadSigNodeMap.get(name);
-					int threadID = kidnode.getGraphNodeId();
-					StartNode clientstart = new StartNode(mainTID, threadID, main, kidnode, sourceLineNum, file);
-					mapOfStartNode.put(threadID, clientstart);
-					mapOfStartNode.get(mainTID).addChild(threadID);
-					threadNodes.add(kidnode);
-				}
-			}
-
 			while(!threadNodes.isEmpty()){
 				CGNode n = threadNodes.removeFirst();
 				curTID = n.getGraphNodeId();
+//				curReceivers=tid2Receivers.get(curTID);
 
 				if(n instanceof AstCGNode2){
+//					CGNode real = newRunTargets.get(n);
+//					if(real == null)
+//						continue;
 					CGNode real = ((AstCGNode2)n).getCGNode();
 					if(thirdProcessedNodes.contains(real))//already processed once
 						continue;
@@ -333,22 +424,24 @@ public class TIDEEngine {
 
 			//extended happens-before relation
 			organizeThreadsRelations();// grand kid threads
-//			if(mapOfStartNode.size() == 1){
-//				System.out.println("ONLY HAS MAIN THREAD, NO NEED TO PROCEED:   " + main.getMethod().toString());
-//				mapOfStartNode.clear();
-//				mapOfJoinNode.clear();
+			if(mapOfStartNode.size() == 1){
+				System.out.println("ONLY HAS MAIN THREAD, NO NEED TO PROCEED:   " + main.getMethod().toString());
+				mapOfStartNode.clear();
+				mapOfJoinNode.clear();
 //				continue;
-//			}else{
-//				System.out.println("mapOfStartNode =========================");
-//				for (Integer tid : mapOfStartNode.keySet()) {
-//					System.out.println(mapOfStartNode.get(tid).toString());
-//				}
-//				System.out.println("mapOfJoinNode =========================");
-//				for (Integer tid : mapOfJoinNode.keySet()) {
-//					System.out.println(mapOfJoinNode.get(tid).toString());
-//				}
-//				System.out.println();
-//			}
+			}else{
+				System.out.println("mapOfStartNode =========================");
+				for (Integer tid : mapOfStartNode.keySet()) {
+					System.out.println(mapOfStartNode.get(tid).toString());
+				}
+				System.out.println("mapOfJoinNode =========================");
+				for (Integer tid : mapOfJoinNode.keySet()) {
+					System.out.println(mapOfJoinNode.get(tid).toString());
+				}
+				System.out.println();
+//				System.out.println("shb ====================================");
+//				shb.print();
+			}
 
 			//race detection
 //			System.err.println("Start to detect race: find shared variables");
@@ -396,6 +489,8 @@ public class TIDEEngine {
 			bughub.tell(new RemoveLocalVar(), bughub);
 			awaitBugHubComplete();
 
+			System.err.println("Start to detect race: real detection");
+
 			//3. performance race detection with Fork-Join
 			bughub.tell(new DistributeDatarace(), bughub);
 			awaitBugHubComplete();
@@ -405,14 +500,17 @@ public class TIDEEngine {
 
 
 			//detect deadlock
+			System.err.println("Start to detect deadlock: real detection");
+
+			//detect deadlocks
 			bughub.tell(new DistributeDeadlock(), bughub);
 			awaitBugHubComplete();
 
 			timeForDetectingDL = timeForDetectingDL + (System.currentTimeMillis() -start);
 		}
 
-//		System.err.println("Initial Race Detection Time: " + timeForDetectingRaces);
-//		System.err.println("Initial Deadlock Detection Time: " + timeForDetectingDL);
+		System.err.println("Total Race Detection Time: " + timeForDetectingRaces);
+		System.err.println("Total Deadlock Detection Time: " + timeForDetectingDL);
 //		ps.print("Total Race Detection Time: " + timeForDetectingRaces);
 //		ps.println();
 //		ps.print("Total Deadlock Detection Time: " + timeForDetectingDL);
@@ -470,6 +568,8 @@ public class TIDEEngine {
 
 
 	private void singleOrganizeRWMaps(Trace trace) {
+		if(trace == null)
+			return;
 		HashMap<String, ArrayList<ReadNode>> rsigMapping = trace.getRsigMapping();
 		HashMap<String, ArrayList<WriteNode>> wsigMapping = trace.getWsigMapping();
 		ArrayList<Integer> tids = trace.getTraceTids();
@@ -812,6 +912,14 @@ public class TIDEEngine {
 
 		SSAInstruction[] insts = n.getIR().getInstructions();
 
+//		if(n.getMethod().getName().toString().contains("calculatePhotons")){
+//			System.out.println();
+//			for (SSAInstruction ssaInstruction : insts) {
+//				if(ssaInstruction != null)
+//					System.out.println(ssaInstruction.toString());
+//			}
+//		}
+
 		for(int i=0; i<insts.length; i++){
 			SSAInstruction inst = insts[i];
 
@@ -954,7 +1062,105 @@ public class TIDEEngine {
 						if(imethod!=null){
 							String sig = imethod.getSignature();
 							//System.out.println("Invoke Inst: "+sig);
-							if(sig.equals("java.lang.Thread.start()V")){
+							if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
+								//Future runnable
+								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+								for(InstanceKey ins: instances){
+									TypeName name = ins.getConcreteType().getName();
+									CGNode node = threadSigNodeMap.get(name);
+									if(node==null){
+										//TODO: find out which runnable object -- need data flow analysis
+										int param = ((SSAAbstractInvokeInstruction)inst).getUse(1);
+										node = handleRunnable(ins, param, n);
+										if(node==null){
+											System.err.println("ERROR: starting new thread: "+ name);
+											continue;
+										}
+										//threadreceiver?
+									}else{//get threadReceivers
+										//should be the hashcode of the instancekey
+//										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+									}
+									System.out.println("Run : " + node.toString());
+
+									boolean scheduled_this_thread = false;
+									//duplicate graph node id
+									if(stidpool.contains(node.getGraphNodeId())){
+										if(threadNodes.contains(node) && scheduledAstNodes.contains(node)){
+											//already scheduled to process twice, skip here.
+											scheduled_this_thread = true;
+										}else{
+											scheduledAstNodes.add(node);
+											AstCGNode2 threadNode = new AstCGNode2(imethod, node.getContext());
+											int threadID = ++maxGraphNodeID;
+											threadNode.setGraphNodeId(threadID);
+											threadNode.setCGNode(node);
+											threadNode.setIR(node.getIR());
+											dupStartJoinTidMap.put(node.getGraphNodeId(), threadNode);
+											node = threadNode;
+										}
+									}
+
+									if(!scheduled_this_thread){
+										threadNodes.add(node);
+										int tid_child = node.getGraphNodeId();
+										stidpool.add(tid_child);
+										//add node to trace
+										StartNode startNode = new StartNode(curTID, tid_child, n, node, sourceLineNum, file);//n
+										curTrace.addS(startNode, inst, tid_child);
+										shb.addEdge(startNode, node);
+										//									inst_start_map.put(node, startNode);
+										mapOfStartNode.put(tid_child, startNode);
+//										mapOfStartNode.get(curTID).addChild(tid_child);
+										StartNode pstartnode = mapOfStartNode.get(curTID);
+										if(pstartnode == null){//?? should not be null, curtid is removed from map
+											if(mainEntryNodes.contains(n)){
+												pstartnode = new StartNode(-1, curTID, n, node, sourceLineNum, file);
+												mapOfStartNode.put(curTID, pstartnode);
+											}else{//thread/runnable
+												pstartnode = new StartNode(curTID, tid_child, n, node,sourceLineNum, file);
+												mapOfStartNode.put(tid_child, pstartnode);
+											}
+										}
+										pstartnode.addChild(tid_child);
+
+										//put to tid -> curreceivers map
+//										tid2Receivers.put(node.getGraphNodeId(), threadReceivers);
+										//TODO: check if it is in a simple loop
+										boolean isInLoop = isInLoop(n,inst);
+
+										if(isInLoop){
+											AstCGNode2 node2 = new AstCGNode2(node.getMethod(),node.getContext());
+											threadNodes.add(node2);
+											//										newRunTargets.put(node2, node);
+											int newID = ++maxGraphNodeID;
+											astCGNode_ntid_map.put(node, newID);
+											StartNode duplicate = new StartNode(curTID,newID, n, node2,sourceLineNum, file);
+											curTrace.add2S(duplicate, inst, newID);//thread id +1
+											shb.addEdge(duplicate, node2);
+											mapOfStartNode.put(newID, duplicate);
+											mapOfStartNode.get(curTID).addChild(newID);
+
+											node2.setGraphNodeId(newID);
+											node2.setIR(node.getIR());
+											node2.setCGNode(node);
+											n_loopn_map.put(node, node2);
+
+											//need to change thread receiver id as well
+//											Set<String> threadReceivers2 = new HashSet();
+//											for(String id: threadReceivers){
+//												threadReceivers2.add(id+"X");//"X" as the marker
+//											}
+											//put to tid -> curreceivers map
+//											tid2Receivers.put(newID, threadReceivers2);
+										}
+									}
+									//find loops in this method!!
+									hasSyncBetween = true;
+								}
+							}else if(sig.equals("java.lang.Thread.start()V")
+									|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
 								//Executors and ThreadPoolExecutor
 								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
@@ -971,7 +1177,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-//											System.err.println("ERROR: starting new thread: "+ name);
+											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -980,7 +1186,7 @@ public class TIDEEngine {
 //										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
 									}
 
-//									System.out.println("Run : " + node.toString());
+									System.out.println("Run : " + node.toString());
 
 									boolean scheduled_this_thread = false;
 									//duplicate graph node id
@@ -1058,24 +1264,31 @@ public class TIDEEngine {
 									hasSyncBetween = true;
 								}
 							}
-							else if(sig.equals("java.lang.Thread.join()V")){
-								//Executors and ThreadPoolExecutor
+							else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
+								//Future join
 								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
-								for(InstanceKey ins: instances) {
+								for(InstanceKey ins: instances){
 									TypeName name = ins.getConcreteType().getName();
 									CGNode node = threadSigNodeMap.get(name);
-									//threadNodes.add(node);
-//									HashSet<String> threadReceivers = new HashSet();
-									if(node==null){//could be a runnable class
+									if(node==null){
+										//TODO: find out which runnable object -- need data flow analysis
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
-										node = handleRunnable(ins,param, n);
-										if(node==null){
-//											System.err.println("ERROR: joining parent thread: "+ name);
-											continue;
+										SSAInstruction creation = n.getDU().getDef(param);
+										if(creation instanceof SSAAbstractInvokeInstruction){
+											param = ((SSAAbstractInvokeInstruction)creation).getUse(1);
+											node = handleRunnable(ins, param, n);
+											if(node==null){
+												System.err.println("ERROR: joining parent thread: "+ name);
+												continue;
+											}
 										}
+										//threadreceiver?
+									}else{//get threadReceivers
+										//should be the hashcode of the instancekey
+//										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
 									}
-//									System.out.println("Join : " + node.toString());
+									System.out.println("Join : " + node.toString());
 
 									//add node to trace
 									int tid_child = node.getGraphNodeId();
@@ -1112,6 +1325,83 @@ public class TIDEEngine {
 									}
 								}
 								hasSyncBetween = true;
+							}
+							else if(sig.equals("java.lang.Thread.join()V")
+									|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
+								//Executors and ThreadPoolExecutor
+								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+								for(InstanceKey ins: instances) {
+									TypeName name = ins.getConcreteType().getName();
+									CGNode node = threadSigNodeMap.get(name);
+									//threadNodes.add(node);
+									boolean isThreadPool = false;
+//									HashSet<String> threadReceivers = new HashSet();
+									if(node==null){//could be a runnable class
+										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
+										//Executors and ThreadPoolExecutor
+										if(sig.contains("java.util.concurrent") &&sig.contains("shutdown()V")){
+											Iterator<SSAInstruction> uses = n.getDU().getUses(param);
+											while(uses.hasNext()){
+												SSAInstruction use = uses.next();//java.util.concurrent.Executor.execute
+												if(use instanceof SSAAbstractInvokeInstruction){
+													SSAAbstractInvokeInstruction invoke = (SSAAbstractInvokeInstruction) use;
+													CallSiteReference ucsr = ((SSAAbstractInvokeInstruction)invoke).getCallSite();
+													MethodReference umr = ucsr.getDeclaredTarget();
+													com.ibm.wala.classLoader.IMethod uimethod = callGraph.getClassHierarchy().resolveMethod(umr);
+													String usig = uimethod.getSignature();
+													if(usig.contains("java.util.concurrent") &&usig.contains("execute")){
+														param = ((SSAAbstractInvokeInstruction)invoke).getUse(1);
+														isThreadPool = true;
+														break;
+													}
+												}
+											}
+										}
+										node = handleRunnable(ins,param, n);
+										if(node==null){
+											System.err.println("ERROR: joining parent thread: "+ name);
+											continue;
+										}
+									}
+									System.out.println("Join : " + node.toString());
+
+									//add node to trace
+									int tid_child = node.getGraphNodeId();
+									if(mapOfJoinNode.containsKey(tid_child)){
+										CGNode threadNode = dupStartJoinTidMap.get(tid_child);
+										tid_child = threadNode.getGraphNodeId();
+										node = threadNode;
+									}
+
+									JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
+									curTrace.addJ(jNode, inst);
+									shb.addBackEdge(node, jNode);
+									mapOfJoinNode.put(tid_child, jNode);
+
+									boolean isInLoop = isInLoop(n,inst);
+									if(isInLoop || isThreadPool){
+										AstCGNode2 node2 = n_loopn_map.get(node);//should find created node2 during start
+										//threadNodes.add(node2);
+										if(node2 == null){
+											node2 = dupStartJoinTidMap.get(tid_child);
+											if(node2 == null){
+												System.err.println("Null node obtain from n_loopn_map. ");
+												continue;
+											}
+										}
+										int newID = node2.getGraphNodeId();
+										JoinNode jNode2 = new JoinNode(curTID, newID, n, node2, sourceLineNum, file);
+										curTrace.addJ(jNode2, inst);//thread id +1
+										shb.addBackEdge(node2, jNode2);
+										mapOfJoinNode.put(newID, jNode2);
+//										node2.setGraphNodeId(newID);
+//										node2.setIR(node.getIR());
+//										node2.setCGNode(node);
+
+									}
+								}
+								hasSyncBetween = true;
 							}else if(sig.equals("java.lang.Thread.<init>(Ljava/lang/Runnable;)V")){
 								//for new Thread(new Runnable)
 								int use0 = inst.getUse(0);
@@ -1129,7 +1419,8 @@ public class TIDEEngine {
 									set = callGraph.getPossibleTargets(n, csr);
 								}
 								for(CGNode node: set){
-									if(AnalysisUtils.isApplicationClass(node.getMethod().getDeclaringClass())){
+									IClass declaringclass = node.getMethod().getDeclaringClass();
+									if(include(declaringclass)){
 										//static method call
 										if(node.getMethod().isStatic()){
 											//omit the pointer-lock map
@@ -1493,6 +1784,17 @@ public class TIDEEngine {
 	}
 
 
+	private boolean include(IClass declaringclass) {
+		if(AnalysisUtils.isApplicationClass(declaringclass)){
+			return true;
+		}else if(AnalysisUtils.isJDKClass(declaringclass)){
+			String dcName = declaringclass.toString();
+			if(consideredJDKCollectionClass.contains(dcName)){
+				return true;
+			}
+		}
+		return false;
+	}
 
 
 
@@ -1557,7 +1859,105 @@ public class TIDEEngine {
 						if(imethod!=null){
 							String sig = imethod.getSignature();
 							//System.out.println("Invoke Inst: "+sig);
-							if(sig.equals("java.lang.Thread.start()V")){
+							if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
+								//Future runnable
+								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+								for(InstanceKey ins: instances){
+									TypeName name = ins.getConcreteType().getName();
+									CGNode node = threadSigNodeMap.get(name);
+									if(node==null){
+										//TODO: find out which runnable object -- need data flow analysis
+										int param = ((SSAAbstractInvokeInstruction)inst).getUse(1);
+										node = handleRunnable(ins, param, n);
+										if(node==null){
+											System.err.println("ERROR: starting new thread: "+ name);
+											continue;
+										}
+										//threadreceiver?
+									}else{//get threadReceivers
+										//should be the hashcode of the instancekey
+//										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+									}
+									System.out.println("Run : " + node.toString());
+
+									boolean scheduled_this_thread = false;
+									//duplicate graph node id
+									if(stidpool.contains(node.getGraphNodeId())){
+										if(threadNodes.contains(node) && scheduledAstNodes.contains(node)){
+											//already scheduled to process twice, skip here.
+											scheduled_this_thread = true;
+										}else{
+											scheduledAstNodes.add(node);
+											AstCGNode2 threadNode = new AstCGNode2(imethod, node.getContext());
+											int threadID = ++maxGraphNodeID;
+											threadNode.setGraphNodeId(threadID);
+											threadNode.setCGNode(node);
+											threadNode.setIR(node.getIR());
+											dupStartJoinTidMap.put(node.getGraphNodeId(), threadNode);
+											node = threadNode;
+										}
+									}
+
+									if(!scheduled_this_thread){
+										threadNodes.add(node);
+										int tid_child = node.getGraphNodeId();
+										stidpool.add(tid_child);
+										//add node to trace
+										StartNode startNode = new StartNode(curTID, tid_child, n, node, sourceLineNum, file);//n
+										curTrace.addS(startNode, inst, tid_child);
+										shb.addEdge(startNode, node);
+										//									inst_start_map.put(node, startNode);
+										mapOfStartNode.put(tid_child, startNode);
+//										mapOfStartNode.get(curTID).addChild(tid_child);
+										StartNode pstartnode = mapOfStartNode.get(curTID);
+										if(pstartnode == null){//?? should not be null, curtid is removed from map
+											if(mainEntryNodes.contains(n)){
+												pstartnode = new StartNode(-1, curTID, n, node, sourceLineNum, file);
+												mapOfStartNode.put(curTID, pstartnode);
+											}else{//thread/runnable
+												pstartnode = new StartNode(curTID, tid_child, n, node,sourceLineNum, file);
+												mapOfStartNode.put(tid_child, pstartnode);
+											}
+										}
+										pstartnode.addChild(tid_child);
+
+										//put to tid -> curreceivers map
+//										tid2Receivers.put(node.getGraphNodeId(), threadReceivers);
+										//TODO: check if it is in a simple loop
+										boolean isInLoop = isInLoop(n,inst);
+
+										if(isInLoop){
+											AstCGNode2 node2 = new AstCGNode2(node.getMethod(),node.getContext());
+											threadNodes.add(node2);
+											//										newRunTargets.put(node2, node);
+											int newID = ++maxGraphNodeID;
+											astCGNode_ntid_map.put(node, newID);
+											StartNode duplicate = new StartNode(curTID,newID, n, node2,sourceLineNum, file);
+											curTrace.add2S(duplicate, inst, newID);//thread id +1
+											shb.addEdge(duplicate, node2);
+											mapOfStartNode.put(newID, duplicate);
+											mapOfStartNode.get(curTID).addChild(newID);
+
+											node2.setGraphNodeId(newID);
+											node2.setIR(node.getIR());
+											node2.setCGNode(node);
+											n_loopn_map.put(node, node2);
+
+											//need to change thread receiver id as well
+//											Set<String> threadReceivers2 = new HashSet();
+//											for(String id: threadReceivers){
+//												threadReceivers2.add(id+"X");//"X" as the marker
+//											}
+											//put to tid -> curreceivers map
+//											tid2Receivers.put(newID, threadReceivers2);
+										}
+									}
+									//find loops in this method!!
+									hasSyncBetween = true;
+								}
+							}else if(sig.equals("java.lang.Thread.start()V")
+									|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
 								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 								for(InstanceKey ins: instances){
@@ -1573,7 +1973,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-//											System.err.println("ERROR: starting new thread: "+ name);
+											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -1659,19 +2059,101 @@ public class TIDEEngine {
 									hasSyncBetween = true;
 								}
 							}
-							else if(sig.equals("java.lang.Thread.join()V")){
+							else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
+								//Future join
 								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 								for(InstanceKey ins: instances){
 									TypeName name = ins.getConcreteType().getName();
 									CGNode node = threadSigNodeMap.get(name);
+									if(node==null){
+										//TODO: find out which runnable object -- need data flow analysis
+										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
+										SSAInstruction creation = n.getDU().getDef(param);
+										if(creation instanceof SSAAbstractInvokeInstruction){
+											param = ((SSAAbstractInvokeInstruction)creation).getUse(1);
+											node = handleRunnable(ins, param, n);
+											if(node==null){
+												System.err.println("ERROR: joining parent thread: "+ name);
+												continue;
+											}
+										}
+										//threadreceiver?
+									}else{//get threadReceivers
+										//should be the hashcode of the instancekey
+//										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+									}
+									System.out.println("Join : " + node.toString());
+
+									//add node to trace
+									int tid_child = node.getGraphNodeId();
+									if(mapOfJoinNode.containsKey(tid_child)){
+										CGNode threadNode = dupStartJoinTidMap.get(tid_child);
+										tid_child = threadNode.getGraphNodeId();
+										node = threadNode;
+									}
+
+									JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
+									curTrace.addJ(jNode, inst);
+									shb.addBackEdge(node, jNode);
+									mapOfJoinNode.put(tid_child, jNode);
+
+									boolean isInLoop = isInLoop(n,inst);
+									if(isInLoop){
+										AstCGNode2 node2 = n_loopn_map.get(node);//should find created node2 during start
+										//threadNodes.add(node2);
+										if(node2 == null){
+											node2 = dupStartJoinTidMap.get(tid_child);
+											if(node2 == null){
+												System.err.println("Null node obtain from n_loopn_map. ");
+												continue;
+											}
+										}
+										int newID = node2.getGraphNodeId();
+										JoinNode jNode2 = new JoinNode(curTID, newID, n, node2, sourceLineNum, file);
+										curTrace.addJ(jNode2, inst);//thread id +1
+										shb.addBackEdge(node2, jNode2);
+										mapOfJoinNode.put(newID, jNode2);
+//										node2.setGraphNodeId(newID);
+//										node2.setIR(node.getIR());
+//										node2.setCGNode(node);
+									}
+								}
+								hasSyncBetween = true;
+							}
+							else if(sig.equals("java.lang.Thread.join()V")
+									|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
+								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+								for(InstanceKey ins: instances){
+									TypeName name = ins.getConcreteType().getName();
+									CGNode node = threadSigNodeMap.get(name);
+  									boolean isThreadPool = false;
 									//threadNodes.add(node);
 //									HashSet<String> threadReceivers = new HashSet();
 									if(node==null){//could be a runnable class
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
+										if(sig.contains("java.util.concurrent") &&sig.contains("shutdown()V")){
+  											Iterator<SSAInstruction> uses = n.getDU().getUses(param);
+  											while(uses.hasNext()){
+  												SSAInstruction use = uses.next();//java.util.concurrent.Executor.execute
+  												if(use instanceof SSAAbstractInvokeInstruction){
+  													SSAAbstractInvokeInstruction invoke = (SSAAbstractInvokeInstruction) use;
+  													CallSiteReference ucsr = ((SSAAbstractInvokeInstruction)invoke).getCallSite();
+  													MethodReference umr = ucsr.getDeclaredTarget();
+  													com.ibm.wala.classLoader.IMethod uimethod = callGraph.getClassHierarchy().resolveMethod(umr);
+  													String usig = uimethod.getSignature();
+  													if(usig.contains("java.util.concurrent") &&usig.contains("execute")){
+  														param = ((SSAAbstractInvokeInstruction)invoke).getUse(1);
+  														isThreadPool = true;
+  														break;
+  													}
+  												}
+  											}
+  										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-//											System.err.println("ERROR: joining parent thread: "+ name);
+											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -1690,7 +2172,7 @@ public class TIDEEngine {
 									mapOfJoinNode.put(tid_child, jNode);
 
 									boolean isInLoop = isInLoop(n,inst);
-									if(isInLoop){
+									if(isInLoop || isThreadPool){
 										AstCGNode2 node2 = n_loopn_map.get(node);
 										if(node2 == null){
 											node2 = dupStartJoinTidMap.get(tid_child);
@@ -2184,6 +2666,8 @@ public class TIDEEngine {
 					}
 				}
 				returnValue = classifyStmtTypes(creation, who);
+			}else{
+				System.out.println();
 			}
 		}
 		return returnValue;
@@ -2211,8 +2695,15 @@ public class TIDEEngine {
 			int def0 = cast.getVal();
 			SSAInstruction creation0 = who.getDU().getDef(def0);
 			return classifyStmtTypes(creation0, who);
-		}else{
-//			System.out.println(creation);
+		}
+//		else if(creation instanceof SSAPhiInstruction){//infinit loop
+//			SSAPhiInstruction phi = (SSAPhiInstruction) creation;
+//			int def0 = phi.getUse(0);
+//			SSAInstruction creation0 = who.getDU().getDef(def0);
+//			return classifyStmtTypes(creation0, who);
+//		}
+		else{
+			System.out.println(creation);
 			return "";
 		}
 	}
@@ -2285,21 +2776,20 @@ public class TIDEEngine {
 				return handleRunnable(instKey, param, useNode);
 			}else{
 				//because: assignments + ssa; array references
-//				int new_param = findDefsInDataFlowFor(useNode, param, creation.iindex);
-//				if(new_param != -1){
-//					node = handleRunnable(instKey, new_param, useNode);
-//					if(node != null)
-//						return node;
-//				}
-//				if(creation instanceof SSAArrayLoadInstruction){
-//					new_param = ((SSAArrayLoadInstruction)creation).getArrayRef();
-//				}
-//				while (node == null){
-//					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
-//					node = handleRunnable(instKey, new_param, useNode);
-//				}
-//				return node;
-				return null;
+				int new_param = findDefsInDataFlowFor(useNode, param, creation.iindex);
+				if(new_param != -1){
+					node = handleRunnable(instKey, new_param, useNode);
+					if(node != null)
+						return node;
+				}
+				if(creation instanceof SSAArrayLoadInstruction){
+					new_param = ((SSAArrayLoadInstruction)creation).getArrayRef();
+				}
+				while (node == null){
+					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
+					node = handleRunnable(instKey, new_param, useNode);
+				}
+				return node;
 			}
 		}
 		return null;
@@ -2715,7 +3205,7 @@ public class TIDEEngine {
 					}
 				}
 				if(!iscontain){
-//					bugs.add(_bug);
+					bugs.add(_bug);
 					addedbugs.add(_bug);
 				}
 			}else if(_bug instanceof TIDERace){//race bug:
@@ -2731,7 +3221,7 @@ public class TIDEEngine {
 					}
 				}
 				if(!iscontain){
-//					bugs.add(_bug);
+					bugs.add(_bug);
 					addedbugs.add(_bug);
 				}
 			}
@@ -2762,10 +3252,10 @@ public class TIDEEngine {
 		removed_rw.clear();
 		addedbugs.clear();
 		removedbugs.clear();
-//		System.out.println("+++++++++++ changed nodes +++++++++++" + changedNodes.size());
-//		for (CGNode cgNode : changedNodes) {
-//			System.out.println(cgNode.getMethod().toString());
-//		}
+		System.out.println("+++++++++++ changed nodes +++++++++++" + changedNodes.size());
+		for (CGNode cgNode : changedNodes) {
+			System.out.println(cgNode.getMethod().toString());
+		}
 		for (CGNode node : changedModifiers) {
 			HashSet<SHBEdge> incomings = shb.getIncomingEdgesOf(node);
 			if(incomings == null)
@@ -2797,9 +3287,9 @@ public class TIDEEngine {
 			removeRelatedFromPointerMaps(old_trace);
 			//remove from other maps
 			removeRelatedFromRWMaps(node);
-			//for update shb later
-			HashSet<CGNode> mays= shb.getOutGoingSinksOf(node);
-			mayIsolates.put(node, mays);
+//			//for update shb later
+//			HashSet<CGNode> mays= shb.getOutGoingSinksOf(node);
+//			mayIsolates.put(node, mays);
 			//remove related lock info/ rw mapping
 			shb.clearOutgoingEdgesFor(node);
 			//keep tids, incoming edges
@@ -2810,18 +3300,17 @@ public class TIDEEngine {
 		}
 //		System.out.println("shb after change ====================================");
 //		shb.print();
+		System.out.println("mapofstartnodes after change ====================================");
+		for (Integer tid : mapOfStartNode.keySet()) {
+			System.out.println(mapOfStartNode.get(tid).toString());
+		}
+		System.out.println("mapOfJoinNode =========================");
+		for (Integer tid : mapOfJoinNode.keySet()) {
+			System.out.println(mapOfJoinNode.get(tid).toString());
+		}
+		System.out.println();
 
-//		System.out.println("mapofstartnodes after change ====================================");
-//		for (Integer tid : mapOfStartNode.keySet()) {
-//			System.out.println(mapOfStartNode.get(tid).toString());
-//		}
-//		System.out.println("mapOfJoinNode =========================");
-//		for (Integer tid : mapOfJoinNode.keySet()) {
-//			System.out.println(mapOfJoinNode.get(tid).toString());
-//		}
-//		System.out.println();
-
-		//update shb, remove those nodes have no incoming/outgoing edges
+//		//update shb, remove those nodes have no incoming/outgoing edges
 //		for (CGNode node : mayIsolates.keySet()) {
 //			HashSet<CGNode> mays = mayIsolates.get(node);
 //			HashSet<CGNode> removes = shb.removeNotUsedTrace(removed_rw, node, mays);//?
@@ -2851,82 +3340,6 @@ public class TIDEEngine {
 		detectBothBugsAgain(changedNodes, changedModifiers, start_time, ps);
 		return bugs;
 	}
-
-	//for expr
-	public HashSet<ITIDEBug> updateEngine2(HashSet<CGNode> changedNodes, boolean ptachanges, SSAInstruction removeInst, PrintStream ps) {
-		long start_time = System.currentTimeMillis();
-		alreadyProcessedNodes.clear();
-		twiceProcessedNodes.clear();
-		thirdProcessedNodes.clear();
-		scheduledAstNodes.clear();
-		hasLocks.clear();
-		hasThreads.clear();
-		interested_l.clear();
-		interested_rw.clear();
-		removed_l.clear();
-		removed_rw.clear();
-		addedbugs.clear();
-		removedbugs.clear();
-		this.removeInst = removeInst;
-//		System.out.println("removed inst is : " + removeInst.toString());
-//		System.out.println("+++++++++++ changed nodes +++++++++++");
-//		for (CGNode cgNode : changedNodes) {
-//			System.out.println(cgNode.getMethod().toString());
-//		}
-		//start to modify engine
-		for (CGNode node : changedNodes) {
-		  int id = node.getGraphNodeId();
-		  Trace old_trace = shb.getTrace(node);
-		  if(old_trace == null){//shoud not be??
-		    continue;
-		  }
-//					System.out.println("  => old trace is " + old_trace.print());
-
-		  //remove newruntarget mapofstartnode inst_start_map threadnodes
-		  if(old_trace.ifHasStart() || old_trace.ifHasJoin()){
-		    removeKidThreadRelations(old_trace);
-		    hasThreads.put(node, true);
-		  }
-		  //compute currentLockednodes, and remove
-		  computeAndRemoveCurrentLockedNodes(node, old_trace);
-		  //also remove pointer_lmap and pointer_rwmap
-		  removeRelatedFromPointerMaps(old_trace);
-		  //remove from other maps
-		  removeRelatedFromRWMaps(node);
-		  //for update shb later
-		  HashSet<CGNode> mays= shb.getOutGoingSinksOf(node);
-		  //remove related lock info/ rw mapping
-		  shb.clearOutgoingEdgesFor(node);
-		  //keep tids, incoming edges
-		  old_trace.clearContent();
-		  //replace with new trace and new relation
-		  traverseNodePNInc(node, old_trace);
-//					System.out.println("  => new trace is " + old_trace.print());
-		}
-//				System.out.println("shb after change ====================================");
-//				shb.print();
-
-//		System.out.println("mapofstartnodes after change ====================================");
-//		for (Integer tid : mapOfStartNode.keySet()) {
-//		  System.out.println(mapOfStartNode.get(tid).toString());
-//		}
-//		System.out.println("mapOfJoinNode =========================");
-//		for (Integer tid : mapOfJoinNode.keySet()) {
-//		  System.out.println(mapOfJoinNode.get(tid).toString());
-//		}
-//		System.out.println();
-
-		if(ptachanges){
-			updatePTA(changedNodes);
-		}
-
-		//redo detection
-		detectBothBugsAgain(changedNodes, new HashSet<>(),start_time, ps);
-		removeInst = null;
-		return bugs;
-	}
-
-
 
 //	HashSet<TIDERace> ignoredRaces = new HashSet<>();
 
@@ -2976,29 +3389,29 @@ public class TIDEEngine {
 			removeRelatedFromPointerMaps(iTrace);
 			//remove from other maps
 			removeRelatedFromRWMaps(ignore);
-			HashSet<CGNode> mayIsolates = shb.getOutGoingSinksOf(ignore);
+//			HashSet<CGNode> mayIsolates = shb.getOutGoingSinksOf(ignore);
 			shb.delTrace(ignore);
 
-			//update shb, remove those nodes have no incoming/outgoing edges
-//			CGNode removed = shb.removeNotUsedTrace(removed_rw);//?
-			HashSet<CGNode> removes = shb.removeNotUsedTrace(removed_rw, ignore, mayIsolates);//?
-			excludedMethodIsolatedCGNodes.put(ignore, removes);
-			for(CGNode removed : removes){
-				System.out.println(" ===== removed node : " + removed.getMethod().toString());
-				Trace rTrace = shb.getTrace(removed);
-				if(rTrace.ifHasStart() || rTrace.ifHasJoin()){
-					removeKidThreadRelations(rTrace);
-					hasThreads.put(removed, true);
-				}
-				//remove from maps
-				computeAndRemoveCurrentLockedNodes(ignore, rTrace);
-				removeRelatedFromRWMaps(removed);
-				//remove from pointer map
-				removeRelatedFromPointerMaps(shb.getTrace(removed));
-				//next round of update shb??
-				shb.delTrace(removed);
-			}
-			relates.addAll(removes);
+//			//update shb, remove those nodes have no incoming/outgoing edges
+////			CGNode removed = shb.removeNotUsedTrace(removed_rw);//?
+//			HashSet<CGNode> removes = shb.removeNotUsedTrace(removed_rw, ignore, mayIsolates);//?
+//			excludedMethodIsolatedCGNodes.put(ignore, removes);
+//			for(CGNode removed : removes){
+//				System.out.println(" ===== removed node : " + removed.getMethod().toString());
+//				Trace rTrace = shb.getTrace(removed);
+//				if(rTrace.ifHasStart() || rTrace.ifHasJoin()){
+//					removeKidThreadRelations(rTrace);
+//					hasThreads.put(removed, true);
+//				}
+//				//remove from maps
+//				computeAndRemoveCurrentLockedNodes(ignore, rTrace);
+//				removeRelatedFromRWMaps(removed);
+//				//remove from pointer map
+//				removeRelatedFromPointerMaps(shb.getTrace(removed));
+//				//next round of update shb??
+//				shb.delTrace(removed);
+//			}
+//			relates.addAll(removes);
 		}
 		//remove related bugs
 		removeBugsRelatedToInterests(relates, null);
@@ -3031,9 +3444,8 @@ public class TIDEEngine {
 				//find curTid
 				HashSet<Integer> mayTids = new HashSet<>();//potential curtids for consider
 				HashSet<Trace> callerTraces = new HashSet<>();//for reconnect
-				Iterator<CGNode> iter = callGraph.getPredNodes(consider);
-				while(iter.hasNext()){
-					CGNode caller = iter.next();
+				HashSet<CGNode> callers = shb.getCallersForIgnored(consider);
+				for (CGNode caller : callers) {
 					Trace callerTrace = shb.getTrace(caller);
 					if(callerTrace != null){
 						ArrayList<Integer> tids = callerTrace.getTraceTids();
@@ -3068,15 +3480,15 @@ public class TIDEEngine {
 		}
 		System.out.println();
 
-		//check isolates
-		for (CGNode consider : considerNodes) {
-			HashSet<CGNode> isolates = excludedMethodIsolatedCGNodes.get(consider);
-			for (CGNode isolate : isolates) {
-				Trace iTrace = shb.getTrace(isolate);
-				if(iTrace == null)
-					System.err.println("Previous isolated cgnode has not been traversed: " + isolate.getMethod().getName());
-			}
-		}
+//		//check isolates
+//		for (CGNode consider : considerNodes) {
+//			HashSet<CGNode> isolates = excludedMethodIsolatedCGNodes.get(consider);
+//			for (CGNode isolate : isolates) {
+//				Trace iTrace = shb.getTrace(isolate);
+//				if(iTrace == null)
+//					System.err.println("Previous isolated cgnode has not been traversed: " + isolate.getMethod().getName());
+//			}
+//		}
 		//redo checking
 		detectBothBugsAgain(considerNodes, null, System.currentTimeMillis(), null);
 
@@ -3241,12 +3653,80 @@ public class TIDEEngine {
 	}
 	SSAInstruction removeInst = null;
 	/**
-	 * for experiement of del inst
+	 * for experiement of del inst, do not use
 	 * @param changedNodes
 	 * @param ptachanges
 	 * @param ps
 	 * @return
 	 */
+	public HashSet<ITIDEBug> updateEngine2(HashSet<CGNode> changedNodes, boolean ptachanges, SSAInstruction removeInst, PrintStream ps) {
+		long start_time = System.currentTimeMillis();
+		alreadyProcessedNodes.clear();
+		twiceProcessedNodes.clear();
+		thirdProcessedNodes.clear();
+		scheduledAstNodes.clear();
+		hasLocks.clear();
+		hasThreads.clear();
+		interested_l.clear();
+		interested_rw.clear();
+		removed_l.clear();
+		removed_rw.clear();
+		addedbugs.clear();
+		removedbugs.clear();
+		this.removeInst = removeInst;
+//		System.out.println("removed inst is : " + removeInst.toString());
+//		System.out.println("+++++++++++ changed nodes +++++++++++");
+//		for (CGNode cgNode : changedNodes) {
+//			System.out.println(cgNode.getMethod().toString());
+//		}
+		for (CGNode node : changedNodes) {
+			Trace old_trace = shb.getTrace(node);
+			if(old_trace == null){
+				continue;
+			}
+			System.out.println("  => old trace is " + old_trace.getContent().toString());
+			//compute currentLockednodes, and remove
+			computeAndRemoveCurrentLockedNodes(node, old_trace);			//remove from pointer map??
+			//remove related lock info/ rw mapping
+			shb.clearOutgoingEdgesFor(node);
+			//remove newruntarget mapofstartnode inst_start_map threadnodes
+			if(old_trace.ifHasStart() || old_trace.ifHasJoin()){
+				removeKidThreadRelations(old_trace);
+				hasThreads.put(node, true);
+			}
+			//also remove pointer_lmap and pointer_rwmap
+			removeRelatedFromPointerMaps(old_trace);
+			old_trace.clearContent();//keep tids, incoming edges
+			//replace with new trace and new relation
+			traverseNodePNInc(node, old_trace);
+			System.out.println("  => new trace is " + old_trace.getContent().toString());
+		}
+//		System.out.println("shb after change ====================================");
+//		shb.print();
+//		System.out.println("mapofstartnodes after change ====================================");
+//		System.out.println(mapOfStartNode.toString());
+
+		//update shb
+		CGNode removed = shb.removeNotUsedTrace(removed_rw);
+		if(removed != null){
+			System.out.println(" ===== removed node : " + removed.getMethod().toString());
+			//remove from maps
+			removeRelatedFromRWMaps(removed);
+			removeRelatedFromPointerMaps(shb.getTrace(removed));
+			//remove from pointer map??
+			shb.delTrace(removed);
+		}
+
+		if(ptachanges){
+			updatePTA(changedNodes);
+		}
+
+		//redo detection
+		detectBothBugsAgain(changedNodes, new HashSet<>(),start_time, ps);
+		removeInst = null;
+		return bugs;
+	}
+
 
 /**
  * remove related rw from rwsig_tid_num_maps and sigRead/WriteNodes maps
@@ -3446,7 +3926,7 @@ public class TIDEEngine {
 				}
 			}
 		}
-//		System.out.println("SIZE of Removed Bugs (in removeBugsRelatedToInterests): " + removed.size());
+		System.out.println("SIZE of Removed Bugs (in removeBugsRelatedToInterests): " + removed.size());
 //		for (ITIDEBug bug : removed) {
 //			if(bug instanceof TIDERace){
 //				MemNode exist1 = ((TIDERace) bug).node1;
@@ -3591,6 +4071,14 @@ public class TIDEEngine {
 
 		SSAInstruction[] insts = n.getIR().getInstructions();
 
+		if(n.getMethod().getName().toString().contains("calculatePhotons")){
+			System.out.println();
+			for (SSAInstruction ssaInstruction : insts) {
+				if(ssaInstruction != null)
+					System.out.println(ssaInstruction.toString());
+			}
+		}
+
 		for(int i=0; i<insts.length; i++){
 			SSAInstruction inst = insts[i];
 			if(inst!=null){
@@ -3719,7 +4207,128 @@ public class TIDEEngine {
 						if(imethod!=null){
 							String sig = imethod.getSignature();
 							//System.out.println("Invoke Inst: "+sig);
-							if(sig.equals("java.lang.Thread.start()V")){
+							if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
+								//Future runnable
+								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+								for(InstanceKey ins: instances){
+									TypeName name = ins.getConcreteType().getName();
+									CGNode node = threadSigNodeMap.get(name);
+									if(node==null){
+										//TODO: find out which runnable object -- need data flow analysis
+										int param = ((SSAAbstractInvokeInstruction)inst).getUse(1);
+										node = handleRunnable(ins, param, n);
+										if(node==null){
+											System.err.println("ERROR: starting new thread: "+ name);
+											continue;
+										}
+										//threadreceiver?
+									}else{//get threadReceivers
+										//should be the hashcode of the instancekey
+//										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+									}
+//									System.out.println("Run : " + node.toString());
+
+									Trace exist;
+									int tempid = node.getGraphNodeId();
+									if(stidpool.contains(tempid)){
+										if(oldkids.contains(tempid)){
+											int linenum = oldkid_line_map.get(tempid);
+											if(linenum != sourceLineNum){//changed => new thread
+												exist = null;
+												AstCGNode2 threadNode = new AstCGNode2(imethod, node.getContext());
+												int threadID = ++maxGraphNodeID;
+												threadNode.setGraphNodeId(threadID);
+												threadNode.setCGNode(node);
+												threadNode.setIR(node.getIR());
+												node = threadNode;
+												dupkids.add(tempid);
+											}else{
+												exist = shb.getTrace(node);
+											}
+											oldkids.remove(oldkids.indexOf(tempid));
+										}else{//new thread
+											exist = null;
+											AstCGNode2 threadNode = new AstCGNode2(imethod, node.getContext());
+											int threadID = ++maxGraphNodeID;
+											threadNode.setGraphNodeId(threadID);
+											threadNode.setCGNode(node);
+											threadNode.setIR(node.getIR());
+//												newRunTargets.put(threadNode, node);
+											node = threadNode;
+										}
+									}else{//new thread, may exist
+										exist = shb.getTrace(node);
+									}
+									if(exist == null){//new threadnode
+										threadNodes.add(node);
+									}else{
+										oldkids.remove(oldkids.indexOf(tempid));
+									}
+									int tid_child = node.getGraphNodeId();
+									stidpool.add(tid_child);
+									//add node to trace
+									StartNode startNode = new StartNode(curTID, tid_child, n, node, sourceLineNum, file);
+									curTrace.addS(startNode, inst, tid_child);
+									mapOfStartNode.put(tid_child, startNode);
+									StartNode pstartnode = mapOfStartNode.get(curTID);
+									if(pstartnode == null){
+										if(mainEntryNodes.contains(n)){
+											pstartnode = new StartNode(-1, curTID, n, node, sourceLineNum, file);
+											mapOfStartNode.put(curTID, pstartnode);
+										}else{//thread/runnable
+											pstartnode = new StartNode(curTID, tid_child, n, node,sourceLineNum, file);
+											mapOfStartNode.put(tid_child, pstartnode);
+										}
+									}
+									pstartnode.addChild(tid_child);
+									shb.addEdge(startNode, node);
+
+									//put to tid -> curreceivers map
+//									tid2Receivers.put(node.getGraphNodeId(), threadReceivers);
+									//TODO: check if it is in a simple loop
+									boolean isInLoop = isInLoop(n,inst);
+
+									if(isInLoop){
+										AstCGNode2 node2 = n_loopn_map.get(node);
+										int newID;
+										if(node2 == null){
+											node2 = new AstCGNode2(node.getMethod(),node.getContext());
+											newID = ++maxGraphNodeID;
+											node2.setGraphNodeId(newID);
+											node2.setIR(node.getIR());
+											node2.setCGNode(node);
+											threadNodes.add(node2);
+										}else{
+											newID = node2.getGraphNodeId();//astCGNode_ntid_map.get(node);
+											if(oldkids.contains(newID)){
+												oldkids.remove(oldkids.indexOf(newID));
+											}
+										}
+										stidpool.add(newID);
+										StartNode duplicate = new StartNode(curTID, newID, n, node2, sourceLineNum, file);
+										curTrace.add2S(duplicate, inst, newID);//thread id +1
+										mapOfStartNode.put(newID, duplicate);
+										mapOfStartNode.get(curTID).addChild(newID);
+										shb.addEdge(duplicate, node2);
+
+//										node2.setGraphNodeId(newID);
+//										node2.setIR(node.getIR());
+//										node2.setCGNode(node);
+
+										//need to change thread receiver id as well
+//										Set<String> threadReceivers2 = new HashSet();
+//										for(String id: threadReceivers){
+//											threadReceivers2.add(id+"X");//"X" as the marker
+//										}
+//										//put to tid -> curreceivers map
+//										tid2Receivers.put(newID, threadReceivers2);
+									}
+								}
+								hasSyncBetween = true;
+							}else if(sig.equals("java.lang.Thread.start()V")
+									|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
+
 								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 								for(InstanceKey ins: instances){
@@ -3735,7 +4344,7 @@ public class TIDEEngine {
 										}
 										node = handleRunnable(ins, param, n);
 										if(node==null){
-//											System.err.println("ERROR: starting new thread: "+ name);
+											System.err.println("ERROR: starting new thread: "+ name);
 											continue;
 										}
 										//threadreceiver?
@@ -3778,7 +4387,7 @@ public class TIDEEngine {
 									}
 									if(exist == null){//new threadnode
 										threadNodes.add(node);
-									}else if(oldkids.contains(tempid)){
+									}else{
 										oldkids.remove(oldkids.indexOf(tempid));
 									}
 									int tid_child = node.getGraphNodeId();
@@ -3843,19 +4452,113 @@ public class TIDEEngine {
 								}
 								hasSyncBetween = true;
 							}
-							else if(sig.equals("java.lang.Thread.join()V")){
+							else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
+								//Future join
 								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 								for(InstanceKey ins: instances){
 									TypeName name = ins.getConcreteType().getName();
 									CGNode node = threadSigNodeMap.get(name);
+									if(node==null){
+										//TODO: find out which runnable object -- need data flow analysis
+										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
+										SSAInstruction creation = n.getDU().getDef(param);
+										if(creation instanceof SSAAbstractInvokeInstruction){
+											param = ((SSAAbstractInvokeInstruction)creation).getUse(1);
+											node = handleRunnable(ins, param, n);
+											if(node==null){
+												System.err.println("ERROR: joining parent thread: "+ name);
+												continue;
+											}
+										}
+										//threadreceiver?
+									}else{//get threadReceivers
+										//should be the hashcode of the instancekey
+//										threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+									}
+									System.out.println("Join : " + node.toString());
+									//add node to trace
+									int tid_child =node.getGraphNodeId();
+									if(mapOfJoinNode.containsKey(tid_child)){
+										//dup run nodes
+										CGNode threadNode = dupStartJoinTidMap.get(tid_child);
+										tid_child = threadNode.getGraphNodeId();
+										node = threadNode;
+									}
+									JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
+									curTrace.addJ(jNode, inst);
+//									JoinNode pjJoinNode = mapOfJoinNode.get(tid_child);
+//									if(pjJoinNode == null){//already removed
+////										if(mainEntryNodes.contains(n)){
+////											pjJoinNode = new JoinNode(-1, curTID, n, node, sourceLineNum, file);
+////											mapOfJoinNode.put(curTID, pjJoinNode);
+////										}else{
+////											pjJoinNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
+////											mapOfJoinNode.put(tid_child, pjJoinNode);
+////										}
+//										pjJoinNode = jNode;
+//										mapOfJoinNode.put(tid_child, pjJoinNode);
+//									}
+									mapOfJoinNode.put(tid_child, jNode);
+									shb.addBackEdge(node, jNode);
+
+									boolean isInLoop = isInLoop(n,inst);
+									if(isInLoop){
+										AstCGNode2 node2 = n_loopn_map.get(node);
+										if(node2 == null){
+											node2 = dupStartJoinTidMap.get(tid_child);
+											if(node2 == null){
+												System.err.println("Null node obtain from n_loopn_map. ");
+												continue;
+											}
+										}
+										//threadNodes.add(node2);
+										int newID = node2.getGraphNodeId();
+										JoinNode jNode2 = new JoinNode(curTID,newID,n,node2, sourceLineNum, file);
+										curTrace.addJ(jNode2, inst);//thread id +1
+										mapOfJoinNode.put(newID, jNode2);
+										shb.addBackEdge(node2, jNode2);
+//										node2.setGraphNodeId(newID);
+//										node2.setIR(node.getIR());
+//										node2.setCGNode(node);
+									}
+								}
+								hasSyncBetween = true;
+
+							}
+							else if(sig.equals("java.lang.Thread.join()V")
+									|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
+								PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+								OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+								for(InstanceKey ins: instances){
+									TypeName name = ins.getConcreteType().getName();
+									CGNode node = threadSigNodeMap.get(name);
+  									boolean isThreadPool = false;
 //									HashSet<String> threadReceivers = new HashSet();
 									if(node==null){//could be a runnable class
 										int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
 										//Executors and ThreadPoolExecutor
+  										if(sig.contains("java.util.concurrent") &&sig.contains("shutdown()V")){
+  											Iterator<SSAInstruction> uses = n.getDU().getUses(param);
+  											while(uses.hasNext()){
+  												SSAInstruction use = uses.next();//java.util.concurrent.Executor.execute
+  												if(use instanceof SSAAbstractInvokeInstruction){
+  													SSAAbstractInvokeInstruction invoke = (SSAAbstractInvokeInstruction) use;
+  													CallSiteReference ucsr = ((SSAAbstractInvokeInstruction)invoke).getCallSite();
+  													MethodReference umr = ucsr.getDeclaredTarget();
+  													com.ibm.wala.classLoader.IMethod uimethod = callGraph.getClassHierarchy().resolveMethod(umr);
+  													String usig = uimethod.getSignature();
+  													if(usig.contains("java.util.concurrent") &&usig.contains("execute")){
+  														param = ((SSAAbstractInvokeInstruction)invoke).getUse(1);
+  														isThreadPool = true;
+  														break;
+  													}
+  												}
+  											}
+  										}
 										node = handleRunnable(ins,param, n);
 										if(node==null){
-//											System.err.println("ERROR: joining parent thread: "+ name);
+											System.err.println("ERROR: joining parent thread: "+ name);
 											continue;
 										}
 									}
@@ -3865,18 +4568,28 @@ public class TIDEEngine {
 									if(mapOfJoinNode.containsKey(tid_child)){
 										//dup run nodes
 										CGNode threadNode = dupStartJoinTidMap.get(tid_child);
-										if(threadNode != null){
-											tid_child = threadNode.getGraphNodeId();
-											node = threadNode;
-										}
+										tid_child = threadNode.getGraphNodeId();
+										node = threadNode;
 									}
 									JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
 									curTrace.addJ(jNode, inst);
+//									JoinNode pjJoinNode = mapOfJoinNode.get(tid_child);
+//									if(pjJoinNode == null){//already removed
+////										if(mainEntryNodes.contains(n)){
+////											pjJoinNode = new JoinNode(-1, curTID, n, node, sourceLineNum, file);
+////											mapOfJoinNode.put(curTID, pjJoinNode);
+////										}else{
+////											pjJoinNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
+////											mapOfJoinNode.put(tid_child, pjJoinNode);
+////										}
+//										pjJoinNode = jNode;
+//										mapOfJoinNode.put(tid_child, pjJoinNode);
+//									}
 									mapOfJoinNode.put(tid_child, jNode);
 									shb.addBackEdge(node, jNode);
 
 									boolean isInLoop = isInLoop(n,inst);
-									if(isInLoop){
+									if(isInLoop || isThreadPool){
 										AstCGNode2 node2 = n_loopn_map.get(node);
 										if(node2 == null){
 											node2 = dupStartJoinTidMap.get(tid_child);
@@ -4181,31 +4894,31 @@ public class TIDEEngine {
 			int newID = newnode.getGraphNodeId();
 			if(mapOfStartNode.get(newID) == null){
 				//no such node, should be created and added before, should not be??
-				System.err.println("thread " + newID + " is newly discovered");
+				System.err.println("thread " + newID + " is missing from mapOfStartNode");
 			}
 			curTID = newID;
 			hasSyncBetween = false;
 			traverseNodePN(newnode);
 		}
 		//if old kids has left => the thread should have been removed earlier
-//		if(oldkids.size() > 0){
-//			for (int oldkid : oldkids) {
-//				System.err.println("thread " + oldkid + " should have been removed earlier");
+		if(oldkids.size() > 0){
+			for (int oldkid : oldkids) {
+				System.err.println("thread " + oldkid + " should have been removed earlier");
 //				mapOfStartNode.remove(oldkid);
 //				tidpool.remove(oldkid);
 //				shb.removeTidFromALlTraces(n, oldkid);
 //				threadDLLockPairs.remove(oldkid);
-//			}
-//		}
-//		if(dupkids.size() > 0){
-//			for (int dupkid : dupkids) {
-//				System.err.println("thread " + dupkid + " should not have duplicate tids");
+			}
+		}
+		if(dupkids.size() > 0){
+			for (int dupkid : dupkids) {
+				System.err.println("thread " + dupkid + " should not have duplicate tids");
 //				mapOfStartNode.remove(dupkid);
 //				tidpool.remove(dupkid);
 //				shb.removeTidFromALlTraces(n, dupkid);
 //				threadDLLockPairs.remove(dupkid);
-//			}
-//		}
+			}
+		}
 		//add back to shb
 		shb.replaceTrace(n, curTrace);
 		//organize wtid num map/rwsigmap
@@ -4902,22 +5615,19 @@ public class TIDEEngine {
 					if(imethod!=null){
 						String sig = imethod.getSignature();
 						//System.out.println("Invoke Inst: "+sig);
-						if(sig.equals("java.lang.Thread.start()V")){
+						if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
+							//Future runnable
 							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
 								CGNode node = threadSigNodeMap.get(name);
-//								HashSet<String> threadReceivers = new HashSet<>();
 								if(node==null){
 									//TODO: find out which runnable object -- need data flow analysis
-									int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
-									if(sig.contains("java.util.concurrent") && sig.contains("execute")){
-										param = ((SSAAbstractInvokeInstruction)inst).getUse(1);
-									}
+									int param = ((SSAAbstractInvokeInstruction)inst).getUse(1);
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-//										System.err.println("ERROR: starting new thread: "+ name);
+										System.err.println("ERROR: starting new thread: "+ name);
 										continue;
 									}
 									//threadreceiver?
@@ -4960,7 +5670,127 @@ public class TIDEEngine {
 								}
 								if(exist == null){//new threadnode
 									threadNodes.add(node);
-								}else if(oldkids.contains(tempid)){
+								}else{
+									oldkids.remove(oldkids.indexOf(tempid));
+								}
+								int tid_child = node.getGraphNodeId();
+								stidpool.add(tid_child);
+								//add node to trace
+								StartNode startNode = new StartNode(localtid, tid_child, n, node, sourceLineNum, file);
+								curTrace.add2S(startNode, inst, tid_child);
+//								inst_start_map.put(node, startNode);
+								mapOfStartNode.put(tid_child, startNode);
+								StartNode pstartnode = mapOfStartNode.get(localtid);
+								if(pstartnode == null){
+									if(mainEntryNodes.contains(n)){
+										pstartnode = new StartNode(-1, localtid, n, node, sourceLineNum, file);
+										mapOfStartNode.put(localtid, pstartnode);
+									}else{//thread/runnable
+										pstartnode = new StartNode(localtid, tid_child, n, node, sourceLineNum, file);
+										mapOfStartNode.put(tid_child, pstartnode);
+									}
+								}
+								pstartnode.addChild(tid_child);
+								shb.addEdge(startNode, node);
+
+								//put to tid -> curreceivers map
+//								tid2Receivers.put(node.getGraphNodeId(), threadReceivers);
+								//TODO: check if it is in a simple loop
+								boolean isInLoop = isInLoop(n,inst);
+
+								if(isInLoop){
+//									AstCGNode2 node2 = new AstCGNode2(node.getMethod(),node.getContext());
+//									threadNodes.add(node2);
+//									newRunTargets.put(node2, node);
+//									inst_start_map.put(node2, startNode);
+									AstCGNode2 node2 = n_loopn_map.get(node);
+									int newID;
+									if(node2 == null){
+										node2 = new AstCGNode2(node.getMethod(), node.getContext());
+										newID = ++maxGraphNodeID;
+										node2.setGraphNodeId(newID);
+										node2.setIR(node.getIR());
+										node2.setCGNode(node);
+										threadNodes.add(node2);
+									}else{
+										newID = node2.getGraphNodeId();//astCGNode_ntid_map.get(node);
+										if(oldkids.contains(newID)){
+											oldkids.remove(oldkids.indexOf(newID));
+										}
+									}
+//									int curTID2 = tids.get(idxOfTid);
+//									idxOfTid++;
+									stidpool.add(newID);
+									StartNode duplicate = new StartNode(localtid, newID, n, node2, sourceLineNum, file);
+									curTrace.add2S(duplicate, inst, newID);//thread id +1
+									mapOfStartNode.put(newID, duplicate);
+									mapOfStartNode.get(localtid).addChild(newID);
+									shb.addEdge(duplicate, node2);
+								}
+							}
+							//find loops in this method!!
+							//node.getIR().getControlFlowGraph();
+							hasSyncBetween = true;
+						}else if(sig.equals("java.lang.Thread.start()V")
+								|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
+							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+							for(InstanceKey ins: instances){
+								TypeName name = ins.getConcreteType().getName();
+								CGNode node = threadSigNodeMap.get(name);
+//								HashSet<String> threadReceivers = new HashSet<>();
+								if(node==null){
+									//TODO: find out which runnable object -- need data flow analysis
+									int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
+									if(sig.contains("java.util.concurrent") && sig.contains("execute")){
+										param = ((SSAAbstractInvokeInstruction)inst).getUse(1);
+									}
+									node = handleRunnable(ins, param, n);
+									if(node==null){
+										System.err.println("ERROR: starting new thread: "+ name);
+										continue;
+									}
+									//threadreceiver?
+								}else{//get threadReceivers
+									//should be the hashcode of the instancekey
+//									threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+								}
+
+								//duplicate graph node id or existing node with trace?
+								Trace exist;
+								int tempid = node.getGraphNodeId();
+								if(stidpool.contains(tempid)){
+									if(oldkids.contains(tempid)){
+										int linenum = oldkid_line_map.get(tempid);
+										if(linenum != sourceLineNum){//new thread
+											exist = null;
+											AstCGNode2 threadNode = new AstCGNode2(imethod, node.getContext());
+											int threadID = ++maxGraphNodeID;
+											threadNode.setGraphNodeId(threadID);
+											threadNode.setCGNode(node);
+											threadNode.setIR(node.getIR());
+											node = threadNode;
+											dupkids.add(tempid);
+										}else{
+											exist = shb.getTrace(node);
+										}
+										oldkids.remove(oldkids.indexOf(tempid));
+									}else{//new thread
+										exist = null;
+										AstCGNode2 threadNode = new AstCGNode2(imethod, node.getContext());
+										int threadID = ++maxGraphNodeID;
+										threadNode.setGraphNodeId(threadID);
+										threadNode.setCGNode(node);
+										threadNode.setIR(node.getIR());
+//											newRunTargets.put(threadNode, node);
+										node = threadNode;
+									}
+								}else{
+									exist = shb.getTrace(node);
+								}
+								if(exist == null){//new threadnode
+									threadNodes.add(node);
+								}else{
 									oldkids.remove(oldkids.indexOf(tempid));
 								}
 								int tid_child = node.getGraphNodeId();
@@ -5034,19 +5864,101 @@ public class TIDEEngine {
 							//node.getIR().getControlFlowGraph();
 							hasSyncBetween = true;
 						}
-						else if(sig.equals("java.lang.Thread.join()V")){
+						else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
+							//Future join
 							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
 								CGNode node = threadSigNodeMap.get(name);
+								if(node==null){
+									//TODO: find out which runnable object -- need data flow analysis
+									int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
+									SSAInstruction creation = n.getDU().getDef(param);
+									if(creation instanceof SSAAbstractInvokeInstruction){
+										param = ((SSAAbstractInvokeInstruction)creation).getUse(1);
+										node = handleRunnable(ins, param, n);
+										if(node==null){
+											System.err.println("ERROR: joining parent thread: "+ name);
+											continue;
+										}
+									}
+									//threadreceiver?
+								}else{//get threadReceivers
+									//should be the hashcode of the instancekey
+//									threadReceivers.add(String.valueOf(ins.hashCode()));//SHOULD BE "this thread/runnable object"
+								}
+								//add joinnode to trace
+								int tid_child =node.getGraphNodeId();
+								if(mapOfJoinNode.containsKey(tid_child)){
+									//dup run nodes
+									CGNode threadNode = dupStartJoinTidMap.get(tid_child);
+									tid_child = threadNode.getGraphNodeId();
+									node = threadNode;
+								}
+								JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
+								curTrace.add2J(jNode, inst, tid_child);
+//								JoinNode pjJoinNode = mapOfJoinNode.get(tid_child);
+//								if(pjJoinNode == null){//already removed
+//									pjJoinNode = jNode;
+//									mapOfJoinNode.put(tid_child, pjJoinNode);
+//								}
+								mapOfJoinNode.put(tid_child, jNode);
+								shb.addBackEdge(node, jNode);
+
+								boolean isInLoop = isInLoop(n,inst);
+								if(isInLoop){
+									AstCGNode2 node2 = n_loopn_map.get(node);
+									if(node2 == null){
+										node2 = dupStartJoinTidMap.get(tid_child);
+										if(node2 == null){
+											System.err.println("Null node obtain from n_loopn_map. ");
+											continue;
+										}
+									}
+									//threadNodes.add(node2);
+									int newID = node2.getGraphNodeId();
+//									int curTID2 = tids.get(idxOfTid);
+									JoinNode jNode2 = new JoinNode(curTID,newID,n,node2, sourceLineNum, file);
+									curTrace.addJ(jNode2, inst);//thread id +1
+									mapOfJoinNode.put(newID, jNode2);
+									shb.addBackEdge(node2, jNode2);
+								}
+							hasSyncBetween = true;
+							}
+						}else if(sig.equals("java.lang.Thread.join()V")
+								|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
+							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
+							for(InstanceKey ins: instances){
+								TypeName name = ins.getConcreteType().getName();
+								CGNode node = threadSigNodeMap.get(name);
+								boolean isThreadPool = false;
 //								HashSet<String> threadReceivers = new HashSet();
 								if(node==null){//could be a runnable class
 									int param = ((SSAAbstractInvokeInstruction)inst).getUse(0);
 									//Executors and ThreadPoolExecutor
+									if(sig.contains("java.util.concurrent") &&sig.contains("shutdown()V")){
+										Iterator<SSAInstruction> uses = n.getDU().getUses(param);
+										while(uses.hasNext()){
+											SSAInstruction use = uses.next();//java.util.concurrent.Executor.execute
+											if(use instanceof SSAAbstractInvokeInstruction){
+												SSAAbstractInvokeInstruction invoke = (SSAAbstractInvokeInstruction) use;
+												CallSiteReference ucsr = ((SSAAbstractInvokeInstruction)invoke).getCallSite();
+												MethodReference umr = ucsr.getDeclaredTarget();
+												com.ibm.wala.classLoader.IMethod uimethod = callGraph.getClassHierarchy().resolveMethod(umr);
+												String usig = uimethod.getSignature();
+												if(usig.contains("java.util.concurrent") &&usig.contains("execute")){
+													param = ((SSAAbstractInvokeInstruction)invoke).getUse(1);
+													isThreadPool = true;
+													break;
+												}
+											}
+										}
+									}
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-//										System.err.println("ERROR: joining parent thread: "+ name);
+										System.err.println("ERROR: joining parent thread: "+ name);
 										continue;
 									}
 								}
@@ -5055,18 +5967,21 @@ public class TIDEEngine {
 								if(mapOfJoinNode.containsKey(tid_child)){
 									//dup run nodes
 									CGNode threadNode = dupStartJoinTidMap.get(tid_child);
-									if(threadNode != null){
-										tid_child = threadNode.getGraphNodeId();
-										node = threadNode;
-									}
+									tid_child = threadNode.getGraphNodeId();
+									node = threadNode;
 								}
 								JoinNode jNode = new JoinNode(curTID, tid_child, n, node, sourceLineNum, file);
 								curTrace.add2J(jNode, inst, tid_child);
+//								JoinNode pjJoinNode = mapOfJoinNode.get(tid_child);
+//								if(pjJoinNode == null){//already removed
+//									pjJoinNode = jNode;
+//									mapOfJoinNode.put(tid_child, pjJoinNode);
+//								}
 								mapOfJoinNode.put(tid_child, jNode);
 								shb.addBackEdge(node, jNode);
 
 								boolean isInLoop = isInLoop(n,inst);
-								if(isInLoop){
+								if(isInLoop || isThreadPool){
 									AstCGNode2 node2 = n_loopn_map.get(node);
 									if(node2 == null){
 										node2 = dupStartJoinTidMap.get(tid_child);
@@ -5349,13 +6264,13 @@ public class TIDEEngine {
 				}
 			}
 		}
-//		if(dupkids.size() > 0){
-//			for (int dupkid : dupkids) {
-//				mapOfStartNode.remove(dupkid);
-//				stidpool.remove(dupkid);
-//				shb.removeTidFromALlTraces(n, dupkid);
-//			}
-//		}
+		if(dupkids.size() > 0){
+			for (int dupkid : dupkids) {
+				mapOfStartNode.remove(dupkid);
+				stidpool.remove(dupkid);
+				shb.removeTidFromALlTraces(n, dupkid);
+			}
+		}
 	}
 
 
@@ -5549,6 +6464,7 @@ public class TIDEEngine {
 	}
 
 	private void updatePTA(Set<CGNode> keys) {
+		////// did not replace siglist in nodes
 		HashSet<IVariable> changes = AbstractFixedPointSolver.changes;
 		//find node from instSig
 		for (IVariable v : changes) {
@@ -5594,30 +6510,30 @@ public class TIDEEngine {
 							HashMap<String, ArrayList<ReadNode>> rsigMapping = trace.getRsigMapping();
 							ArrayList<ReadNode> relatedReads = rsigMapping.get(old);
 							if(relatedReads != null){
-								if(relatedReads.size() == 0){
-									//need to update in rsig_tid_num_map
-									HashMap<Integer, Integer> map = rsig_tid_num_map.get(old);
-									if(map == null)//should not be null??
-										continue;
-									HashSet<Integer> removedTids = new HashSet<>();
-									for (Integer tid : map.keySet()) {
-										if(tids.contains(tid)){
-											int num = map.get(tid);
-											num--;
-											if(num == 0){
-												removedTids.add(tid);
-											}else{
-												map.put(tid, num);
-											}
+							if(relatedReads.size() == 0){
+								//need to update in rsig_tid_num_map
+								HashMap<Integer, Integer> map = rsig_tid_num_map.get(old);
+								if(map == null)//should not be null??
+									continue;
+								HashSet<Integer> removedTids = new HashSet<>();
+								for (Integer tid : map.keySet()) {
+									if(tids.contains(tid)){
+										int num = map.get(tid);
+										num--;
+										if(num == 0){
+											removedTids.add(tid);
+										}else{
+											map.put(tid, num);
 										}
 									}
-									for (Integer tid : removedTids) {
-										map.remove(tid);
-									}
-									if(map.keySet().size() == 0){//maybe too conservartive
-										rsig_tid_num_map.remove(old);
-									}
 								}
+								for (Integer tid : removedTids) {
+									map.remove(tid);
+								}
+								if(map.keySet().size() == 0){//maybe too conservartive
+									rsig_tid_num_map.remove(old);
+								}
+							}
 							}
 							HashSet<ReadNode> reads = sigReadNodes.get(old);
 							if(reads != null){
@@ -5630,29 +6546,29 @@ public class TIDEEngine {
 							HashMap<String, ArrayList<WriteNode>> wsigMapping = trace.getWsigMapping();
 							ArrayList<WriteNode> relatedWrites = wsigMapping.get(old);
 							if(relatedWrites != null){
-								if(relatedWrites.size() == 0){
-									HashMap<Integer, Integer> map = wsig_tid_num_map.get(old);
-									if(map == null)//should not be null??
-										continue;
-									HashSet<Integer> removedTids = new HashSet<>();
-									for (Integer tid : map.keySet()) {
-										if(tids.contains(tid)){
-											int num = map.get(tid);
-											num--;
-											if(num == 0){
-												removedTids.add(tid);
-											}else{
-												map.put(tid, num);
-											}
+							if(relatedWrites.size() == 0){
+								HashMap<Integer, Integer> map = wsig_tid_num_map.get(old);
+								if(map == null)//should not be null??
+									continue;
+								HashSet<Integer> removedTids = new HashSet<>();
+								for (Integer tid : map.keySet()) {
+									if(tids.contains(tid)){
+										int num = map.get(tid);
+										num--;
+										if(num == 0){
+											removedTids.add(tid);
+										}else{
+											map.put(tid, num);
 										}
 									}
-									for (Integer tid : removedTids) {
-										map.remove(tid);
-									}
-									if(map.keySet().size() == 0){
-										wsig_tid_num_map.remove(old);
-									}
 								}
+								for (Integer tid : removedTids) {
+									map.remove(tid);
+								}
+								if(map.keySet().size() == 0){
+									wsig_tid_num_map.remove(old);
+								}
+							}
 							}
 							HashSet<WriteNode> writes = sigWriteNodes.get(old);
 							if(writes != null){
@@ -5746,6 +6662,9 @@ public class TIDEEngine {
 		}
 	}
 
+
+
+
 	public void detectBothBugsAgain(HashSet<CGNode> changedNodes, HashSet<CGNode> changedModifiers, long start_time, PrintStream ps) {
 		//indicate if we need to check race/lock/both
 		boolean lock = false;
@@ -5798,9 +6717,89 @@ public class TIDEEngine {
 			recheckLock();
 		}
 		long incre_dl_time = System.currentTimeMillis() - race_end_time;
-		if(!PLUGIN){
-			ps.print(incre_race_time+" "+incre_dl_time+" ");
-		}
+//        ps.print(incre_race_time+" "+incre_dl_time+" ");
+
+		System.err.println(bugs.size());
+//		HashSet<TIDERace> newOnes = new HashSet<>();
+//		HashSet<TIDERace> copy = new HashSet<>();
+//		copy.addAll(ignoredRaces);
+
+		System.out.println("Removed bugs ============================ " + removedbugs.size());
+//		for (ITIDEBug bug : removedbugs) {
+//			if(bug instanceof TIDERace){
+//				MemNode exist1 = ((TIDERace) bug).node1;
+//				MemNode exist2 = ((TIDERace) bug).node2;
+//				boolean included = false;
+//				for (TIDERace ignore : ignoredRaces) {
+//					MemNode ignore1 = ((TIDERace) ignore).node1;
+//					MemNode ignore2 = ((TIDERace) ignore).node2;
+//					if((exist1.equals(ignore1) && exist2.equals(ignore2)) && (exist1.equals(ignore2) && exist2.equals(ignore1))){
+//						included = true;
+//					}
+//				}
+//				if (included) {
+////					System.out.println("Already Removed ======================================================================");
+////					System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid1);
+////					System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid2);
+//				}else{
+//					System.out.println("Extra Removed ======================================================================");
+//					System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid1);
+//					System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid2);
+//				}
+//			}
+//		}
+		System.out.println("Added bugs ============================ " + addedbugs.size());
+//		for (ITIDEBug bug : addedbugs) {
+//			MemNode exist1 = ((TIDERace) bug).node1;
+//			MemNode exist2 = ((TIDERace) bug).node2;
+//			if(bug instanceof TIDERace){
+//				boolean included = false;
+//				for (TIDERace ignore : ignoredRaces) {
+//					if(((TIDERace) bug).initsig.equals(ignore.initsig)){
+//						included = true;
+//					}
+//				}
+//				if(included){
+////					boolean b = copy.remove(bug);
+////					System.out.println(b + "Add back-----------------------------------------------------------------------");
+////					System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid1);
+////					System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid2);
+//				}else{
+//					newOnes.add((TIDERace) bug);
+//					System.out.println("Extra Added-----------------------------------------------------------------------");
+//					System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid1);
+//					System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) bug).tid2);
+//				}
+//			}
+//			else
+//				System.out.println(((TIDEDeadlock)bug).toString());
+//		}
+//		for (TIDERace notback : copy) {
+//			MemNode exist1 = ((TIDERace) notback).node1;
+//			MemNode exist2 = ((TIDERace) notback).node2;
+//			System.out.println("Never back-----------------------------------------------------------------------");
+//			System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) notback).tid1);
+//			System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) notback).tid2);
+//		}
+//		for (TIDERace newone : newOnes) {
+//			MemNode exist1 = ((TIDERace) newone).node1;
+//			MemNode exist2 = ((TIDERace) newone).node2;
+//			boolean included = false;
+//			for (ITIDEBug exist : bugs) {
+//				if(((TIDERace) newone).initsig.equals(((TIDERace) exist).initsig)){
+//					included = true;
+//				}
+//			}
+//			if(included){
+////				System.out.println("Already in Existing Bugs-----------------------------------------------------------------------");
+////				System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) newone).tid1);
+////				System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) newone).tid2);
+//			}else{
+//				System.out.println("NEW !!!!!!!!!-----------------------------------------------------------------------");
+//				System.out.println("1: " + exist1.getPrefix() + exist1.getLocalSig() + "  with tid: " + ((TIDERace) newone).tid1);
+//				System.out.println("2: " + exist2.getPrefix() + exist2.getLocalSig() + "  with tid: " + ((TIDERace) newone).tid2);
+//			}
+//		}
 
 		bugs.removeAll(removedbugs);
 		bugs.addAll(addedbugs);
@@ -5846,11 +6845,13 @@ public class TIDEEngine {
 
 
 	private void recheckRace() {
-//		System.err.println("Start to detect races INCREMENTALLLy: ");
+		System.err.println("Start to detect races INCREMENTALLLy: ");
 		//1. find shared vars
 		HashSet<String> new_sharedFields = new HashSet<>();
 		//seq
 		for (String sig : interested_rw) {
+			if(sig.contains("critical/Section.turn."))
+				System.out.println();
 			HashMap<Integer, Integer> writeTids = wsig_tid_num_map.get(sig);
 			if(writeTids != null){
 				if(writeTids.keySet().size() > 1){
@@ -5903,7 +6904,7 @@ public class TIDEEngine {
 
 
 	private void recheckLock() {
-//		System.err.println("Start to detect deadlock INCREMENTALLLy:");
+		System.err.println("Start to detect deadlock INCREMENTALLLy:");
 		bughub.tell(new IncrementalDeadlock(interested_l), bughub);
 		awaitBugHubComplete();
 	}

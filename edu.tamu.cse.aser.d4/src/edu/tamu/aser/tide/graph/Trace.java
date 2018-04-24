@@ -71,7 +71,7 @@ public class Trace {
 //		}
 		HashSet<Integer> ekids = pidkidMapping.get(tid);
 		if(ekids == null){
-//			System.out.println("tid <=> kid pair not exist.");
+			System.out.println("tid <=> kid pair not exist.");
 			return;
 		}
 		if(ekids.contains(kid)){
@@ -89,7 +89,7 @@ public class Trace {
 //			return -1;//no such relation
 		HashSet<Integer> ekids = pidkidMapping.get(tid);
 		if(ekids == null){
-//			System.out.println("tid <=> kid pair not exist.");
+			System.out.println("tid <=> kid pair not exist.");
 			return null;
 		}
 		return ekids;

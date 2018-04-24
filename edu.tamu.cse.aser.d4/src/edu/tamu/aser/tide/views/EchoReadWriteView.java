@@ -164,7 +164,7 @@ public class EchoReadWriteView extends ViewPart{
 				if (obj instanceof EventNode) {
 					HashMap<String, IFile> map = new HashMap<>();
 					HashMap<String, Integer> map2 = new HashMap<>();
-					ITreeNode parent = ((EventNode) obj).getParent().getParent();
+					ITreeNode parent = ((EventNode) obj).getParent();
 					if(parent instanceof CSuperWriteNode){
 						CSuperWriteNode node = (CSuperWriteNode) parent;
 						map = node.event_ifile_map;
@@ -181,6 +181,8 @@ public class EchoReadWriteView extends ViewPart{
 					}
 
 					IFile file = map.get(((EventNode) obj).getName());
+					if(file == null)//jdk class
+						return;
 
 					IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 					String editorId = editorRegistry.getDefaultEditor(file.getFullPath().toString()).getId();
@@ -224,7 +226,7 @@ public class EchoReadWriteView extends ViewPart{
 				if (obj instanceof EventNode) {
 					HashMap<String, IFile> map = new HashMap<>();
 					HashMap<String, Integer> map2 = new HashMap<>();
-					ITreeNode parent = ((EventNode) obj).getParent().getParent();
+					ITreeNode parent = ((EventNode) obj).getParent();
 					if(parent instanceof CSuperWriteNode){
 						CSuperWriteNode node = (CSuperWriteNode) parent;
 						map = node.event_ifile_map;
@@ -240,6 +242,8 @@ public class EchoReadWriteView extends ViewPart{
 					}
 
 					IFile file = map.get(((EventNode) obj).getName());
+					if(file == null)//jdk class
+						return;
 
 					IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 					String editorId = editorRegistry.getDefaultEditor(file.getFullPath().toString()).getId();

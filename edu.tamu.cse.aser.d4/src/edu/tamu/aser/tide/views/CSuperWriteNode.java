@@ -35,10 +35,15 @@ public class CSuperWriteNode extends TreeNode{
 	private void initialNode(TIDERace race, int idx) {
 		this.event_ifile_map = race.event_ifile_map;
 		this.event_line_map = race.event_line_map;
-		//trace
-		String name = "Trace of " + write.getSig() + " is :";
-		SubTraceNode subtrace = new SubTraceNode(this, name, race.traceMsg.get(idx - 1));
-		super.children.add(subtrace);
+//		//trace
+//		String name = "Trace of " + write.getSig() + " :";
+//		SubTraceNode subtrace = new SubTraceNode(this, name, race.traceMsg.get(idx - 1));
+//		super.children.add(subtrace);
+		LinkedList<String> events = race.traceMsg.get(idx - 1);
+		for (String event : events) {
+			EventNode eventNode = new EventNode(this, event);
+			super.children.add(eventNode);
+		}
 		//rwlist
 		rwList = new ConcurrentRWList(this);
 //		super.children.add(rwList);
@@ -51,7 +56,7 @@ public class CSuperWriteNode extends TreeNode{
 
 	@Override
 	public ImageDescriptor getImage() {
-		return Activator.getImageDescriptor("datasheet.gif");
+		return Activator.getImageDescriptor("write-icon.png");
 	}
 
 	@Override

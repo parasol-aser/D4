@@ -31,6 +31,6 @@ public class ReadNode extends MemNode{
 //		return " "+TID+" read "+addr +" "+ sig+" "+line;
 		String classname = super.node.getMethod().getDeclaringClass().toString();
 		String methodname = super.node.getMethod().getName().toString();
-		return "Reading at line " + line + " in " + classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
+		return "Read on " + super.getPrefix() + " in " +  classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
 	}
 }

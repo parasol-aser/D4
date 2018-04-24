@@ -98,8 +98,8 @@ public interface BugMarker {
      * @see BugRankCategory
      */
     enum MarkerRank {
-         Scariest("buggy-tiny-green.png"),
-    	 Scary("buggy-tiny-orange.png");
+         Scariest("circle-running-icon.png"),
+    	 Scary("lock-icon.png");
 
 
         private final String icon;

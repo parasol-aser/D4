@@ -5,6 +5,8 @@ import java.util.LinkedList;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 
+import edu.tamu.aser.tide.plugin.Activator;
+
 public class EventNode extends TreeNode{
 	protected String name;
 
@@ -20,8 +22,8 @@ public class EventNode extends TreeNode{
 
 	@Override
 	public ImageDescriptor getImage() {
-//		return Activator.getImageDescriptor("file_icon.png");
-		return null;
+		return Activator.getImageDescriptor("forward_nav.gif");
+//		return null;
 	}
 
 	@Override

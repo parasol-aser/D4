@@ -129,7 +129,7 @@ public class EchoDLView extends ViewPart{
 				ISelection selection = treeViewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
 				if (obj instanceof EventNode) {
-					ITreeNode parent = ((EventNode) obj).getParent().getParent().getParent();
+					ITreeNode parent = ((EventNode) obj).getParent().getParent();
 					if(parent instanceof RaceNode){
 						RaceNode race = (RaceNode) parent;
 						HashMap<String, IFile> map = race.race.event_ifile_map;
@@ -162,6 +162,8 @@ public class EchoDLView extends ViewPart{
 						DeadlockNode dl = (DeadlockNode) parent;
 						HashMap<String, IFile> map = dl.deadlock.event_ifile_map;
 						IFile file = map.get(((EventNode) obj).getName());
+						if(file == null)
+							return;
 
 						IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 						String editorId = editorRegistry.getDefaultEditor(file.getFullPath().toString()).getId();

@@ -16,7 +16,7 @@ import edu.tamu.aser.tide.trace.SyncNode;
 
 public class SHBGraph{
 
-	private HashMap<CGNode, Trace> traceMapping = new HashMap<>();
+	private HashMap<CGNode, Trace> traceMapping = new HashMap<>(); //TODO: may change to <String, Trace>
 	public EdgeManager edgeManager = new EdgeManager();
 	public CGNode main;
 
@@ -78,11 +78,18 @@ public class SHBGraph{
 		}
 	}
 
+
+	private HashMap<CGNode, HashSet<CGNode>> ignore2Callers = new HashMap<>();
+	public HashSet<CGNode> getCallersForIgnored(CGNode node){
+		return ignore2Callers.get(node);
+	}
+
 	public boolean delTrace(CGNode node){
 		if(traceMapping.containsKey(node)){
 			//if remove these nodes, when consider back, they are missing, then require re-traversal insts.
 //			clearSourceINodeFor(node);
-			clearIncomingEdgesFor(node);
+			HashSet<CGNode> callers = clearIncomingEdgesFor(node);
+			ignore2Callers.put(node, callers);
 			clearOutgoingEdgesFor(node);
 			traceMapping.remove(node);
 			//what if node only has one kid with one tid?? should delete
@@ -127,21 +134,16 @@ public class SHBGraph{
 	public int compareParent(SyncNode syncNode, INode inode, int sTID, int iTID) {//inode stays in parent thread
 		// -1: sync -> comper; 1: comper -> sync; 0: ?
 		CGNode iCgNode = inode.getBelonging();
-		Trace trace = getTrace(iCgNode);
-		if(trace != null){
-			ArrayList<INode> list = trace.getContent();
-			int idxI = list.indexOf(inode);
-			int idxS = list.indexOf(syncNode);
-//			if(idxS == -1){
-//				return furtherCompareParent(syncNode, inode, sTID, iTID);
-//			}else{
-				if(idxS < idxI)
-					return -1;
-				else
-					return 1;
-//			}
+		ArrayList<INode> list = getTrace(iCgNode).getContent();
+		int idxI = list.indexOf(inode);
+		int idxS = list.indexOf(syncNode);
+		if(idxS == -1){
+			return furtherCompareParent(syncNode, inode, sTID, iTID);
 		}else{
-			return 0;
+			if(idxS < idxI)
+				return -1;
+			else
+				return 1;
 		}
 	}
 
@@ -228,31 +230,7 @@ public class SHBGraph{
 		int idxJ = list.indexOf(join);
 		if(idxJ == -1 || idxS == -1){
 			parent = start.getBelonging();
-			int relation = compareStartJoin2(start, join, parent);
-			if(relation == 0){
-				parent = join.getBelonging();
-				relation = compareStartJoin2(start, join, parent);
-				if(relation == 0){
-					return whoHappensFirst(start, join, start.getParentTID(), join.getParentTID());
-				}else
-					return relation;
-			}else
-				return relation;
-		}else{
-			if(idxS < idxJ)
-				return -1;
-			else
-				return 1;
-		}
-	}
-
-	public int compareStartJoin2(StartNode start, JoinNode join, CGNode parent) {
-		// -1: start -> join; 1: join -> start; 0: ?
-		ArrayList<INode> list = getTrace(parent).getContent();
-		int idxS = list.indexOf(start);
-		int idxJ = list.indexOf(join);
-		if(idxJ == -1 || idxS == -1){
-			return 0;
+			return compareStartJoin(start, join, parent);
 		}else{
 			if(idxS < idxJ)
 				return -1;
@@ -336,9 +314,9 @@ public class SHBGraph{
 		return edgeManager.getIncomingEdgesOf(node);
 	}
 
-	public void clearIncomingEdgesFor(CGNode node){
+	public HashSet<CGNode> clearIncomingEdgesFor(CGNode node){
 		//only clear incming edges:other node's inode -> node
-		edgeManager.clearIncomingEdgesFor(node);
+		return edgeManager.clearIncomingEdgesFor(node);
 	}
 
 	private void clearSourceINodeFor(CGNode node) {
@@ -584,19 +562,22 @@ class EdgeManager {
 		return edgeMapping.containsKey(inode);
 	}
 
-	public void clearIncomingEdgesFor(CGNode node) {
+	public HashSet<CGNode> clearIncomingEdgesFor(CGNode node) {
 		HashSet<SHBEdge> related = re_edgeMapping.get(node);
+		HashSet<CGNode> callers = new HashSet<>();
 		HashSet<INode> removes = new HashSet<>();
 		for (INode inode : edgeMapping.keySet()) {
 			SHBEdge edge = edgeMapping.get(inode);
 			if(related.contains(edge)){
 				removes.add(inode);
+				callers.add(inode.getBelonging());
 			}
 		}
 		for (INode remove : removes) {
 			edgeMapping.remove(remove);
 		}
 		re_edgeMapping.remove(node);
+		return callers;
 	}
 
 

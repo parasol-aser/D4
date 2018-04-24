@@ -43,10 +43,10 @@ public class TraceNode extends TreeNode{
 //			"Trace of " + rw1.getSig() + " is in thread" + tid1 + ": \n"
 			TIDERace race = ((RaceNode) parent).race;
 			//1st rwnode
-			String name1 = "Trace of " + race.node1.getSig() + " is :";
+			String name1 = "Trace of " + race.node1.getSig() + " :";
 			SubTraceNode subtrace1 = new SubTraceNode(this, name1, trace1);
 			//2nd rwnode
-			String name2 = "Trace of " + race.node2.getSig() + " is :";
+			String name2 = "Trace of " + race.node2.getSig() + " :";
 			SubTraceNode subtrace2 = new SubTraceNode(this, name2, trace2);
 			super.children.add(subtrace1);
 			super.children.add(subtrace2);
@@ -54,10 +54,10 @@ public class TraceNode extends TreeNode{
 //			"Trace of 1st lockpair is in thread" + tid1 + " : "
 			TIDEDeadlock deadlock = ((DeadlockNode) parent).deadlock;
 			//1st lockpair
-			String name1 = "Trace of 1st lockpair is :";
+			String name1 = "Trace of 1st lockpair ";
 			SubTraceNode subtrace1 = new SubTraceNode(this, name1, trace1);
 			//2nd lockpair
-			String name2 = "Trace of 2nd lockpair is :";
+			String name2 = "Trace of 2nd lockpair :";
 			SubTraceNode subtrace2 = new SubTraceNode(this, name2, trace2);
 			super.children.add(subtrace1);
 			super.children.add(subtrace2);

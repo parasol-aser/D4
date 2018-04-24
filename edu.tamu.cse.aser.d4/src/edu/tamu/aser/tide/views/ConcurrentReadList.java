@@ -26,7 +26,7 @@ public class ConcurrentReadList extends TreeNode{
 
 	@Override
 	public ImageDescriptor getImage() {
-		return Activator.getImageDescriptor("folder_icon.gif");
+		return Activator.getImageDescriptor("parallel.png");
 	}
 
 	@Override

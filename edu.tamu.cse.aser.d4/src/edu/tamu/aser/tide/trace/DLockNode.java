@@ -102,7 +102,7 @@ public class DLockNode extends SyncNode{
 
 	public String toString(){
 		String methodname = node.getMethod().getName().toString();
-		return "Lock at line "+ line + " in " + instSig.substring(0, instSig.indexOf(':')) +"." + methodname;
+		return "Lock in " + instSig.substring(0, instSig.indexOf(':')) +"." + methodname + "(" + getInstSig() + ")";
 //		return " "+TID+" lock "+ locksigs;
 	}
 
