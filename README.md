@@ -22,18 +22,32 @@ We provide a docker image running D4 on a local machine with a user-defined numb
 in your terminal. If you see an error: ````Please login prior to pull: Login with your Docker ID to push and pull images from Docker Hub.````, please goto [https://hub.docker.com/](https://hub.docker.com/) to register an account and login.
 
 ### Running D4
+#### Run D4 on a local machine
+To perform the analysis for benchmark ````sunflow```` with a short version of exclused packages using 8 threads, we run the main method of class ````ReproduceBenchmarks```` in ````edu.tamu.cse.aser.d4```` with the program argument ````sunflow_short 8````.
 
-### BOZHEN: add a tutorial here (plus a video demo)
+The exclused packages can be modified by adding/removing package names in ````ShortDefaultExclusions.txt```` of ````edu.tamu.cse.aser.d4````.
 
+#### Run D4 both on a local machine and a server
+##### 1. Pack the jar running on server
+Replace the hostnames of the local pc (labeled with #local pc) and remote server (labeled with #local pc) in ````master.conf```` and ````worker.conf```` in ````edu.tamu.cse.aser.d4```` and ````edu.tamu.cse.aser.d4remote```` by your pc and server addresses.
+
+Generate a runnable jar of ````BackendStart```` in ````edu.tamu.cse.aser.d4remote```` with all the dependencies copied to a sub-folder.
+
+Transfer the jar, its dependency folder and the data folder of ````edu.tamu.cse.aser.d4remote```` to the remote server. For example, you can use FileZilla.
+
+##### 2. Run D4 
+To perform the analysis for benchmark ````sunflow```` with a short version of exclusion packages, we need to run the remote jar with the command: ````java -Dconfig.file=worker.conf -jar backend.jar sunflow_short````. Then, run the main of class ````ReproduceBenchmarks```` in ````edu.tamu.cse.aser.d4```` with the program argument ````sunflow_short````. The analysis is performed with a default thread number of 48. 
+
+A video demo is available at [YouTube]().
 
 ### Running D4 with Your Own Application 
-We provide an Eclipse plugin that implements the techniques in D4. You can launch the plugin by following:  ````/edu.tamu.cse.aser.d4```` -> ````MANIFEST.MF```` -> Testing -> Launch an Eclipse application. 
+We provide an Eclipse plugin that implements the techniques in D4. You can launch the plugin by following:  ````/edu.tamu.cse.aser.d4```` -> ````MANIFEST.MF```` -> Testing -> Launch an Eclipse application. A video demo is available at [YouTube](https://www.youtube.com/watch?v=88W40z15kR4).
 
-In the launched Eclipse workspace, you can create a new project or import your existing project. We provide an example code in ````edu.tamu.cse.aser.plugintests````. You can start the plugin by right-clicking the main class that you want to test, choose "ASER" and "ECHO", then, the initial detection starts to run. You can go to Window -> Show View -> Others to select our views (i.e. ECHO Concurrent Relations, ECHO Race List, ECHO Deadlock List) that report all the detected bugs. 
+In the launched Eclipse workspace, you can create a new project or import your existing project. We provide an example code in ````edu.tamu.cse.aser.plugintests````. You can start the plugin by right-clicking the main class that you want to test, choose "ASER" and "D4", then, the initial detection starts to run. You can go to Window -> Show View -> Others to select our views (i.e. D4 Concurrent Relations, D4 Race List, D4 Deadlock List) that report all the detected bugs. 
 
 Then, you can make some changes in your program to fix the bugs and save the program. The plugin will run our incremental techniques to update the views according to the added/fixed bugs.
 
-For some variables or methods that you do not want to analyze, you can right-click the variables/methods shown in the Outline or the races/concurrent relations to go to ECHO Bug Choice -> Ignore This Variable. 
+For some variables or methods that you do not want to analyze, you can right-click the variables/methods shown in the Outline or the races/concurrent relations to go to D4 Bug Choice -> Ignore This Variable. 
 
 
 ### Authors
