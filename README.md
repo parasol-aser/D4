@@ -3,8 +3,7 @@
 D4 is a tool that interatively detects concurrency errors in multithreaded Java programs in the Eclipse IDE. For most code changes, it detects data races and deadlocks instantly, i.e., less than 100ms after the change is introduced. D4 is powered by a distributed system design and a set of parallel incremental algorithms for pointer analysis and happens-before analysis. We have also successfully integrated the pointer analysis code into the popular [WALA](https://github.com/april1989/Incremental_Points_to_Analysis.git) framework.
 
 We provide an Eclipse plugin that implements the techniques in D4 and a video demo to introduce its features: 
-[![here](https://github.com/parasol-aser/D4/blob/master/d4_demo_fig.png)](https://www.youtube.com/watch?v=88W40z15kR4)
-
+<iframe width="560" height="315" src="https://www.youtube.com/embed/sAF4WYl7ANU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 If you use this resource, please cite our PLDI'18 paper: "D4: Fast Concurrency Debugging with Parallel Differential Analysis".
 
 ### Software Dependencies
