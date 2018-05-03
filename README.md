@@ -4,7 +4,7 @@ D4 is a tool that interatively detects concurrency errors in multithreaded Java 
 
 A video demo of D4 is here:
 
-[![IMAGE ALT TEXT](https://img.youtube.com/vi/sAF4WYl7ANU/hqdefault.jpg)](https://www.youtube.com/watch?v=sAF4WYl7ANU&t=148s "D4 Demo")
+[![IMAGE ALT TEXT](https://github.com/parasol-aser/D4/blob/master/d4_demo_fig.png)](https://www.youtube.com/watch?v=sAF4WYl7ANU&t=148s "D4 Demo")
 
 If you use this resource, please cite our PLDI'18 paper: "D4: Fast Concurrency Debugging with Parallel Differential Analysis".
 
