@@ -11,8 +11,8 @@ If you use this resource, please cite our PLDI'18 paper: "D4: Fast Concurrency D
 ### Software Dependencies
 - Java 1.8 to compile
 - Eclipse PDE
-- WALA (included)
-- Akka (included)
+- [WALA 1.3.4](https://github.com/wala/WALA) (included)
+- [Akka](https://akka.io/) (included)
 
 ### Build D4 
 
