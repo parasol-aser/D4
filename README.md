@@ -2,7 +2,7 @@
 
 D4 is a tool that detects data races and deadlocks interactively in the Eclipse IDE for Java. For most code changes, it finishes in less than 0.1s after the change is introduced. A video demo of D4 is available below:
 
-[![IMAGE ALT TEXT](https://github.com/parasol-aser/D4/blob/master/d4_demo_fig.png)](https://www.youtube.com/watch?v=sAF4WYl7ANU&t=148s "D4 Demo")
+[![IMAGE|small](./d4_demo_fig.png)](https://www.youtube.com/watch?v=sAF4WYl7ANU&t "D4 Demo")
 
 ### Software Dependencies
 - Java 1.8 to compile
