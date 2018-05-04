@@ -1,5 +1,4 @@
-# D4: 
-## Fast Concurrency Debugging with Parallel Differential Analysis
+# D4: Fast Concurrency Debugging with Parallel Differential Analysis
 
 D4 is a tool that detects data races and deadlocks interactively in the Eclipse IDE for Java. For most code changes, it finishes in less than 0.1s after the change is introduced. A video demo of D4 is available below:
 
