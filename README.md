@@ -42,4 +42,4 @@ D4 is powered by a set of parallel incremental algorithms for pointer analysis a
 
 If you use this resource, please cite our paper: 
 
-[PLDI'18] "[D4: Fast Concurrency Debugging with Parallel Differential Analysis](https://parasol.tamu.edu/~jeff/d4.pdf)"
+[PLDI'18] "[D4: Fast Concurrency Debugging with Parallel Differential Analysis](https://parasol.tamu.edu/~jeff/academic/d4.pdf)"
