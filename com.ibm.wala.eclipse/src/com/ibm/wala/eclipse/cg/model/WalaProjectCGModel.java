@@ -43,15 +43,18 @@ import com.ibm.wala.util.strings.Atom;
 
 abstract public class WalaProjectCGModel implements WalaCGModel {
 
-  protected AbstractAnalysisEngine engine;
+  protected JDTJavaSourceAnalysisEngine engine;
 
   protected CallGraph callGraph;
 
   protected Collection roots;
 
+  private CallGraphBuilder builder;
+
   protected WalaProjectCGModel(IJavaProject project, final String exclusionsFile) throws IOException, CoreException{
 
     final EclipseProjectPath ep = JavaEclipseProjectPath.make(project, EclipseProjectPath.AnalysisScopeType.SOURCE_FOR_PROJ);
+
     this.engine = new JDTJavaSourceAnalysisEngine(project) {
       @Override
       public void buildAnalysisScope() {
@@ -73,13 +76,7 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
         return getEntrypoints(scope, cha);
       }
 
-      //JEFF
-      @Override
-      protected CallGraphBuilder getCallGraphBuilder(IClassHierarchy cha,
-          AnalysisOptions options, AnalysisCache cache) {
-        return super.getCallGraphBuilder(cha, options, cache);
-      }
-
+      @SuppressWarnings("unused")
       private void addCustomBypassLogic(IClassHierarchy classHierarchy, AnalysisOptions analysisOptions) throws IllegalArgumentException {
         ClassLoader classLoader = Util.class.getClassLoader();
         if (classLoader == null) {
@@ -102,13 +99,18 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
 
   public void buildGraph() throws WalaException, CancelException {
     try {
-      callGraph = engine.buildDefaultCallGraph();
+      builder = engine.defaultCallGraphBuilder();
+      callGraph = builder.makeCallGraph(engine.getOptions(), null);
       roots = inferRoots(callGraph);
     } catch (IllegalArgumentException e) {
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public CallGraphBuilder getCallGraphBuilder() {
+    return builder;
   }
 
   public CallGraph getGraph() {

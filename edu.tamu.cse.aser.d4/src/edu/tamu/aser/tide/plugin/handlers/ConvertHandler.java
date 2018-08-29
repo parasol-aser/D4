@@ -149,7 +149,7 @@ public class ConvertHandler extends AbstractHandler {
 			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
 			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
 
-			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
+			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha);
 			List<Module> modules = new LinkedList<Module>();
 			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
 			cl.init(modules);
@@ -210,7 +210,7 @@ public class ConvertHandler extends AbstractHandler {
 			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
 			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
 
-			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
+			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha);
 			List<Module> modules = new LinkedList<Module>();
 			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
 			cl.init(modules);
@@ -350,7 +350,7 @@ public class ConvertHandler extends AbstractHandler {
 			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
 			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
 
-			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
+			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha);
 			List<Module> modules = new LinkedList<Module>();
 			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
 			cl.init(modules);
