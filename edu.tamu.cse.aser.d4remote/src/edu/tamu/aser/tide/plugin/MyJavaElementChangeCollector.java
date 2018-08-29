@@ -17,8 +17,6 @@ import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.core.SourceType;
 
 
-
-
 public class MyJavaElementChangeCollector implements IElementChangedListener{
 	/**
 	 * only collect changes here

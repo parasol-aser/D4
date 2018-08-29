@@ -65,11 +65,11 @@ public class StartNode extends SyncNode{
 		if(node == null){//main
 			String tclassname = target.getMethod().getDeclaringClass().toString();
 			String tmethodname = target.getMethod().getName().toString();
-			return "In Main Thread" + selfTID + ", created by " + tclassname.substring(tclassname.indexOf(':') +3, tclassname.length()) + "." + tmethodname;
+			return "Main thread created by " + tclassname.substring(tclassname.indexOf(':') +3, tclassname.length()) + "." + tmethodname;
 		}else{
 			String pclassname = node.getMethod().getDeclaringClass().toString();
 			String pmethodname = node.getMethod().getName().toString();
-			return "In Kid Thread" + selfTID + ", created by " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname + " on line " + linenum;
+			return "Child thread created by " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname ;
 		}
 	}
 	@Override

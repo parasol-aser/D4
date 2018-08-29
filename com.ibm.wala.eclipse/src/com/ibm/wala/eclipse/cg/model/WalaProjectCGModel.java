@@ -77,7 +77,6 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
       @Override
       protected CallGraphBuilder getCallGraphBuilder(IClassHierarchy cha,
           AnalysisOptions options, AnalysisCache cache) {
-
         return super.getCallGraphBuilder(cha, options, cache);
       }
 

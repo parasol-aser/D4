@@ -40,7 +40,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import edu.tamu.aser.tide.akkasys.BugHub;
+import edu.tamu.aser.tide.akkabug.BugHub;
 import edu.tamu.aser.tide.dist.remote.master.DistributeMaster;
 import edu.tamu.aser.tide.engine.AnalysisUtils;
 import edu.tamu.aser.tide.engine.ITIDEBug;
@@ -731,6 +731,7 @@ public class ReproduceBenchmarks {
 							if(includeAll
 									||klass.getName().toString().contains(mainClassName))
 								result.add(new DefaultEntrypoint(method, classHierarchy));
+							System.out.println("+++++ " + method.toString());
 						}
 						else if(method.isPublic()&&!method.isStatic()
 								&&method.getName().toString().equals("run")

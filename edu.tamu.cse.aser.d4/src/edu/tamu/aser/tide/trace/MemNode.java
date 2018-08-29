@@ -75,7 +75,7 @@ public abstract class MemNode implements INode {
 				if(this.objsigs.equals(thatnode.objsigs)
 						&& this.prefix.equals(thatnode.prefix)
 						&& this.localSig.equals(((MemNode) that).localSig)
-						&& this.file.equals(thatnode.file)
+//						&& this.file.equals(thatnode.file)
 //						&& this.line == ((MemNode) that).line//line??
 						){
 					return true;

@@ -161,7 +161,6 @@ abstract public class AstClass implements IClass, ClassConstants {
   }
   @Override
   public void updateMethod(Selector selector, IMethod method) {
-
     if (declaredMethods.containsKey(selector)) {
       declaredMethods.put(selector, method);
     } else if (getSuperclass() != null) {
@@ -184,6 +183,7 @@ abstract public class AstClass implements IClass, ClassConstants {
     // assume that for AST classes, you can't have multiple fields with the same name
     return getField(name);
   }
+
   @Override
   public Collection<IMethod> getDeclaredMethods() {
     return declaredMethods.values();

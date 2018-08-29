@@ -63,8 +63,8 @@ import com.ibm.wala.util.graph.InferGraphRoots;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import edu.tamu.aser.tide.akkasys.BugHub;
-import edu.tamu.aser.tide.akkasys.BugWorker;
+import edu.tamu.aser.tide.akkabug.BugHub;
+import edu.tamu.aser.tide.akkabug.BugWorker;
 import edu.tamu.aser.tide.graph.SHBEdge;
 import edu.tamu.aser.tide.graph.SHBGraph;
 import edu.tamu.aser.tide.marker.BugMarker;
@@ -1187,20 +1187,6 @@ public class TIDECGModel extends WalaProjectCGModel {
         ControlFlowGraph<SSAInstruction, ISSABasicBlock> cfg_old = ir_old.getControlFlowGraph();
         ControlFlowGraph<SSAInstruction, ISSABasicBlock> cfg_new = ir.getControlFlowGraph();
 
-//        for (Iterator<ISSABasicBlock> x = cfg.iterator(); x.hasNext();) {
-//          BasicBlock b = (BasicBlock) x.next();
-//       // visit each instruction in the basic block.
-//          for (Iterator<SSAInstruction> it = b.iterator(); it.hasNext();) {
-//        	  SSAInstruction inst = it.next();
-//              if (inst != null) {
-//
-//            	  String str = inst.toString();
-//        			if(str.indexOf('@')>0)
-//        				str = str.substring(0,str.indexOf('@')-1);
-//        			mapOld.put(str, inst);
-//              }
-//          }
-//        }
 
     	for(int i=0;i<insts_old.length;i++)
     	{
@@ -1227,9 +1213,6 @@ public class TIDECGModel extends WalaProjectCGModel {
     			mapNew.put(str, inst);
     		}
     	}
-    	//NOT WORKING
-    	//int use = insts[6].getUse(1);
-    	//SSAConversion.undoCopyPropagation( (AstIR)ir, 6, use);
 
     	HashMap<SSAInstruction,ISSABasicBlock> deleted = new HashMap<SSAInstruction,ISSABasicBlock>();
     	HashMap<SSAInstruction,ISSABasicBlock> added = new HashMap<SSAInstruction,ISSABasicBlock>();
@@ -1260,46 +1243,6 @@ public class TIDECGModel extends WalaProjectCGModel {
     			added.put(inst,bb);
     		}
     	}
-    	//added.removeAll(mapOld.keySet());
-    	//deleted.removeAll(mapNew.keySet());
-
-
-//    	if(false)
-//        	{
-//        	if(!deleted.isEmpty())
-//        	{
-//        		System.err.println("Deleted Instructions");
-//
-//	        	for(Object o: deleted.keySet())
-//	        		System.out.println(o);
-//        	}
-//        	if(!added.isEmpty())
-//        	{
-//        		System.err.println("Added Instructions");
-//	        	for(Object o: added.keySet())
-//	        		System.out.println(o);
-//        	}
-//    	}
-
-
-//    	int size_old = insts_old.length;
-//    	int size = insts.length;
-//    	for(int i=0, j=0;i<size_old&&j<size;)
-//    	{
-//    		SSAInstruction i_old = insts_old[i];
-//    		SSAInstruction i_new = insts[i];
-//    		if(!i_old.equals(i_new))
-//    		{
-//
-//    		}
-//    	}
-
-    	//UPDATE IR, CALL GRAPH, CHA, PTA
-//    	model.getCache().getSSACache().updateMethodIR(m_old, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions(),ir);
-
-//    	HashSet set = new HashSet();
-//    	set.add(class_old);
-//    	loader_old.removeAll(set);
 
 		engine.updatePointerAnalaysis(node, added,deleted,ir_old, ir);
 	}

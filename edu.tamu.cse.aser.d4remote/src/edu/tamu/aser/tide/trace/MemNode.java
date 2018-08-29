@@ -66,7 +66,7 @@ public abstract class MemNode implements INode {
 //		}
 //		return false;
 //	}
-
+	@Override
 	public boolean equals(Object that){
 		if(that instanceof MemNode){
 			MemNode thatnode = (MemNode) that;
@@ -75,8 +75,9 @@ public abstract class MemNode implements INode {
 				if(this.objsigs.equals(thatnode.objsigs)
 						&& this.prefix.equals(thatnode.prefix)
 						&& this.localSig.equals(((MemNode) that).localSig)
-						&& this.line == ((MemNode) that).line
-						){//line??
+//						&& this.file.equals(thatnode.file)
+//						&& this.line == ((MemNode) that).line//line??
+						){
 					return true;
 				}
 			}

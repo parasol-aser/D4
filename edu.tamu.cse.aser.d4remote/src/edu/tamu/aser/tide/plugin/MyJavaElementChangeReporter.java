@@ -2,6 +2,7 @@ package edu.tamu.aser.tide.plugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -18,9 +19,12 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.internal.core.JavaElementDelta;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.core.SourceType;
@@ -203,6 +207,20 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 //			changed.className = "";
 //			changed.methodName = "";
 		}
+
+		@Override
+		public boolean visit(VariableDeclarationStatement node) {
+			for (Iterator iter = node.fragments().iterator(); iter.hasNext();) {
+				VariableDeclarationFragment fragment = (VariableDeclarationFragment) iter.next();
+				// ... store these fragments somewhere
+			}
+			return false; // prevent that SimpleName is interpreted as reference
+		}
+
+		@Override
+		public boolean visit(FieldDeclaration node) {
+			return false;
+		};
 
 		@Override
 		public boolean visit(MethodDeclaration node) {

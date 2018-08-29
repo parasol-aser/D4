@@ -318,8 +318,7 @@ public abstract class AbstractAnalysisEngine implements AnalysisEngine {
   public CallGraphBuilder builder_echo;
   public CallGraph buildDefaultCallGraph() throws IllegalArgumentException, CancelException, IOException {
     builder_echo = defaultCallGraphBuilder();
-
-    return builder_echo.getCallGraph();//.makeCallGraph(options, null);
+    return builder_echo.getCallGraph();
   }//JEFF
 
   public AnalysisCache getCache() {
@@ -332,8 +331,7 @@ public abstract class AbstractAnalysisEngine implements AnalysisEngine {
 
 
   public void updatePointerAnalaysis(CGNode node, Map added, Map deleted, IR ir_old, IR ir) {
-//changed, only remove old
-    if(builder_echo!=null && builder_echo instanceof SSAPropagationCallGraphBuilder){
+    if(builder_echo != null && builder_echo instanceof SSAPropagationCallGraphBuilder){
       DefUse du_old = new DefUse(ir_old);
       ConstraintVisitor v_old = ((SSAPropagationCallGraphBuilder)builder_echo).makeVisitor(node);
       v_old.setIR(ir_old);
@@ -344,7 +342,6 @@ public abstract class AbstractAnalysisEngine implements AnalysisEngine {
       v_new.setDefUse(du_new);
       builder_echo.updatePointerAnalaysis(node, added, deleted, v_old, v_new);
     }
-
   }
 
 }

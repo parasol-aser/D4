@@ -62,8 +62,8 @@ public class MethodNode implements INode {
 		String methodname1 = target.getMethod().getName().toString();
 		String classname = method.getMethod().getDeclaringClass().toString();
 		String methodname = method.getMethod().getName().toString();
-		return "Calling " + classname1.substring(classname1.indexOf(':') +3, classname1.length()) + "." + methodname1 + " at line " + line
-				+ " in " + classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
+		return "Call " + classname1.substring(classname1.indexOf(':') +3, classname1.length()) + "." + methodname1 +
+				 " from " + classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
 	}
 
 }

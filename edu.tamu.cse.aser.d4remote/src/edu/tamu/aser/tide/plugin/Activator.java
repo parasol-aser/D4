@@ -26,6 +26,7 @@ public class Activator extends AbstractUIPlugin {
 
 //	public static IJavaProject project;
 	private ConvertHandler chandler;
+//	private TriggerCheckHandler tHandler;
 	/**
 	 * The constructor
 	 */
@@ -85,11 +86,18 @@ public class Activator extends AbstractUIPlugin {
 		return this.chandler;
 	}
 
+//	public TriggerCheckHandler getTriggerCheckHandler(){
+//		return this.tHandler;
+//	}
 
 	public void setCHandler(ConvertHandler convertHandler) {
 
 		this.chandler = convertHandler;
 	}
+
+//	public void setTHandler(TriggerCheckHandler triggerCheckHandler) {
+//		this.tHandler = triggerCheckHandler;
+//	}
 
 	public static ImageDescriptor getImageDescriptor(String name) {
 		String iconPath = "icons/";

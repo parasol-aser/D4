@@ -229,8 +229,9 @@ public class SHBGraph{
 		int idxS = list.indexOf(start);
 		int idxJ = list.indexOf(join);
 		if(idxJ == -1 || idxS == -1){
-			parent = start.getBelonging();
-			return compareStartJoin(start, join, parent);
+//			parent = start.getBelonging();
+//			return compareStartJoin(start, join, parent);
+			return 0;
 		}else{
 			if(idxS < idxJ)
 				return -1;

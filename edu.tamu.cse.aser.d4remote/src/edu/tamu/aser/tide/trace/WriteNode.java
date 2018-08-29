@@ -29,6 +29,6 @@ public class WriteNode extends MemNode{
 //		return " "+TID+" write "+addr +" "+ sig+" "+line;
 		String classname = super.node.getMethod().getDeclaringClass().toString();
 		String methodname = super.node.getMethod().getName().toString();
-		return "Writing at line " + line + " in " + classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
+		return "Write to " + super.getPrefix() + " in " + classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
 	}
 }
