@@ -16,9 +16,11 @@ Require-Bundle: org.eclipse.jdt.ui,
  com.ibm.wala.shrike;bundle-version="1.1.3",
  com.ibm.wala.ide;bundle-version="1.1.3",
  org.eclipse.jface.text,
- com.ibm.wala.ide.jdt
+ com.ibm.wala.ide.jdt,
+ edu.tamu.wala.increpta
 Bundle-ActivationPolicy: lazy
-Export-Package: com.ibm.wala.eclipse.cg.model,
+Export-Package: com.ibm.wala.cast.java.client.d4,
+ com.ibm.wala.eclipse.cg.model,
  com.ibm.wala.eclipse.cg.views,
  com.ibm.wala.eclipse.util
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

@@ -13,11 +13,13 @@ package com.ibm.wala.eclipse.cg.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 
 import com.ibm.wala.cast.java.client.JDTJavaSourceAnalysisEngine;
+import com.ibm.wala.cast.java.client.d4.D4JDTJavaSourceAnalysisEngine;
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope;
 import com.ibm.wala.client.AbstractAnalysisEngine;
 import com.ibm.wala.ide.util.EclipseProjectPath;
@@ -25,43 +27,49 @@ import com.ibm.wala.ide.util.JavaEclipseProjectPath;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.ClassTargetSelector;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.Util;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.summaries.BypassClassTargetSelector;
 import com.ibm.wala.ipa.summaries.BypassMethodTargetSelector;
 import com.ibm.wala.ipa.summaries.XMLMethodSummaryReader;
+import com.ibm.wala.ssa.DefUse;
+import com.ibm.wala.ssa.IR;
+import com.ibm.wala.ssa.ISSABasicBlock;
+import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.config.FileOfClasses;
 import com.ibm.wala.util.debug.Assertions;
 import com.ibm.wala.util.strings.Atom;
 
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGraphBuilder;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGraphBuilder.ConstraintVisitor;
+
 abstract public class WalaProjectCGModel implements WalaCGModel {
 
-  protected JDTJavaSourceAnalysisEngine engine;
+  protected D4JDTJavaSourceAnalysisEngine engine;
 
   protected CallGraph callGraph;
 
   protected Collection roots;
 
-  private CallGraphBuilder builder;
-
   protected WalaProjectCGModel(IJavaProject project, final String exclusionsFile) throws IOException, CoreException{
 
     final EclipseProjectPath ep = JavaEclipseProjectPath.make(project, EclipseProjectPath.AnalysisScopeType.SOURCE_FOR_PROJ);
 
-    this.engine = new JDTJavaSourceAnalysisEngine(project) {
+    this.engine = new D4JDTJavaSourceAnalysisEngine(project) {
       @Override
       public void buildAnalysisScope() {
         try {
           scope = ep.toAnalysisScope(new JavaSourceAnalysisScope());
           setExclusionsFile(exclusionsFile);
-          //scope.setExclusions(FileOfClasses.createFileOfClasses(new File(getExclusionsFile())));
 
           if(getExclusionsFile()!=null) {
             InputStream is = WalaProjectCGModel.class.getClassLoader().getResourceAsStream(getExclusionsFile());
@@ -99,8 +107,7 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
 
   public void buildGraph() throws WalaException, CancelException {
     try {
-      builder = engine.defaultCallGraphBuilder();
-      callGraph = builder.makeCallGraph(engine.getOptions(), null);
+      callGraph = ((IPASSAPropagationCallGraphBuilder) engine.defaultCallGraphBuilder()).getCallGraph();//AstJavaIPAZeroXCFABuilder
       roots = inferRoots(callGraph);
     } catch (IllegalArgumentException e) {
       e.printStackTrace();
@@ -110,7 +117,7 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
   }
 
   public CallGraphBuilder getCallGraphBuilder() {
-    return builder;
+    return engine.getBuilder();
   }
 
   public CallGraph getGraph() {
@@ -121,12 +128,13 @@ abstract public class WalaProjectCGModel implements WalaCGModel {
     return roots;
   }
 
-  public AbstractAnalysisEngine getEngine(){
+  public D4JDTJavaSourceAnalysisEngine getEngine() {
     return engine;
   }
 
   abstract protected Iterable<Entrypoint> getEntrypoints(AnalysisScope scope, IClassHierarchy cha);
 
   abstract protected Collection inferRoots(CallGraph cg) throws WalaException;
+
 
 }
