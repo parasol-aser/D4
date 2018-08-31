@@ -7,18 +7,22 @@ D4 is a tool that detects data races and deadlocks interactively in the Eclipse 
 ### Software Dependencies
 - Java 1.8 to compile
 - Eclipse PDE
-- [WALA 1.3.4](https://github.com/wala/WALA) (included)
+- [WALA 1.5.0](https://github.com/wala/WALA)
+- [Incremental Pointer Analysis](https://github.com/april1989/Incremental_Points_to_Analysis.git)(submodule)
 - [Akka](https://akka.io/) (included)
 
 ### Build and Run D4 
 
-````git clone git@github.com:parasol-aser/D4.git```` and import all the projects into Eclipse. 
+````git clone https://github.com/wala/WALA```` 
 
-Launch the plugin:  ````/edu.tamu.cse.aser.d4```` -> ````MANIFEST.MF```` -> Testing -> Launch an Eclipse application. 
+
+````git clone --recurse-submodules git@github.com:parasol-aser/D4.git```` 
+
+Import all the projects into Eclipse, and launch the plugin:  ````/edu.tamu.cse.aser.d4```` -> ````MANIFEST.MF```` -> Testing -> Launch an Eclipse application. 
 
 In the newly launched Eclipse application, right-click a main class in Package Explorer, select ASER -> D4.
 
-The incremental detection can be triggered by save the changed files.
+The incremental detection can be triggered by saving the changed files.
 
 #### D4 views
 
