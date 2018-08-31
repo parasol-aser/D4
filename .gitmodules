@@ -1,0 +1,3 @@
+[submodule "Incremental_Points_to_Analysis"]
+	path = Incremental_Points_to_Analysis
+	url = https://github.com/april1989/Incremental_Points_to_Analysis.git
