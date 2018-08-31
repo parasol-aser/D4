@@ -11,6 +11,7 @@ import org.osgi.framework.BundleContext;
 
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
 //import edu.tamu.aser.tide.plugin.handlers.TriggerCheckHandler;
+import edu.tamu.aser.tide.plugin.handlers.TriggerCheckHandler;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -23,11 +24,11 @@ public class Activator extends AbstractUIPlugin {
 	// The shared instance
 	private static Activator plugin;
 	private static MyJavaElementChangeReporter reporter;
-//	private static MyJavaElementChangeCollector collector;
+	private static MyJavaElementChangeCollector collector;
 
 //	public static IJavaProject project;
 	private ConvertHandler chandler;
-//	private TriggerCheckHandler tHandler;
+	private TriggerCheckHandler tHandler;
 	/**
 	 * The constructor
 	 */
@@ -39,9 +40,9 @@ public class Activator extends AbstractUIPlugin {
 		return reporter;
 	}
 
-//	public MyJavaElementChangeCollector getMyJavaElementChangeCollector(){
-//		return collector;
-//	}
+	public MyJavaElementChangeCollector getMyJavaElementChangeCollector(){
+		return collector;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -79,26 +80,26 @@ public class Activator extends AbstractUIPlugin {
 		return reporter;
 	}
 
-//	public static MyJavaElementChangeCollector getDefaultCollector(){
-//		return collector;
-//	}
+	public static MyJavaElementChangeCollector getDefaultCollector(){
+		return collector;
+	}
 
 	public ConvertHandler getConvertHandler(){
 		return this.chandler;
 	}
 
-//	public TriggerCheckHandler getTriggerCheckHandler(){
-//		return this.tHandler;
-//	}
+	public TriggerCheckHandler getTriggerCheckHandler(){
+		return this.tHandler;
+	}
 
 	public void setCHandler(ConvertHandler convertHandler) {
 
 		this.chandler = convertHandler;
 	}
 
-//	public void setTHandler(TriggerCheckHandler triggerCheckHandler) {
-//		this.tHandler = triggerCheckHandler;
-//	}
+	public void setTHandler(TriggerCheckHandler triggerCheckHandler) {
+		this.tHandler = triggerCheckHandler;
+	}
 
 	public static ImageDescriptor getImageDescriptor(String name) {
 		String iconPath = "icons/";

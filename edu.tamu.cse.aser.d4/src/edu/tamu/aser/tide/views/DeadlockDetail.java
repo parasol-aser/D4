@@ -52,17 +52,6 @@ public class DeadlockDetail extends TreeNode{
 			map.remove(msg);
 			children.remove(remove);
 		}
-//		DeadlockNode removethis = null;
-//		//remove this node
-//		for (Object object : children) {
-//			DeadlockNode dlnode = (DeadlockNode) object;
-//			String msg = dlnode.getName();//racemsg
-//			if(msg.equals(deadlock.deadlockMsg)){
-//				//same node
-//				removethis = dlnode;
-//			}
-//		}
-//		children.remove(removethis);
 	}
 
 	public void clear() {

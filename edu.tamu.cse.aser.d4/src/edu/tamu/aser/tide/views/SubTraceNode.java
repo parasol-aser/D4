@@ -34,7 +34,6 @@ public class SubTraceNode extends TreeNode{
 
 	@Override
 	public ImageDescriptor getImage() {
-//		return Activator.getImageDescriptor("forward_nav.gif");
 		return null;
 	}
 

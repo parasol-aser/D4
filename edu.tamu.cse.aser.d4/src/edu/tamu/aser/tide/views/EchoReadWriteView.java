@@ -47,8 +47,6 @@ public class EchoReadWriteView extends ViewPart{
 	protected TreeViewer concurentRelationViewer;
 	protected BugLabelProvider labelProvider;
 	protected BugDetail bugDetail;
-//	protected RaceDetail raceDetail;
-//	protected DeadlockDetail deadlockDetail;
 	protected RelationDetail relationDetail;
 
 	protected Action jumpToLineInEditor;
@@ -295,7 +293,7 @@ public class EchoReadWriteView extends ViewPart{
 
 	private Object curDetail = null;
 
-	public void initialGUI(Set<ITIDEBug> bugs) {
+	public void initialGUI(Set<TIDERace> bugs) {
 		//clear all
 		if(curDetail != null){
 			concurentRelationViewer.remove(curDetail);
@@ -306,30 +304,22 @@ public class EchoReadWriteView extends ViewPart{
 		//refresh
 		rootViewer.refresh();
 		concurentRelationViewer.refresh();
-		rootViewer.setInput(translateToInput((HashSet<ITIDEBug>) bugs));
-//		rootViewer.expandAll();
+		rootViewer.setInput(translateToInput((HashSet<TIDERace>) bugs));
 		rootViewer.expandToLevel(relationDetail, 1);
 	}
 
 
-	@SuppressWarnings("unchecked")
-	public void updateGUI(HashSet<ITIDEBug> addedbugs, HashSet<ITIDEBug> removedbugs) {
-		HashSet<ITIDEBug> addedbugsClone = (HashSet<ITIDEBug>)addedbugs.clone();
-//		addedbugs.removeAll(removedbugs);
-//		removedbugs.removeAll(addedbugsClone);
+	public void updateGUI(HashSet<TIDERace> addedbugs, HashSet<TIDERace> removedbugs) {
 		//only update changed bugs
-		for (ITIDEBug removed : removedbugs) {
+		for (TIDERace removed : removedbugs) {
 			if(existingbugs.contains(removed)){
-				if(removed instanceof TIDERace){
-					TIDERace race = (TIDERace) removed;
-					String sig = race.sig;
-					boolean noleft = relationDetail.removeChild(race, sig);//remove one race from relation
-					if(noleft){
-						relationDetail.removeThisEntry(sig);
-						existingSigs.remove(sig);
-					}
-					existingbugs.remove(removed);
+				String sig = removed.sig;
+				boolean noleft = relationDetail.removeChild(removed, sig);//remove one race from relation
+				if(noleft){
+					relationDetail.removeThisEntry(sig);
+					existingSigs.remove(sig);
 				}
+				existingbugs.remove(removed);
 			}else{
 				System.err.println("Existing bugs should contain this removed bug.");
 			}
@@ -343,7 +333,7 @@ public class EchoReadWriteView extends ViewPart{
 	}
 
 
-	public void considerBugs(HashSet<ITIDEBug> considerbugs) {
+	public void considerBugs(HashSet<TIDERace> considerbugs) {
 		addToInput(considerbugs);
 		rootViewer.refresh();
 		rootViewer.expandToLevel(relationDetail, 1);
@@ -351,7 +341,7 @@ public class EchoReadWriteView extends ViewPart{
 	}
 
 
-	public void ignoreBugs(HashSet<ITIDEBug> removedbugs){
+	public void ignoreBugs(HashSet<TIDERace> removedbugs){
 		for (ITIDEBug ignore : removedbugs) {
 			if(existingbugs.contains(ignore)){
 				if(ignore instanceof TIDERace){
@@ -375,106 +365,40 @@ public class EchoReadWriteView extends ViewPart{
 		if(curDetail != null){
 			concurentRelationViewer.remove(curDetail);
 		}
-//		concurentRelationViewer.refresh();
 	}
 
 
-	public void updateGUI(Set<ITIDEBug> bugs) {//update all, not efficient
-		//remove old
-		rootViewer.remove(relationDetail);
-		rootViewer.refresh();
-		//also remove things in bugdetail
-		rootViewer.setInput(translateToInput((HashSet<ITIDEBug>) bugs));
-		//		treeViewer.expandAll();
-		rootViewer.refresh();
-		concurentRelationViewer.refresh();
-	}
-
-	private BugDetail translateToInput(HashSet<ITIDEBug> bugs) {
+	private BugDetail translateToInput(HashSet<TIDERace> bugs) {
 		bugDetail.clear();
-		for (ITIDEBug bug : bugs) {
-			if(bug instanceof TIDERace){
-				TIDERace race = (TIDERace) bug;
-				String sig = race.sig;
-				if(existingSigs.contains(sig)){
-					//previously added
-					relationDetail.addChild(race, sig);
-				}else{
-					//newly added
-					relationDetail.createChild(race, sig);
-					existingSigs.add(sig);
-				}
-				existingbugs.add(race);
+		for (TIDERace race : bugs) {
+			String sig = race.sig;
+			if(existingSigs.contains(sig)){
+				//previously added
+				relationDetail.addChild(race, sig);
+			}else{
+				//newly added
+				relationDetail.createChild(race, sig);
+				existingSigs.add(sig);
 			}
+			existingbugs.add(race);
 		}
 		return bugDetail;
 	}
 
-	private void addToInput(HashSet<ITIDEBug> bugs) {
-		for (ITIDEBug bug : bugs) {
-			if(bug instanceof TIDERace){
-				TIDERace race = (TIDERace) bug;
-				String sig = race.sig; // may need to change
-				if(existingSigs.contains(sig)){
-					//previously added
-					relationDetail.addChild(race, sig, true);
-				}else{
-					//newly added
-					relationDetail.createChild(race, sig, true);
-					existingSigs.add(sig);
-				}
-				existingbugs.add(race);
+	private void addToInput(HashSet<TIDERace> bugs) {
+		for (TIDERace race : bugs) {
+			String sig = race.sig; // may need to change
+			if(existingSigs.contains(sig)){
+				//previously added
+				relationDetail.addChild(race, sig, true);
+			}else{
+				//newly added
+				relationDetail.createChild(race, sig, true);
+				existingSigs.add(sig);
 			}
+			existingbugs.add(race);
 		}
 	}
-
-//	private void generateRelations(HashSet<ITIDEBug> bugs){
-//		String wholesig;
-//		for (ITIDEBug bug : bugs) {
-//			if(bug instanceof TIDERace){
-////				Yanze
-//				TIDERace raceBug = (TIDERace)bug;
-//				wholesig = raceBug.initsig;
-////				set trace to corresponding nodes
-//				raceBug.node1.setTrace(raceBug.traceMsg.get(0));
-//				raceBug.node2.setTrace(raceBug.traceMsg.get(1));
-//				raceBug.node1.setFileTrace(raceBug.event_ifile_map, raceBug.event_line_map);
-//				raceBug.node2.setFileTrace(raceBug.event_ifile_map, raceBug.event_line_map);
-//				if (existRelationMap.containsKey(wholesig) ) {
-//					HashMap<String, ConcurrentRelation> relation = existRelationMap.get(wholesig);
-//					if (raceBug.node1 instanceof WriteNode) {
-//						if (relation.containsKey(raceBug.node1.toString())) {
-//							relation.get(raceBug.node1.toString()).addConcurrentRW(raceBug.node2);
-//						} else {
-//							relation.put(raceBug.node1.toString(), new ConcurrentRelation((WriteNode) raceBug.node1));
-//							relation.get(raceBug.node1.toString()).addConcurrentRW(raceBug.node2);
-//						}
-//					}
-//					if (raceBug.node2 instanceof WriteNode) {
-//						if (relation.containsKey(raceBug.node2.toString())) {
-//							relation.get(raceBug.node2.toString()).addConcurrentRW(raceBug.node1);
-//						} else {
-//							relation.put(raceBug.node2.toString(), new ConcurrentRelation((WriteNode) raceBug.node2));
-//							relation.get(raceBug.node2.toString()).addConcurrentRW(raceBug.node1);
-//						}
-//					}
-//				} else {
-//					HashMap<String, ConcurrentRelation> relation = new HashMap<String, ConcurrentRelation>();
-//					if ( raceBug.node1 instanceof WriteNode ) {
-//						WriteNode node1 = (WriteNode) raceBug.node1;
-//						relation.put(node1.toString(), new ConcurrentRelation(node1));
-//						relation.get(node1.toString()).addConcurrentRW(raceBug.node2);
-//					}
-//					if ( raceBug.node2 instanceof WriteNode ) {
-//						WriteNode node2 = (WriteNode) raceBug.node2;
-//						relation.put(node2.toString(), new ConcurrentRelation(node2));
-//						relation.get(node2.toString()).addConcurrentRW(raceBug.node1);
-//					}
-//					existRelationMap.put(wholesig, relation);
-//				}
-//			}
-//		}
-//	}
 
 
 

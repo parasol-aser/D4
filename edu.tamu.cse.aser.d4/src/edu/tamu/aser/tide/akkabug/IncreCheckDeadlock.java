@@ -1,6 +1,6 @@
 package edu.tamu.aser.tide.akkabug;
 
-import edu.tamu.aser.tide.trace.DLockNode;
+import edu.tamu.aser.tide.nodes.DLockNode;
 
 public class IncreCheckDeadlock {
 

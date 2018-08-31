@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.graph;
+package edu.tamu.aser.tide.shb;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,12 +8,14 @@ import java.util.Map;
 
 import com.ibm.wala.ssa.SSAInstruction;
 
-import edu.tamu.aser.tide.trace.INode;
-import edu.tamu.aser.tide.trace.JoinNode;
-import edu.tamu.aser.tide.trace.LockPair;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.StartNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.DLockNode;
+import edu.tamu.aser.tide.nodes.DUnlockNode;
+import edu.tamu.aser.tide.nodes.INode;
+import edu.tamu.aser.tide.nodes.JoinNode;
+import edu.tamu.aser.tide.nodes.LockPair;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.StartNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class Trace {
 
@@ -129,6 +131,11 @@ public class Trace {
 		lockPairs.add(lp);
 	}
 
+
+	public void removeLockPair(LockPair pair) {
+		lockPairs.remove(pair);
+	}
+
 	public HashMap<String, ArrayList<ReadNode>> getRsigMapping(){
 		return rsigMapping;
 	}
@@ -190,6 +197,15 @@ public class Trace {
 		trace.add(node);
 	}
 
+	/**
+	 * currently, only insert lock/unlock
+	 * @param node
+	 */
+	public void insert(DLockNode lnode, DUnlockNode unode, int idx){
+		trace.add(idx, lnode);
+		trace.add(idx + 2, unode);
+	}
+
 	public void remove(INode node){
 		//inst_start_mapping,  hasStart,  hasJoin
 		if(node instanceof StartNode){
@@ -242,8 +258,20 @@ public class Trace {
 		}
 		addCurKidTidMapping(node.getParentTID(), tid_child);
 		kids.add(tid_child);//target kid
-		kid_line_map.put(tid_child, node.linenum);
+		kid_line_map.put(tid_child, node.line);
 	}
+
+	//update: inst => 3 starts
+	//loop or threads with same instructions(2nd traversal)
+	public void add2S(StartNode node, SSAInstruction inst, int tid_child) {//add 2nd insert
+		StartNode origin = inst_start_mapping.get(inst);
+		trace.add(trace.indexOf(origin) + 1, node);
+		addCurKidTidMapping(node.getParentTID(), tid_child);
+		kids.add(tid_child);//target kid
+		kid_line_map.put(tid_child, node.line);
+		hasStart ++;
+	}
+
 
 	public void addJ(JoinNode node, SSAInstruction inst){//only add start
 		trace.add(node);
@@ -251,17 +279,6 @@ public class Trace {
 		if(hasJoin == 0){
 			hasJoin ++;
 		}
-	}
-
-	//need update: inst => 3 starts?
-	//loop or threads with same instructions(2nd traversal)
-	public void add2S(StartNode node, SSAInstruction inst, int tid_child) {//add 2nd insert
-		StartNode origin = inst_start_mapping.get(inst);
-		trace.add(trace.indexOf(origin) + 1, node);
-		addCurKidTidMapping(node.getParentTID(), tid_child);
-		kids.add(tid_child);//target kid
-		kid_line_map.put(tid_child, node.linenum);
-		hasStart ++;
 	}
 
 	public void add2J(JoinNode node, SSAInstruction inst, int tid_child) {//add 2nd insert
@@ -394,6 +411,7 @@ public class Trace {
 	public Map<Integer, Integer> getOldkidsMap() {
 		return oldkid_line_map;
 	}
+
 
 
 

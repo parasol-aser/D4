@@ -8,7 +8,6 @@ public class BugContentProvider implements ITreeContentProvider {
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
 	}
 
 	/**
@@ -29,31 +28,25 @@ public class BugContentProvider implements ITreeContentProvider {
 	*/
 	@Override
 	public void inputChanged(Viewer viewer, Object oldinput, Object newinput) {
-		// ??
-
 	}
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-		// TODO Auto-generated method stub
 		return ((ITreeNode)parentElement).getChildren().toArray();
 	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		// TODO Auto-generated method stub
 		return getChildren(inputElement);
 	}
 
 	@Override
 	public Object getParent(Object element) {
-		// TODO Auto-generated method stub
 		return ((ITreeNode)element).getParent();
 	}
 
 	@Override
 	public boolean hasChildren(Object element) {
-		// TODO Auto-generated method stub
 		return ((ITreeNode)element).hasChildren();
 	}
 

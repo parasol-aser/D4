@@ -47,21 +47,14 @@ public class DeadlockNode extends TreeNode{
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void createChildren(ArrayList<LinkedList<String>> traces, String fix) {
-		// TODO Auto-generated method stub
-//		TraceNode tracenode = new TraceNode(this, traceMsg);
-//		FixNode fixnode = new FixNode(this, fix);
-//		super.children.add(tracenode);
-//		super.children.add(fixnode);
-
 		LinkedList<String> trace1 = traces.get(0);
 		LinkedList<String> trace2 = traces.get(1);
 		if(this instanceof DeadlockNode){
-//			"Trace of 1st lockpair is in thread" + tid1 + " : "
 			//1st lockpair
-			String name1 = "Trace of " + deadlock.lp1.lock1.getInstSig() + "," + deadlock.lp1.lock2.getInstSig() + " :";
+			String name1 = "Trace of " + deadlock.lp1.lock1.getInstSig() + " => " + deadlock.lp1.lock2.getInstSig() + " :";
 			SubTraceNode subtrace1 = new SubTraceNode(this, name1, trace1);
 			//2nd lockpair
-			String name2 = "Trace of " + deadlock.lp2.lock1.getInstSig() + "," + deadlock.lp2.lock2.getInstSig() + " :";
+			String name2 = "Trace of " + deadlock.lp2.lock1.getInstSig() + " => " + deadlock.lp2.lock2.getInstSig() + " :";
 			SubTraceNode subtrace2 = new SubTraceNode(this, name2, trace2);
 			super.children.add(subtrace1);
 			super.children.add(subtrace2);

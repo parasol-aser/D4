@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.util.intset.MutableIntSet;
 
@@ -17,20 +18,20 @@ import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.engine.TIDEDeadlock;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.graph.SHBEdge;
-import edu.tamu.aser.tide.graph.SHBGraph;
-import edu.tamu.aser.tide.graph.Trace;
+import edu.tamu.aser.tide.nodes.DLPair;
+import edu.tamu.aser.tide.nodes.DLockNode;
+import edu.tamu.aser.tide.nodes.DUnlockNode;
+import edu.tamu.aser.tide.nodes.INode;
+import edu.tamu.aser.tide.nodes.JoinNode;
+import edu.tamu.aser.tide.nodes.LockPair;
+import edu.tamu.aser.tide.nodes.MemNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.StartNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
+import edu.tamu.aser.tide.shb.SHBEdge;
+import edu.tamu.aser.tide.shb.SHBGraph;
+import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmarks;
-import edu.tamu.aser.tide.trace.DLLockPair;
-import edu.tamu.aser.tide.trace.DLockNode;
-import edu.tamu.aser.tide.trace.DUnlockNode;
-import edu.tamu.aser.tide.trace.INode;
-import edu.tamu.aser.tide.trace.JoinNode;
-import edu.tamu.aser.tide.trace.LockPair;
-import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.StartNode;
-import edu.tamu.aser.tide.trace.WriteNode;
 
 public class BugWorker extends UntypedActor{
 
@@ -88,54 +89,24 @@ public class BugWorker extends UntypedActor{
 		}
 		//collect dlpair including check
 		SHBGraph shb = engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
 		ArrayList<Integer> ctids = shb.getTrace(check.getBelonging()).getTraceTids();
 		Set<Integer> tids = engine.threadDLLockPairs.keySet();
 		for (int ctid : ctids) {
-			ArrayList<DLLockPair> dLLockPairs = engine.threadDLLockPairs.get(ctid);
+			ArrayList<DLPair> dLLockPairs = engine.threadDLLockPairs.get(ctid);
 			if(dLLockPairs == null){
 				continue;
 			}
-			for (DLLockPair pair : dLLockPairs) {
+			for (DLPair pair : dLLockPairs) {
 				if (pair.lock1.equals(check) || pair.lock2.equals(check)) {
-					DLLockPair dllp1 = pair;
+					DLPair dllp1 = pair;
 					for(Integer tid2: tids){
 						if(tid2 != ctid){
-							ArrayList<DLLockPair> dLLockPairs2 = engine.threadDLLockPairs.get(tid2);
+							ArrayList<DLPair> dLLockPairs2 = engine.threadDLLockPairs.get(tid2);
 							for(int j=0;j<dLLockPairs2.size();j++){
-								DLLockPair dllp2 = dLLockPairs2.get(j);
-								HashSet<String> l11sig = dllp1.lock1.getLockSig();
-								HashSet<String> l12sig = dllp1.lock2.getLockSig();
-								HashSet<String> l21sig = dllp2.lock1.getLockSig();
-								HashSet<String> l22sig = dllp2.lock2.getLockSig();
-								if(containAny(l11sig, l22sig) && containAny(l21sig, l12sig)){
-									//check reachability
-									boolean reached = checkReachabilityof(ctid, dllp1, tid2, dllp2);
-									if(reached){
-										TIDEDeadlock dl = new TIDEDeadlock(ctid,dllp1,tid2,dllp2);
-										boolean isReentrant = false;
-										if((l11sig.equals(l12sig)) || (l21sig.equals(l22sig))){
-											//maybe reentrant lock, check pointer again
-											PointerKey l11key = dllp1.lock1.getPointer();
-											PointerKey l12key = dllp1.lock2.getPointer();
-											PointerKey l21key = dllp2.lock1.getPointer();
-											PointerKey l22key = dllp2.lock2.getPointer();
-											if(l11key.equals(l12key) || l21key.equals(l22key)){
-//											System.out.println(l11sig + "\n" + l12sig + "\n" + l21sig + "\n" + l22sig);
-												isReentrant = true;
-//												System.out.println(l11sig + " isReentrant");
-											}
-										}
-										if(!isReentrant){
-											bugs.add(dl);
-//											System.out.println(dl.lp1.lock1.getLockString() + " " + dl.lp1.lock2.getLockString()
-//											+ " // " +dl.lp2.lock1.getLockString() + " " + dl.lp2.lock2.getLockString());
-										}
-									}
+								DLPair dllp2 = dLLockPairs2.get(j);
+								TIDEDeadlock dl = checkDeadlock(dllp1, dllp2, ctid, tid2);
+								if (dl != null) {
+									bugs.add(dl);
 								}
 							}
 						}
@@ -144,7 +115,6 @@ public class BugWorker extends UntypedActor{
 			}
 		}
 		if(bugs.size() > 0){
-//			ReproduceBenchmarks.engine.addBugsBack(bugs);
 			if(PLUGIN)
 				TIDECGModel.bugEngine.addBugsBack(bugs);
 			else
@@ -153,62 +123,62 @@ public class BugWorker extends UntypedActor{
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
+	private TIDEDeadlock checkDeadlock(DLPair dllp1, DLPair dllp2, int tid1, int tid2) {
+		HashSet<String> l11sig = dllp1.lock1.getLockSig();
+		HashSet<String> l12sig = dllp1.lock2.getLockSig();
+		HashSet<String> l21sig = dllp2.lock1.getLockSig();
+		HashSet<String> l22sig = dllp2.lock2.getLockSig();
+		if(containAny(l11sig, l22sig) && containAny(l21sig, l12sig)){
+			//check reachability
+			boolean reached1 = hasHBRelation(tid1, dllp1.lock1, tid2, dllp2.lock1);
+			boolean reached2 = hasHBRelation(tid1, dllp1.lock2, tid2, dllp2.lock2);
+			if(reached1 && reached2){
+				TIDEDeadlock dl = new TIDEDeadlock(tid1,dllp1, tid2,dllp2);
+//				if((l11sig.equals(l12sig)) || (l21sig.equals(l22sig))){
+//					//maybe reentrant lock, but hard to check
+//					PointerKey l11key = dllp1.lock1.getPointer();
+//					PointerKey l12key = dllp1.lock2.getPointer();
+//					PointerKey l21key = dllp2.lock1.getPointer();
+//					PointerKey l22key = dllp2.lock2.getPointer();
+//					if(l11key.equals(l12key) || l21key.equals(l22key)){
+//						isReentrant = true;
+//					}
+//				}
+				return dl;
+			}
+		}
+		return null;
+	}
+
 
 
 	private void processCheckDeadlock(CheckDeadlock job) {
+		TIDEEngine engine;
+		if(PLUGIN){
+			engine = TIDECGModel.bugEngine;
+		}else{
+			engine = ReproduceBenchmarks.engine;
+		}
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
-		ArrayList<DLLockPair> dLLockPairs = job.getPairs();
+		ArrayList<DLPair> dLLockPairs = job.getPairs();
 		Set<Integer> tids = job.getTids();
 		int tid1 = job.getTid();
 		for(int i=0;i<dLLockPairs.size();i++){
-			DLLockPair dllp1 = dLLockPairs.get(i);
+			DLPair dllp1 = dLLockPairs.get(i);
 			for(Integer tid2: tids){
 				if(tid2!=tid1){
-					ArrayList<DLLockPair> dLLockPairs2;
-//					dLLockPairs2 = ReproduceBenchmarks.engine.threadDLLockPairs.get(tid2);
-					if(PLUGIN)
-						dLLockPairs2 = TIDECGModel.bugEngine.threadDLLockPairs.get(tid2);
-					else
-						dLLockPairs2 = ReproduceBenchmarks.engine.threadDLLockPairs.get(tid2);
-
+					ArrayList<DLPair> dLLockPairs2 = engine.threadDLLockPairs.get(tid2);
 					for(int j=0;j<dLLockPairs2.size();j++){
-						DLLockPair dllp2 = dLLockPairs2.get(j);
-						HashSet<String> l11sig = dllp1.lock1.getLockSig();
-						HashSet<String> l12sig = dllp1.lock2.getLockSig();
-						HashSet<String> l21sig = dllp2.lock1.getLockSig();
-						HashSet<String> l22sig = dllp2.lock2.getLockSig();
-						if(containAny(l11sig, l22sig) && containAny(l21sig, l12sig)){
-							//(l11sig.equals(l22sig)) && (l21sig.equals(l12sig))
-							//check reachability
-							boolean reached = checkReachabilityof(tid1, dllp1, tid2, dllp2);
-							if(reached){
-								TIDEDeadlock dl = new TIDEDeadlock(tid1, dllp1, tid2, dllp2);
-								boolean isReentrant = false;
-								if((l11sig.equals(l12sig)) || (l21sig.equals(l22sig))){
-									//maybe reentrant lock, check pointer again
-									PointerKey l11key = dllp1.lock1.getPointer();
-									PointerKey l12key = dllp1.lock2.getPointer();
-									PointerKey l21key = dllp2.lock1.getPointer();
-									PointerKey l22key = dllp2.lock2.getPointer();
-									if(l11key.equals(l12key) || l21key.equals(l22key)){
-//									System.out.println(l11sig + "\n" + l12sig + "\n" + l21sig + "\n" + l22sig);
-										isReentrant = true;
-//										System.out.println(l11sig + " isReentrant");
-									}
-								}
-								if(!isReentrant){
-									bugs.add(dl);
-//									System.out.println(dl.lp1.lock1.getLockString() + " " + dl.lp1.lock2.getLockString()
-//									+ " // " +dl.lp2.lock1.getLockString() + " " + dl.lp2.lock2.getLockString());
-								}
-							}
+						DLPair dllp2 = dLLockPairs2.get(j);
+						TIDEDeadlock dl = checkDeadlock(dllp1, dllp2, tid1, tid2);
+						if (dl != null) {
+							bugs.add(dl);
 						}
 					}
 				}
 			}
 		}
 		if(bugs.size() > 0){
-//			ReproduceBenchmarks.engine.addBugsBack(bugs);
 			if(PLUGIN)
 				TIDECGModel.bugEngine.addBugsBack(bugs);
 			else
@@ -231,28 +201,31 @@ public class BugWorker extends UntypedActor{
 
 
 	private void processIncreCheckDatarace(IncreCheckDatarace job) {
+		processCheckDatarace(job);
+	}
+
+	private void processCheckDatarace(CheckDatarace job) {//tids??
 		HashSet<WriteNode> writes = job.getWrites();
 		HashSet<ReadNode> reads = job.getReads();
-		String sig = job.getSig();
-//		if (sig.contains("shaderOverride")) {
-//			System.out.println();
-//		}
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
-		SHBGraph shb ;
+		String sig = job.getSig();
+		TIDEEngine engine;
 		if(PLUGIN){
-			shb = TIDECGModel.bugEngine.shb;
+			engine = TIDECGModel.bugEngine;
 		}else{
-			shb = ReproduceBenchmarks.engine.shb;
+			engine = ReproduceBenchmarks.engine;
 		}
+		SHBGraph shb = engine.shb;
+
+		//write->read
 	    for (WriteNode wnode : writes) {
-	    	//check read & write
 	    	Trace wTrace = shb.getTrace(wnode.getBelonging());
 	    	if (wTrace == null) {
 				continue;
 			}
 			ArrayList<Integer> wtids = wTrace.getTraceTids();
 	    	if(reads!=null){
-	    		for(ReadNode read : reads){//write->read
+	    		for(ReadNode read : reads){
 	    			MemNode xnode = read;
 	    			Trace xTrace = shb.getTrace(xnode.getBelonging());
 	    			if (xTrace == null) {//this xnode shoudl be deleted already!!!!!!
@@ -261,9 +234,7 @@ public class BugWorker extends UntypedActor{
 					ArrayList<Integer> xtids = xTrace.getTraceTids();
 					for (int wtid : wtids) {
 						for (int xtid : xtids) {
-//							System.out.println("checking: w: " + wnode.getPrefix() + wnode.getLocalSig() + " of " + wtid +
-//									" x: " + xnode.getPrefix() + xnode.getLocalSig() + " of " + xtid);
-							if(checkLockSetAndHappensBefore(wtid, wnode, xtid, xnode)){
+							if(checkLockSetAndHappensBeforeRelation(wtid, wnode, xtid, xnode)){
 								TIDERace race = new TIDERace(sig,xnode,xtid,wnode, wtid);
 								bugs.add(race);
 							}
@@ -271,8 +242,18 @@ public class BugWorker extends UntypedActor{
 					}
 	    		}
 	    	}
-	    	for(WriteNode write : writes){//write->write
-	    		WriteNode xnode = write;
+	    }
+	    //write -> write
+	    Object[] writes_array = writes.toArray();
+	    for (int i = 0; i < writes_array.length; i++) {
+	    	WriteNode wnode = (WriteNode) writes_array[i];
+	    	Trace wTrace = shb.getTrace(wnode.getBelonging());
+	    	if (wTrace == null) {
+				continue;
+			}
+			ArrayList<Integer> wtids = wTrace.getTraceTids();
+			for (int j = i; j < writes_array.length; j++) {
+				WriteNode xnode = (WriteNode) writes_array[j];
 	    		Trace xTrace = shb.getTrace(xnode.getBelonging());
 	    		if (xTrace == null) {
 	    			continue;
@@ -280,81 +261,17 @@ public class BugWorker extends UntypedActor{
 				ArrayList<Integer> xtids = xTrace.getTraceTids();
 				for (int wtid : wtids) {
 					for (int xtid : xtids) {
-//						System.out.println("checking: w: " + wnode.getPrefix() + wnode.getLocalSig() + " of " + wtid +
-//								" x: " + xnode.getPrefix() + xnode.getLocalSig() + " of " + xtid);
-						if(checkLockSetAndHappensBefore(xtid, xnode, wtid, wnode)){
+						if(checkLockSetAndHappensBeforeRelation(xtid, xnode, wtid, wnode)){
 							TIDERace race = new TIDERace(sig,xnode, xtid, wnode, wtid);
 							bugs.add(race);
 						}
 					}
 				}
-	    	}
-	    }
+			}
+		}
 
 	    if(bugs.size() > 0){
-//			ReproduceBenchmarks.engine.addBugsBack(bugs);
-			if (PLUGIN) {
-				TIDECGModel.bugEngine.addBugsBack(bugs);
-			}else{
-				ReproduceBenchmarks.engine.addBugsBack(bugs);
-			}
-		}
-		getSender().tell(new ReturnResult(), getSelf());
-	}
-
-	private void processCheckDatarace(CheckDatarace job) {//tids??
-		HashSet<WriteNode> writes = job.getWrites();
-		HashSet<ReadNode> reads = job.getReads();
-		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
-		String sig = job.getSig();
-		SHBGraph shb ;
-		if(PLUGIN){
-			shb = TIDECGModel.bugEngine.shb;
-		}else{
-			shb = ReproduceBenchmarks.engine.shb;
-		}
-
-		for(WriteNode wnode : writes){
-			ArrayList<Integer> wtids = shb.getTrace(wnode.getBelonging()).getTraceTids();
-			if(reads!=null){
-				for(ReadNode read : reads){//write->read
-					MemNode xnode = read;
-					ArrayList<Integer> xtids = shb.getTrace(xnode.getBelonging()).getTraceTids();
-					for (int wtid : wtids) {
-						for (int xtid : xtids) {
-							if(checkLockSetAndHappensBefore(wtid, wnode, xtid, xnode)){
-								TIDERace race = new TIDERace(sig,xnode,xtid, wnode, wtid);
-								if(!bugs.contains(race)){
-									bugs.add(race);
-								}
-							}
-						}
-					}
-				}
-			}
-			for(WriteNode write : writes){//write->write
-				MemNode xnode = write;
-				ArrayList<Integer> xtids = shb.getTrace(xnode.getBelonging()).getTraceTids();
-				for (Integer wtid : wtids) {
-					for (Integer xtid : xtids) {
-						if(checkLockSetAndHappensBefore(wtid, wnode, xtid, xnode)){
-							TIDERace race = new TIDERace(sig,xnode,xtid, wnode, wtid);
-							if(!bugs.contains(race)){
-								bugs.add(race);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if(bugs.size() > 0){
-//			ReproduceBenchmarks.engine.addBugsBack(bugs);
-			if (PLUGIN) {
-				TIDECGModel.bugEngine.addBugsBack(bugs);
-			}else{
-				ReproduceBenchmarks.engine.addBugsBack(bugs);
-			}
+	    	engine.addBugsBack(bugs);
 		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
@@ -377,50 +294,50 @@ public class BugWorker extends UntypedActor{
 			for (INode node : nodes) {
 				if (node instanceof MemNode) {
 					HashSet<String> sigs = ((MemNode)node).getObjSig();
-					if(sigs.contains(check)){
-						if (node instanceof ReadNode) {
-							HashSet<ReadNode> reads = sigReadNodes.get(check);
-							if(reads==null){
-								reads = new HashSet<ReadNode> ();
-								reads.add((ReadNode) node);
-								sigReadNodes.put(check, reads);
-							}else{
-								reads.add((ReadNode)node);
-							}
-						}else{//write node
-							HashSet<WriteNode> writes = sigWriteNodes.get(check);
-							if(writes==null){
-								writes = new HashSet<WriteNode> ();
-								writes.add((WriteNode)node);
-								sigWriteNodes.put(check, writes);
-							}else{
-								writes.add((WriteNode)node);
-							}
-						}
-					}
+					filterRWNodesBySig(sigs, check, node, sigReadNodes, sigWriteNodes);
 				}
 			}
 		}
-//		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
-//		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
-		if(PLUGIN){
-			TIDECGModel.bugEngine.addSigReadNodes(sigReadNodes);
-			TIDECGModel.bugEngine.addSigWriteNodes(sigWriteNodes);
-		}else{
-			ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
-			ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
-		}
+		engine.addSigReadNodes(sigReadNodes);
+		engine.addSigWriteNodes(sigWriteNodes);
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
+	private void filterRWNodesBySig(HashSet<String> sigs, String sig, INode node,
+			HashMap<String, HashSet<ReadNode>> sigReadNodes, HashMap<String, HashSet<WriteNode>> sigWriteNodes) {
+		if(sigs.contains(sig)){
+			if (node instanceof ReadNode) {
+				HashSet<ReadNode> reads = sigReadNodes.get(sig);
+				if(reads==null){
+					reads = new HashSet<ReadNode> ();
+					reads.add((ReadNode) node);
+					sigReadNodes.put(sig, reads);
+				}else{
+					reads.add((ReadNode)node);
+				}
+			}else{//write node
+				HashSet<WriteNode> writes = sigWriteNodes.get(sig);
+				if(writes==null){
+					writes = new HashSet<WriteNode> ();
+					writes.add((WriteNode)node);
+					sigWriteNodes.put(sig, writes);
+				}else{
+					writes.add((WriteNode)node);
+				}
+			}
+		}
+	}
+
+
 	private void processRemoveLocalJob(RemoveLocalJob job) {
 		ArrayList<Trace> team = job.getTeam();
-		HashSet<String> sharedFields ;
+		TIDEEngine engine;
 		if(PLUGIN){
-			sharedFields = TIDECGModel.bugEngine.sharedFields;
+			engine = TIDECGModel.bugEngine;
 		}else{
-			sharedFields = ReproduceBenchmarks.engine.sharedFields;
+			engine = ReproduceBenchmarks.engine;
 		}
+		HashSet<String> sharedFields = engine.sharedFields;
 		HashMap<String, HashSet<ReadNode>> sigReadNodes = new HashMap<String, HashSet<ReadNode>>();
 		HashMap<String, HashSet<WriteNode>> sigWriteNodes = new HashMap<String, HashSet<WriteNode>>();
 
@@ -431,40 +348,13 @@ public class BugWorker extends UntypedActor{
 				if(node instanceof MemNode){
 					HashSet<String> sigs = ((MemNode)node).getObjSig();
 					for (String sig : sigs) {
-						if(sharedFields.contains(sig)){
-							if(node instanceof ReadNode){
-								HashSet<ReadNode> reads = sigReadNodes.get(sig);
-								if(reads==null){
-									reads = new HashSet<ReadNode> ();
-									reads.add((ReadNode)node);
-									sigReadNodes.put(sig, reads);
-								}else{
-									reads.add((ReadNode)node);
-								}
-							}else{
-								HashSet<WriteNode> writes = sigWriteNodes.get(sig);
-								if(writes==null){
-									writes = new HashSet<WriteNode> ();
-									writes.add((WriteNode)node);
-									sigWriteNodes.put(sig, writes);
-								}else{
-									writes.add((WriteNode)node);
-								}
-							}
-						}
+						filterRWNodesBySig(sharedFields, sig, node, sigReadNodes, sigWriteNodes);
 					}
 				}
 			}
 		}
-//		ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
-//		ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
-		if(PLUGIN){
-			TIDECGModel.bugEngine.addSigReadNodes(sigReadNodes);
-			TIDECGModel.bugEngine.addSigWriteNodes(sigWriteNodes);
-		}else{
-			ReproduceBenchmarks.engine.addSigReadNodes(sigReadNodes);
-			ReproduceBenchmarks.engine.addSigWriteNodes(sigWriteNodes);
-		}
+		engine.addSigReadNodes(sigReadNodes);
+		engine.addSigWriteNodes(sigWriteNodes);
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
@@ -484,7 +374,6 @@ public class BugWorker extends UntypedActor{
 				}
 			}
 		}
-//		ReproduceBenchmarks.engine.addSharedVars(sharedFields);
 		if (PLUGIN) {
 			TIDECGModel.bugEngine.addSharedVars(sharedFields);
 		}else{
@@ -493,7 +382,7 @@ public class BugWorker extends UntypedActor{
 		getSender().tell(new ReturnResult(), getSelf());
 	}
 
-	private boolean checkLockSetAndHappensBefore(Integer wtid, WriteNode wnode, Integer xtid, MemNode xnode) {//ReachabilityEngine reachEngine,
+	private boolean checkLockSetAndHappensBeforeRelation(Integer wtid, WriteNode wnode, Integer xtid, MemNode xnode) {//ReachabilityEngine reachEngine,
 		TIDEEngine engine;
 		if(PLUGIN){
 			engine = TIDECGModel.bugEngine;
@@ -503,9 +392,10 @@ public class BugWorker extends UntypedActor{
 		if(wtid != xtid){
 			if(!hasCommonLock(xtid, xnode, wtid, wnode)){
 				return hasHBRelation(wtid, wnode, xtid, xnode);
-			}else if(engine.change){
-				engine.addRecheckBugs(wnode, xnode);
 			}
+//			else if(engine.change){
+//				engine.addRecheckBugs(wnode, xnode);
+//			}
 		}
 		return false;
 	}
@@ -597,7 +487,7 @@ public class BugWorker extends UntypedActor{
 					}
 				}
 			}
-			SHBEdge edge = shb.getIncomingEdgeWithTid(cgNode, tid);//using dfs, since usually is single tid shbedge
+			SHBEdge edge = shb.getIncomingEdgeWithTidForShowTrace(cgNode, tid);//using dfs, since usually is single tid shbedge
 			if (edge == null) {
 				break;
 			}else{
@@ -607,19 +497,6 @@ public class BugWorker extends UntypedActor{
 		}
 
 		return allPairs;
-	}
-
-
-
-	private boolean ifHasCommonSig(LockPair pair, LockPair pair2) {
-		HashSet<String> sigs = ((DLockNode)pair.lock).getLockSig();
-		HashSet<String> sigs2 = ((DLockNode) pair2.lock).getLockSig();
-		for (String sig : sigs) {
-			if(sigs2.contains(sig)){
-				return true;
-			}
-		}
-		return false;
 	}
 
 
@@ -637,8 +514,6 @@ public class BugWorker extends UntypedActor{
 			DLockNode lock = (DLockNode) pair.lock;
 			DUnlockNode unlock = (DUnlockNode) pair.unlock;
 			Trace trace = shb.getTrace(node.getBelonging());
-//			Trace trace2 = shb.getTrace(lock.getBelonging());
-
 			int idxL = trace.indexOf(lock);
 			int idxN = trace.indexOf(node);
 			int idxU = trace.indexOf(unlock);
@@ -694,36 +569,21 @@ public class BugWorker extends UntypedActor{
 		}
 	}
 
-	private boolean checkReachabilityof(int tid1, DLLockPair dllp1, int tid2, DLLockPair dllp2) {//replaced
-		HashMap<Integer, StartNode> mapOfStartNode;
-		boolean isDeadlock = hasHBRelation(tid1, dllp1.lock1, tid2, dllp2.lock1);
-		return isDeadlock;
-	}
-
 
 	private boolean hasHBRelation(int erTID, INode comper, int eeTID, INode compee){
 		boolean donothave = false;
-		SHBGraph shb;
+		TIDEEngine engine;
 		if(PLUGIN){
-			shb = TIDECGModel.bugEngine.shb;
+			engine = TIDECGModel.bugEngine;
 		}else{
-			shb = ReproduceBenchmarks.engine.shb;
+			engine = ReproduceBenchmarks.engine;
 		}
-		StartNode erStartNode ;
-		StartNode eeStartNode ;
-		JoinNode erJoinNode ;
-		JoinNode eeJoinNode ;
-		if(PLUGIN){
-			erStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(erTID);
-			eeStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(eeTID);
-			erJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(erTID);
-			eeJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(eeTID);
-		}else{
-			erStartNode = ReproduceBenchmarks.engine.mapOfStartNode.get(erTID);
-			eeStartNode = ReproduceBenchmarks.engine.mapOfStartNode.get(eeTID);
-			erJoinNode = ReproduceBenchmarks.engine.mapOfJoinNode.get(erTID);
-			eeJoinNode = ReproduceBenchmarks.engine.mapOfJoinNode.get(eeTID);
-		}
+		SHBGraph shb = engine.shb;
+		CallGraph cg = engine.callGraph;
+		StartNode erStartNode = engine.mapOfStartNode.get(erTID);
+		StartNode eeStartNode = engine.mapOfStartNode.get(eeTID);
+		JoinNode erJoinNode = engine.mapOfJoinNode.get(erTID);
+		JoinNode eeJoinNode = engine.mapOfJoinNode.get(eeTID);
 
 		if (erStartNode == null || eeStartNode == null) {
 			return false;//should not be?? the startnode has been removed, but the rwnode still got collected.
@@ -772,16 +632,16 @@ public class BugWorker extends UntypedActor{
 						donothave = true;
 					}
 				}else if(erJoinNode == null){//-1: start -> join; 1: join -> start;
-					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent) < 0){//trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)
+					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent, cg) < 0){//trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)
 						donothave = true;
 					}
 				}else if(eeJoinNode == null){
-					if(shb.compareStartJoin(eeStartNode, erJoinNode, parent) < 0){//trace.indexOf(wJoinNode) > trace.indexOf(xStartNode)
+					if(shb.compareStartJoin(eeStartNode, erJoinNode, parent, cg) < 0){//trace.indexOf(wJoinNode) > trace.indexOf(xStartNode)
 						donothave = true;
 					}
 				}else{
-					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent) < 0
-							&& shb.compareStartJoin(eeStartNode, erJoinNode, parent) < 0){//(trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)) && (trace.indexOf(wJoinNode) > trace.indexOf(xStartNode))
+					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent, cg) < 0
+							&& shb.compareStartJoin(eeStartNode, erJoinNode, parent, cg) < 0){//(trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)) && (trace.indexOf(wJoinNode) > trace.indexOf(xStartNode))
 						donothave = true;
 					}
 				}

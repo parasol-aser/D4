@@ -6,8 +6,8 @@ import java.util.LinkedList;
 
 import org.eclipse.core.resources.IFile;
 
-import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.MemNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class TIDERace implements ITIDEBug{
 
@@ -15,39 +15,33 @@ public class TIDERace implements ITIDEBug{
 	public final MemNode node2;
 	public String sig;
 	public String initsig;
-	//
 	public int tid1;
 	public int tid2;
-	//
 	public String raceMsg, fixMsg;
 	public ArrayList<LinkedList<String>> traceMsg;
 	public HashMap<String, IFile> event_ifile_map = new HashMap<>();
 	public HashMap<String, Integer> event_line_map = new HashMap<>();
 
-	//for recheck
+	/**
+	 * for recheck bugs
+	 * @param node1
+	 * @param node2
+	 */
 	public TIDERace(MemNode node1, MemNode node2){
 		this.node1=node1;
 		this.node2=node2;
 		this.sig = "";
 	}
 
-	public TIDERace(String sig, MemNode node1, MemNode node2){
-		int index1 = sig.indexOf(".");
-		if(sig.substring(0,index1).contains("array"))
-			this.sig = sig.substring(0,index1);
-		else{
-		int index2 = sig.substring(index1+1).indexOf(".");
-		if(index2>0)//must be suffixed with .'hashcode'
-			this.sig = sig.substring(0,index1+index2+1);
-		else
-			this.sig = sig;
-		}
-		this.node1=node1;
-		this.node2=node2;
-		this.initsig = sig;
-	}
-
-	public TIDERace(String sig, MemNode xnode, int xtid, WriteNode wnode, int wtid) {
+	/**
+	 * constructor
+	 * @param sig
+	 * @param xnode
+	 * @param xtid
+	 * @param wnode
+	 * @param wtid
+	 */
+	public TIDERace(String sig, MemNode xnode, int xtid, MemNode wnode, int wtid) {
 		setUpSig(sig);
 		this.node1 = xnode;
 		this.node2 = wnode;
@@ -85,20 +79,28 @@ public class TIDERace implements ITIDEBug{
 		event_ifile_map.put(event, ifile);//check later
 	}
 
-	public int hashCode()
-	{
-		return sig.hashCode();
+	@Override
+	public int hashCode(){
+//		return sig.hashCode() + node1.getInst().hashCode() + node2.getInst().hashCode();
+		return sig.hashCode() + node1.getSig().hashCode() + node2.getSig().hashCode();
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if(o instanceof TIDERace){
-			if(this.sig.equals(((TIDERace) o).sig) &&
-				((this.node1.getSig().equals(((TIDERace) o).node1.getSig())&&
-				this.node2.getSig().equals(((TIDERace) o).node2.getSig()))
-				||(this.node1.getSig().equals(((TIDERace) o).node2.getSig())&&
-						this.node2.getSig().equals(((TIDERace) o).node1.getSig()))
-						))
+	public boolean equals(Object obj) {
+		if(obj instanceof TIDERace){
+			TIDERace that = (TIDERace) obj;
+			if(this.sig.equals(that.sig)
+					&& ((this.node1.getSig().equals(that.node1.getSig())
+							&& this.node2.getSig().equals(that.node2.getSig()))
+							||(this.node1.getSig().equals(that.node2.getSig())
+									&& this.node2.getSig().equals(that.node1.getSig()))
+							)
+//					&& ((this.node1.getInst().equals(that.node1.getInst())
+//							&& this.node2.getInst().equals(that.node2.getInst()))
+//							||(this.node1.getInst().equals(that.node2.getInst())
+//									&& this.node2.getInst().equals(that.node1.getInst()))
+//							)
+					)
 				return true;
 		}
 
@@ -106,7 +108,6 @@ public class TIDERace implements ITIDEBug{
 	}
 
 	public void setBugInfo(String raceMsg, ArrayList<LinkedList<String>> traceMsg2, String fixMsg) {
-		// TODO Auto-generated method stub
 		this.raceMsg = raceMsg;
 		this.fixMsg = fixMsg;
 		this.traceMsg = traceMsg2;

@@ -8,9 +8,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import edu.tamu.aser.tide.engine.TIDERace;
+import edu.tamu.aser.tide.nodes.MemNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 import edu.tamu.aser.tide.plugin.Activator;
-import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.WriteNode;
 
 public class CSuperWriteNode extends TreeNode{
 	public String name;
@@ -35,10 +35,7 @@ public class CSuperWriteNode extends TreeNode{
 	private void initialNode(TIDERace race, int idx) {
 		this.event_ifile_map = race.event_ifile_map;
 		this.event_line_map = race.event_line_map;
-//		//trace
-//		String name = "Trace of " + write.getSig() + " :";
-//		SubTraceNode subtrace = new SubTraceNode(this, name, race.traceMsg.get(idx - 1));
-//		super.children.add(subtrace);
+		//trace
 		LinkedList<String> events = race.traceMsg.get(idx - 1);
 		for (String event : events) {
 			EventNode eventNode = new EventNode(this, event);
@@ -92,35 +89,6 @@ public class CSuperWriteNode extends TreeNode{
 		super.children.clear();
 	}
 
-
-//	@SuppressWarnings("unchecked")
-//	protected void createChildren(LinkedList<String> trace) {
-//		String name = "Trace of " + this.write.getSig() + " is :";
-//		SubTraceNode subtrace = new SubTraceNode(this, name, trace);
-//		super.children.add(subtrace);
-//	}
-//
-//	public void setRelationDetail(ConcurrentRelation concurrentRelation) {
-////		TODO
-//		if (rwList == null) {
-//			rwList = new ConcurrentRWList(null);
-//			rwList.createChild(concurrentRelation.concurrentWrites, concurrentRelation.concurrentReads);
-//		} else {
-//			rwList.addChild(concurrentRelation.concurrentWrites, concurrentRelation.concurrentReads);
-//		}
-//	}
-//
-//	public void removeRelationDetail(MemNode node) {
-//		if (node instanceof WriteNode) {
-//			rwList.wList.removeChild((WriteNode) node);
-//		} else if (node instanceof ReadNode) {
-//			rwList.rList.removeChild((ReadNode) node);
-//		}
-//	}
-//
-//	public ConcurrentRWList getRelationDetail() {
-//		return rwList;
-//	}
 
 
 

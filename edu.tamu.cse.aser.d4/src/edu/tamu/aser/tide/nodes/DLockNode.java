@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 import java.util.HashSet;
 
@@ -16,7 +16,7 @@ public class DLockNode extends SyncNode{
 	String lock;
 
 	public String instSig;
-	final int line;
+	int line;
 	public SSAInstruction inst;
 	PointerKey key;
 	OrdinalSet<InstanceKey> instances;
@@ -25,20 +25,10 @@ public class DLockNode extends SyncNode{
 	private CGNode node;
 	public IFile file;
 
-	public DLockNode(int TID, String inString, String lockobj, int line, SSAInstruction createinst)
-	{//int GID,
-//		this.GID = GID;
-		this.TID = TID;
-		this.lock = lockobj;
-		this.line = line;
-		this.inst = createinst;
-		this.instSig = inString;
-	}
-
-	public DLockNode(int curTID, String instSig2, int sourceLineNum, PointerKey key,
+	public DLockNode(int curTID, String instSig, int sourceLineNum, PointerKey key,
 			OrdinalSet<InstanceKey> instances, CGNode node, SSAInstruction createinst,IFile file ) {
 		this.TID = curTID;
-		this.instSig = instSig2;
+		this.instSig = instSig;
 		this.line = sourceLineNum;
 		this.key = key;
 		this.instances = instances;
@@ -46,6 +36,11 @@ public class DLockNode extends SyncNode{
 		this.node = node;
 		this.inst = createinst;
 		this.file = file;
+	}
+
+	public DLockNode copy(int line){
+		String new_instSig = instSig.substring(0, instSig.lastIndexOf(":") + 1) + line;
+		return new DLockNode(TID, new_instSig, line, key, instances, node, inst, file);
 	}
 
 	public IFile getFile(){
@@ -88,11 +83,8 @@ public class DLockNode extends SyncNode{
 	public int getTID() {
 		return TID;
 	}
-//	public int getGID() {
-//		return GID;
-//	}
-	public String getLockString()
-	{
+
+	public String getLockString(){
 		return lock;
 	}
 
@@ -100,36 +92,57 @@ public class DLockNode extends SyncNode{
 		return line;
 	}
 
-	public String toString(){
-		String methodname = node.getMethod().getName().toString();
-		return "Lock in " + instSig.substring(0, instSig.indexOf(':')) +"." + methodname + "(" + getInstSig() + ")";
-//		return " "+TID+" lock "+ locksigs;
+	public boolean setLine(int line){
+		if(this.line != line){
+			this.line = line;
+			return true;
+		}
+		return false;
 	}
 
-	public int hashCode()
-	{
-//		return locksigs.hashCode();//return the lock string
+	public String toString(){
+		String classname = node.getMethod().getDeclaringClass().toString();
+		String methodname = node.getMethod().getName().toString();
+		String cn = null;
+		boolean jdk = false;
+		if(classname.contains("java/util/")){
+			jdk = true;
+			cn = classname.substring(classname.indexOf("L") +1, classname.length() -1);
+		}else{
+			cn = classname.substring(classname.indexOf(':') +3, classname.length());
+		}
+		if(jdk){
+			return "(Ext Lib) Lock in " + cn +"." + methodname + " (line " + line + ")";
+		}else{
+			return "Lock in " + cn +"." + methodname + " (line " + line + ")";
+		}
+//		return "Lock in " + instSig.substring(0, instSig.indexOf(':')) +"." + methodname + " (line " + line + ")";
+	}
+
+	@Override
+	public int hashCode(){
+//		return locksigs.hashCode();
 		if(key == null)
 			return locksigs.hashCode();
 		else
 			return locksigs.hashCode() + key.hashCode();
 	}
 
-	public boolean equals(Object o)
-	{
+	@Override
+	public boolean equals(Object o){
 		if(o instanceof DLockNode){
-			if(((DLockNode) o).getLockSig().equals(locksigs) && ((DLockNode) o).instSig.equals(instSig))
+			DLockNode that = (DLockNode) o;
+			if(this.node.equals(that.node)
+					&& this.instSig.equals(that.instSig)
+					&& this.line == that.line)
 				return true;
-//			if(lock.equals(((DLockNode) o).getLockString()))
-//				return true;
 		}
 		return false;
 	}
 
 	@Override
 	public int getSelfTID() {
-		// TODO Auto-generated method stub
-		return 0;
+		return TID;
 	}
 
 }

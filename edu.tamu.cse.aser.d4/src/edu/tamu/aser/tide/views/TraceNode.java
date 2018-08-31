@@ -40,7 +40,6 @@ public class TraceNode extends TreeNode{
 		LinkedList<String> trace1 = traces.get(0);
 		LinkedList<String> trace2 = traces.get(1);
 		if(super.parent instanceof RaceNode){
-//			"Trace of " + rw1.getSig() + " is in thread" + tid1 + ": \n"
 			TIDERace race = ((RaceNode) parent).race;
 			//1st rwnode
 			String name1 = "Trace of " + race.node1.getSig() + " :";
@@ -51,7 +50,6 @@ public class TraceNode extends TreeNode{
 			super.children.add(subtrace1);
 			super.children.add(subtrace2);
 		}else if(super.parent instanceof DeadlockNode){
-//			"Trace of 1st lockpair is in thread" + tid1 + " : "
 			TIDEDeadlock deadlock = ((DeadlockNode) parent).deadlock;
 			//1st lockpair
 			String name1 = "Trace of 1st lockpair ";

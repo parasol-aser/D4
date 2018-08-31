@@ -8,8 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import edu.tamu.aser.tide.engine.TIDERace;
+import edu.tamu.aser.tide.nodes.WriteNode;
 import edu.tamu.aser.tide.plugin.Activator;
-import edu.tamu.aser.tide.trace.WriteNode;
 
 public class CWriteNode extends TreeNode{
 	public String name;
@@ -65,12 +65,5 @@ public class CWriteNode extends TreeNode{
 		}
 	}
 
-
-//	@SuppressWarnings("unchecked")
-//	protected void createChildren(LinkedList<String> trace) {
-//		String name = "Trace of " + this.read.getSig() + " is :";
-//		SubTraceNode subtrace = new SubTraceNode(this, name, trace);
-//		super.children.add(subtrace);
-//	}
 
 }

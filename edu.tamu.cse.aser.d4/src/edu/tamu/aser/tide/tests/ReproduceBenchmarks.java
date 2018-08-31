@@ -10,6 +10,7 @@ import java.util.Set;
 import com.ibm.wala.cfg.ControlFlowGraph;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.classLoader.Language;
 import com.ibm.wala.core.tests.callGraph.CallGraphTestUtil;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
@@ -24,11 +25,7 @@ import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Util;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
-import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysisImpl;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationGraph;
-import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
-import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder.ConstraintVisitor;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
@@ -50,6 +47,12 @@ import edu.tamu.aser.tide.engine.TIDEDeadlock;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGraphBuilder;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGraphBuilder.ConstraintVisitor;
+import edu.tamu.wala.increpta.util.IPAUtil;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPointerAnalysisImpl;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPropagationGraph;
+
 
 public class ReproduceBenchmarks {
 
@@ -354,15 +357,15 @@ public class ReproduceBenchmarks {
 		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
 
-		SSAPropagationCallGraphBuilder builder = Util.makeZeroOneContainerCFABuilder(options, new AnalysisCacheImpl(), cha, scope);
+		IPASSAPropagationCallGraphBuilder builder = IPAUtil.makeIPAZeroCFABuilder(Language.JAVA, options, new AnalysisCacheImpl(), cha, scope);
 
 		long start_time = System.currentTimeMillis();
 		CallGraph cg  = builder.makeCallGraph(options, null);
-		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
+		IPAPointerAnalysisImpl pta = (IPAPointerAnalysisImpl) builder.getPointerAnalysis();
 		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time) + "ms");
 		int numofCGNodes = cg.getNumberOfNodes();
 		int totalInstanceKey = pta.getInstanceKeys().size();
-		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
+		int totalPointerKey =((IPAPointerAnalysisImpl)pta).getNumOfPointerKeys();
 		int totalPointerEdge = 0;
 		int totalClass=cha.getNumberOfClasses();
 		Iterator<PointerKey> iter = pta.getPointerKeys().iterator();
@@ -384,13 +387,16 @@ public class ReproduceBenchmarks {
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, numOfWorkers), "bughub");
 		start_time = System.currentTimeMillis();
-		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
+		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
 		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
-		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
+		engine.detectBothBugs(ps);
 
 //		System.out.println("EXHAUSTIVE DETECTION >>>");
 		int race = 0;
 		int dl = 0;
+		HashSet<ITIDEBug> bugs = new HashSet<>();
+		bugs.addAll(engine.addeddeadlocks);
+		bugs.addAll(engine.addedraces);
 		for(ITIDEBug bug : bugs){
 			if(bug instanceof TIDERace){
 				race++;
@@ -403,7 +409,7 @@ public class ReproduceBenchmarks {
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
-		builder.getPropagationSystem().initializeAkkaSys(numOfWorkers);
+		builder.getSystem().initialParallelSystem(false, numOfWorkers);
 		incrementalTest(builder, cg);
 	}
 
@@ -416,15 +422,15 @@ public class ReproduceBenchmarks {
 		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
 
-		SSAPropagationCallGraphBuilder builder = Util.makeZeroOneContainerCFABuilder(options, new AnalysisCacheImpl(), cha, scope);
+		IPASSAPropagationCallGraphBuilder builder = IPAUtil.makeIPAZeroCFABuilder(Language.JAVA, options, new AnalysisCacheImpl(), cha, scope);
 
 		long start_time = System.currentTimeMillis();
 		CallGraph cg  = builder.makeCallGraph(options, null);
-		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
+		IPAPointerAnalysisImpl pta = (IPAPointerAnalysisImpl) builder.getPointerAnalysis();
 		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time) + "ms");
 		int numofCGNodes = cg.getNumberOfNodes();
 		int totalInstanceKey = pta.getInstanceKeys().size();
-		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
+		int totalPointerKey =((IPAPointerAnalysisImpl)pta).getNumOfPointerKeys();
 		int totalPointerEdge = 0;
 		int totalClass=cha.getNumberOfClasses();
 		Iterator<PointerKey> iter = pta.getPointerKeys().iterator();
@@ -446,12 +452,15 @@ public class ReproduceBenchmarks {
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
 //		start_time = System.currentTimeMillis();
-		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
+		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
 		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
-		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
+		engine.detectBothBugs(ps);
 
 		int race = 0;
 		int dl = 0;
+		HashSet<ITIDEBug> bugs = new HashSet<>();
+		bugs.addAll(engine.addeddeadlocks);
+		bugs.addAll(engine.addedraces);
 		for(ITIDEBug bug : bugs){
 			if(bug instanceof TIDERace){
 				race++;
@@ -464,7 +473,7 @@ public class ReproduceBenchmarks {
 //		System.err.println("Exhaustive Deadlock Detection Time: " + engine.timeForDetectingDL);
 
 		System.out.println("Running Incremental Points-to Analysis and Detection ... ");
-		builder.getPropagationSystem().initializeAkkaSys(1);
+		builder.getSystem().initialParallelSystem(false, 1);
 		incrementalTest(builder, cg);
 	}
 
@@ -481,15 +490,15 @@ public class ReproduceBenchmarks {
 		Iterable<Entrypoint> entrypoints = findEntryPoints(cha,mainClassName,includeAllMainEntryPoints);
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
 
-		SSAPropagationCallGraphBuilder builder = Util.makeZeroOneContainerCFABuilder(options, new AnalysisCacheImpl(), cha, scope);
+		IPASSAPropagationCallGraphBuilder builder = IPAUtil.makeIPAZeroCFABuilder(Language.JAVA, options, new AnalysisCacheImpl(), cha, scope);
 
 		long start_time = System.currentTimeMillis();
 		CallGraph cg  = builder.makeCallGraph(options, null);
-		PointerAnalysis<InstanceKey> pta = builder.getPointerAnalysis();
+		IPAPointerAnalysisImpl pta = (IPAPointerAnalysisImpl) builder.getPointerAnalysis();
 		System.out.println("Exhaustive Points-to Analysis Time: "+(System.currentTimeMillis()-start_time) + "ms");
 		int numofCGNodes = cg.getNumberOfNodes();
 		int totalInstanceKey = pta.getInstanceKeys().size();
-		int totalPointerKey =((PointerAnalysisImpl)pta).getNumOfPointerKeys();
+		int totalPointerKey =((IPAPointerAnalysisImpl)pta).getNumOfPointerKeys();
 		int totalPointerEdge = 0;
 		int totalClass=cha.getNumberOfClasses();
 		Iterator<PointerKey> iter = pta.getPointerKeys().iterator();
@@ -511,13 +520,16 @@ public class ReproduceBenchmarks {
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
 //		start_time = System.currentTimeMillis();
-		PropagationGraph flowgraph = builder.getPropagationSystem().getPropagationGraph();
+		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
 		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
-		Set<ITIDEBug> bugs = engine.detectBothBugs(ps);
+		engine.detectBothBugs(ps);
 
 //		System.out.println("INITIAL DETECTION >>>");
 		int race = 0;
 		int dl = 0;
+		HashSet<ITIDEBug> bugs = new HashSet<>();
+		bugs.addAll(engine.addeddeadlocks);
+		bugs.addAll(engine.addedraces);
 		for(ITIDEBug bug : bugs){
 			if(bug instanceof TIDERace){
 				race++;
@@ -534,7 +546,7 @@ public class ReproduceBenchmarks {
 		incrementalDistTest(master, builder, cg);
 	}
 
-	private static void incrementalDistTest(DistributeMaster master, SSAPropagationCallGraphBuilder builder, CallGraph cg) {
+	private static void incrementalDistTest(DistributeMaster master, IPASSAPropagationCallGraphBuilder builder, CallGraph cg) {
 		Iterator<CGNode> iter2 = cg.iterator();
 		HashSet<CGNode> storeCG = new HashSet<>();
 		while(iter2.hasNext()){
@@ -591,7 +603,7 @@ public class ReproduceBenchmarks {
 	}
 
 
-	public static void incrementalTest(SSAPropagationCallGraphBuilder builder, CallGraph cg){
+	public static void incrementalTest(IPASSAPropagationCallGraphBuilder builder, CallGraph cg){
 		Iterator<CGNode> iter2 = cg.iterator();
 		HashSet<CGNode> storeCG = new HashSet<>();
 		while(iter2.hasNext()){
@@ -607,7 +619,7 @@ public class ReproduceBenchmarks {
 		for (CGNode n : storeCG) {
 			if(!n.getMethod().getSignature().contains("com.ibm.wala")
 					&& !n.getMethod().getSignature().contains(mainSignature)){
-				builder.system.setChange(true);
+				builder.getSystem().setChange(true);
 				IR ir = n.getIR();
 				if(ir == null)
 					continue;
@@ -635,18 +647,18 @@ public class ReproduceBenchmarks {
 					try{
 
 						builder.setDelete(true);
-						builder.system.setFirstDel(true);
+						builder.getSystem().setFirstDel(true);
 						v.setBasicBlock(bb);
 
 						long delete_start_time = System.currentTimeMillis();
 						inst.visit(v);
 						//del
-						builder.system.setFirstDel(false);
+						builder.getSystem().setFirstDel(false);
 						do{
-							builder.system.solveAkkaDel(null);
-						}while(!builder.system.emptyWorkListAkka());
+							builder.getSystem().solveDel(null);
+						}while(!builder.getSystem().emptyWorkList());
 						builder.setDelete(false);
-						HashSet<IVariable> resultsadd = builder.system.changes;
+						HashSet<IVariable> resultsadd = builder.getSystem().changes;
 						if(resultsadd.size() > 0){
 							ptachanges = true;
 						}else{
@@ -658,23 +670,23 @@ public class ReproduceBenchmarks {
 						long deldetect_time = 0;
 						if(!benchmark.contains("fop")){
 							engine.setDelete(true);
-							bugs = engine.updateEngine2(changedNodes, ptachanges, inst, ps);
+							engine.updateEngineToEvaluate(changedNodes, ptachanges, inst, ps);
 							engine.setDelete(false);
 							deldetect_time = (delete_end_time - deldetect_start_time);
 						}else{
 							ps.print(0+" "+0+" ");
 						}
 
-						builder.system.clearChanges();
+						builder.getSystem().clearChanges();
 						//add
 						long add_start_time = System.currentTimeMillis();
 						inst.visit(v);
 						do{
-							builder.system.solveAkkaAdd(null);
+							builder.getSystem().solveAdd(null);
 							builder.addConstraintsFromNewNodes(null);
-						} while (!builder.system.emptyWorkListAkka());
+						} while (!builder.getSystem().emptyWorkList());
 
-						HashSet<IVariable> resultsdel = builder.system.changes;
+						HashSet<IVariable> resultsdel = builder.getSystem().changes;
 						if(resultsdel.size() > 0){
 							ptachanges = true;
 						}else{
@@ -685,13 +697,13 @@ public class ReproduceBenchmarks {
 						long ptaadd_time = (adddetect_start_time-add_start_time);
 						long adddetect_time = 0;
 						if(!benchmark.contains("fop")){
-							bugs = engine.updateEngine(changedNodes, new HashSet<>(), ptachanges, ps);
+							engine.updateEngine(changedNodes, new HashSet<>(), new HashSet<>(), ptachanges, ps);
 							adddetect_time = (add_end_time - adddetect_start_time);
 						}else{
 							ps.print(0+" "+0+" ");
 						}
 
-						builder.system.clearChanges();
+						builder.getSystem().clearChanges();
 						ps.print(ptadelete_time+" "+ptaadd_time+" ");
 						//incre_race_time+" "+incre_dl_time+" "+ptadelete_time+" "+ptaadd_time+" "
 						totaltime = totaltime + ptadelete_time + ptaadd_time + deldetect_time + adddetect_time;

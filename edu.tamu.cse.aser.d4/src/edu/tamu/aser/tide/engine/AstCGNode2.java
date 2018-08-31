@@ -15,7 +15,9 @@ import com.ibm.wala.util.collections.SparseVector;
 import com.ibm.wala.util.graph.impl.NodeWithNumber;
 import com.ibm.wala.util.intset.MutableSharedBitVectorIntSet;
 
-public class AstCGNode2 extends NodeWithNumber implements CGNode {
+import edu.tamu.wala.increpta.callgraph.impl.IPACGNode;
+
+public class AstCGNode2 extends NodeWithNumber implements IPACGNode {
 
     /**
      * A Mapping from call site program counter (int) -> Object, where Object is a CGNode if we've discovered exactly one target for

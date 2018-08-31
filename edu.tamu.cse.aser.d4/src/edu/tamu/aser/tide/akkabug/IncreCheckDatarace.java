@@ -2,30 +2,25 @@ package edu.tamu.aser.tide.akkabug;
 
 import java.util.HashSet;
 
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
-public class IncreCheckDatarace {
-	private String sig;
-	private HashSet<WriteNode> writes;
-	private HashSet<ReadNode> reads;
+public class IncreCheckDatarace extends CheckDatarace{
 
-	public IncreCheckDatarace(String sig, HashSet<WriteNode> writes2, HashSet<ReadNode> reads2) {
-		this.sig = sig;
-		this.writes = writes2;
-		this.reads = reads2;
+	public IncreCheckDatarace(String sig, HashSet<WriteNode> writes, HashSet<ReadNode> reads) {
+		super(sig, writes, reads);
 	}
 
 	public HashSet<WriteNode> getWrites(){
-		return writes;
+		return super.writes;
 	}
 
 	public HashSet<ReadNode> getReads(){
-		return reads;
+		return super.reads;
 	}
 
 	public String getSig(){
-		return sig;
+		return super.sig;
 	}
 
 }

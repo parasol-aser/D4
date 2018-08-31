@@ -41,13 +41,11 @@ public class EchoRaceView extends ViewPart{
 	protected TreeViewer treeViewer;
 	protected Text text;
 	protected BugLabelProvider labelProvider;
-//	protected BugDetail bugDetail;
 	protected RaceDetail raceDetail;
-//	protected DeadlockDetail deadlockDetail;
 	protected Action jumpToLineInEditor;
 
 	protected TIDEEngine bugEngine;
-	protected HashSet<ITIDEBug> existingbugs = new HashSet<>();
+	protected HashSet<TIDERace> existingbugs = new HashSet<>();
 
 	public EchoRaceView() {
 		super();
@@ -108,23 +106,13 @@ public class EchoRaceView extends ViewPart{
 
 	public void initializeTree(BugDetail bugDetail) {
 		//initialize the tree
-//		bugDetail = new BugDetail(null);
-//		this.bugDetail = bugDetail;
 		raceDetail = new RaceDetail(bugDetail);
-//		deadlockDetail = new DeadlockDetail(bugDetail);
-
 		bugDetail.setRaceDetail(raceDetail);
-//		bugDetail.setDeadlockDetail(deadlockDetail);
 	}
 
 	private void initializeTree() {
 		//initialize the tree
-//		bugDetail = new BugDetail(null);
 		raceDetail = new RaceDetail(null);
-//		deadlockDetail = new DeadlockDetail(bugDetail);
-
-//		bugDetail.setRaceDetail(raceDetail);
-//		bugDetail.setDeadlockDetail(deadlockDetail);
 	}
 
 	protected void createActions() {
@@ -139,6 +127,8 @@ public class EchoRaceView extends ViewPart{
 						RaceNode race = (RaceNode) parent;
 						HashMap<String, IFile> map = race.race.event_ifile_map;
 						IFile file = map.get(((EventNode) obj).getName());
+						if(file == null)
+							return;
 
 						IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 						String editorId = editorRegistry.getDefaultEditor(file.getFullPath().toString()).getId();
@@ -167,7 +157,8 @@ public class EchoRaceView extends ViewPart{
 						DeadlockNode dl = (DeadlockNode) parent;
 						HashMap<String, IFile> map = dl.deadlock.event_ifile_map;
 						IFile file = map.get(((EventNode) obj).getName());
-
+						if(file == null)
+							return;
 						IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 						String editorId = editorRegistry.getDefaultEditor(file.getFullPath().toString()).getId();
 						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -207,71 +198,51 @@ public class EchoRaceView extends ViewPart{
 	}
 
 
-	public void initialGUI(Set<ITIDEBug> bugs) {
+	public void initialGUI(Set<TIDERace> bugs) {
 		//clear all
 		raceDetail.clear();
 		existingbugs.clear();
 		//refresh
 		treeViewer.refresh();
-//		translateToInput((HashSet<ITIDEBug>) bugs);
-		translateToInput2((HashSet<ITIDEBug>) bugs);
+		translateToInput2((HashSet<TIDERace>) bugs);
 		treeViewer.setInput(raceDetail);
 		existingbugs.addAll(bugs);
-		//		treeViewer.expandAll();
 		treeViewer.expandToLevel(raceDetail, 1);
-//		treeViewer.expandToLevel(deadlockDetail, 1);
 	}
 
 
 	@SuppressWarnings("unchecked")
-	public void updateGUI(HashSet<ITIDEBug> addedbugs, HashSet<ITIDEBug> removedbugs) {
-		HashSet<ITIDEBug> addedbugsClone = (HashSet<ITIDEBug>)addedbugs.clone();
-//		addedbugs.removeAll(removedbugs);
-//		removedbugs.removeAll(addedbugsClone);
+	public void updateGUI(HashSet<TIDERace> addedbugs, HashSet<TIDERace> removedbugs) {
 		//only update changed bugs
-		for (ITIDEBug removed : removedbugs) {
+		for (TIDERace removed : removedbugs) {
 			if(existingbugs.contains(removed)){
-				if(removed instanceof TIDERace){
-					TIDERace race = (TIDERace) removed;
-					raceDetail.removeChild(race);
-				}
-//				else{
-//					TIDEDeadlock deadlock = (TIDEDeadlock) removed;
-//					deadlockDetail.removeChild(deadlock);
-//				}
+				raceDetail.removeChild(removed);
 				existingbugs.remove(removed);
 			}else{
 				System.err.println("Existing bugs should contain this removed bug.");
 			}
 		}
 		//add new
-
-//				treeViewer.setInput(translateToInput(addedbugs));
 		addToInput(addedbugs);
 		existingbugs.addAll(addedbugs);
 		treeViewer.refresh();
 		treeViewer.expandToLevel(raceDetail, 1);
-//		treeViewer.expandToLevel(deadlockDetail, 1);
 	}
 
-	public void considerBugs(HashSet<ITIDEBug> considerbugs) {
+	public void considerBugs(HashSet<TIDERace> considerbugs) {
 		addToInput(considerbugs);
 		existingbugs.addAll(considerbugs);
 		treeViewer.refresh();
 		treeViewer.expandToLevel(raceDetail, 1);
 	}
 
-	public void ignoreBugs(HashSet<ITIDEBug> removedbugs){
+	public void ignoreBugs(HashSet<TIDERace> removedbugs){
 		for (ITIDEBug ignore : removedbugs) {
 			if(existingbugs.contains(ignore)){
 				if(ignore instanceof TIDERace){
 					TIDERace race = (TIDERace) ignore;
 					raceDetail.removeChild(race);
 				}
-//				else{
-//					TIDEDeadlock deadlock = (TIDEDeadlock) ignore;
-//					deadlockDetail.removeChild(deadlock);
-//				}
 			}else{
 				System.err.println("Existing bugs should contain this removed bug.");
 			}
@@ -280,55 +251,23 @@ public class EchoRaceView extends ViewPart{
 
 		treeViewer.refresh();
 		treeViewer.expandToLevel(raceDetail, 1);
-//		treeViewer.expandToLevel(deadlockDetail, 1);
 	}
 
 
-	public boolean updateGUI(Set<ITIDEBug> bugs) {//update all, not efficient
-		//remove old
-		treeViewer.remove(raceDetail);
-//		treeViewer.remove(deadlockDetail);
-		treeViewer.refresh();
-		//also remove things in bugdetail
-//		translateToInput((HashSet<ITIDEBug>) bugs);
-		translateToInput2((HashSet<ITIDEBug>) bugs);
-		treeViewer.setInput(raceDetail);
-		//		treeViewer.expandAll();
-		return true;
-	}
-
-	private void translateToInput(HashSet<ITIDEBug> bugs) {
-//		bugDetail.clear();
-		for (ITIDEBug bug : bugs) {
-			if(bug instanceof TIDERace){
-				raceDetail.createChild((TIDERace) bug);
-			}
-//			else if(bug instanceof TIDEDeadlock){
-//				deadlockDetail.createChild((TIDEDeadlock) bug);
-//			}
-		}
-	}
-
-	private void translateToInput2(HashSet<ITIDEBug> bugs) {
+	private void translateToInput2(HashSet<TIDERace> bugs) {
 		raceDetail.clear();
 		for (ITIDEBug bug : bugs) {
 			if(bug instanceof TIDERace){
 				raceDetail.createChild((TIDERace) bug);
 			}
-//			else if(bug instanceof TIDEDeadlock){
-//				deadlockDetail.createChild((TIDEDeadlock) bug);
-//			}
 		}
 	}
 
-	private void addToInput(HashSet<ITIDEBug> bugs) {
-		for (ITIDEBug bug : bugs) {
-			if(bug instanceof TIDERace){
-				raceDetail.createChild((TIDERace) bug, true);
+	private void addToInput(HashSet<TIDERace> bugs) {
+		for (TIDERace race : bugs) {
+			if(!existingbugs.contains(race)){
+				raceDetail.createChild(race, true);
 			}
-//			else if(bug instanceof TIDEDeadlock){
-//				deadlockDetail.createChild((TIDEDeadlock) bug);
-//			}
 		}
 	}
 

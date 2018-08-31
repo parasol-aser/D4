@@ -13,12 +13,12 @@ import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.graph.Trace;
+import edu.tamu.aser.tide.nodes.DLPair;
+import edu.tamu.aser.tide.nodes.DLockNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
+import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmarks;
-import edu.tamu.aser.tide.trace.DLLockPair;
-import edu.tamu.aser.tide.trace.DLockNode;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
 
 public class BugHub extends UntypedActor{
 
@@ -106,7 +106,7 @@ public class BugHub extends UntypedActor{
 			}
 			Set<Integer> tids = engine.threadDLLockPairs.keySet();
 			for(Integer tid1: tids){
-				ArrayList<DLLockPair> dLLockPairs = engine.threadDLLockPairs.get(tid1);
+				ArrayList<DLPair> dLLockPairs = engine.threadDLLockPairs.get(tid1);
 				workerRouter.tell(new CheckDeadlock(tid1, tids, dLLockPairs), getSelf());
 				nrOfWorks++;
 			}
@@ -164,39 +164,39 @@ public class BugHub extends UntypedActor{
 			if(nrOfWorks == 0){
 				doWeTerminate();
 			}
-		}else if(message instanceof IncrementalRecheckCommonLock){
-//			IncrementalRecheckCommonLock work = (IncrementalRecheckCommonLock) message;
-			TIDEEngine engine;
-			if(PLUGIN){
-				engine = TIDECGModel.bugEngine;
-			}else{
-				engine = ReproduceBenchmarks.engine;
-			}
-			Object[] bugs = engine.bugs.toArray();
-			int total = bugs.length;
-			int num_in_group = total/8 + total%8;
-			HashSet<TIDERace> group = new HashSet<>();
-			for(int i=0;i<bugs.length;i++){
-				ITIDEBug bug = (ITIDEBug) bugs[i];
-				if(bug instanceof TIDERace){
-					group.add((TIDERace) bug);
-					if(group.size() == num_in_group){
-						HashSet<TIDERace> team1 = new HashSet<>();
-						team1.addAll(group);
-						workerRouter.tell(new IncreRecheckCommonLock(team1), getSelf());
-						group.clear();
-						nrOfWorks++;
-					}
-				}
-			}
-			if(group.size() > 0){
-				workerRouter.tell(new IncreRecheckCommonLock(group), getSelf());
-				nrOfWorks++;
-			}
-			if(nrOfWorks == 0){
-				doWeTerminate();
-			}
 		}
+//		else if(message instanceof IncrementalRecheckCommonLock){
+//			TIDEEngine engine;
+//			if(PLUGIN){
+//				engine = TIDECGModel.bugEngine;
+//			}else{
+//				engine = ReproduceBenchmarks.engine;
+//			}
+//			Object[] bugs = engine.bugs.toArray();
+//			int total = bugs.length;
+//			int num_in_group = total/8 + total%8;
+//			HashSet<TIDERace> group = new HashSet<>();
+//			for(int i=0;i<bugs.length;i++){
+//				ITIDEBug bug = (ITIDEBug) bugs[i];
+//				if(bug instanceof TIDERace){
+//					group.add((TIDERace) bug);
+//					if(group.size() == num_in_group){
+//						HashSet<TIDERace> team1 = new HashSet<>();
+//						team1.addAll(group);
+//						workerRouter.tell(new IncreRecheckCommonLock(team1), getSelf());
+//						group.clear();
+//						nrOfWorks++;
+//					}
+//				}
+//			}
+//			if(group.size() > 0){
+//				workerRouter.tell(new IncreRecheckCommonLock(group), getSelf());
+//				nrOfWorks++;
+//			}
+//			if(nrOfWorks == 0){
+//				doWeTerminate();
+//			}
+//		}
 		else{
 			unhandled(message);
 		}

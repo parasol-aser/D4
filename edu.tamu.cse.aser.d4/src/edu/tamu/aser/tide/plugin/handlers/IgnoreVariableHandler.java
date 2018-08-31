@@ -79,7 +79,7 @@ public class IgnoreVariableHandler extends AbstractHandler {
 		IPath ipath = ((SourceType)path.getSegment(0)).getParent().getPath();
 		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(ipath);
 		Object element = treeSel.getFirstElement();
-		HashSet<ITIDEBug> all = new HashSet<>();
+		HashSet<TIDERace> all = new HashSet<>();
 		//option from echoviews
 		if(element instanceof RaceNode){
 			RaceNode racenode = (RaceNode) element;
@@ -90,7 +90,7 @@ public class IgnoreVariableHandler extends AbstractHandler {
 				all.addAll(others);
 				all.add(race);
 			}else{//consider this variable
-				HashSet<ITIDEBug> others = engine.considerThisSigForRace(race, excludedSig);
+				HashSet<TIDERace> others = engine.considerThisSigForRace(race, excludedSig);
 				all.addAll(others);
 				all.add(race);
 			}
@@ -128,7 +128,7 @@ public class IgnoreVariableHandler extends AbstractHandler {
 				HashSet<TIDERace> related = engine.excludeThisSigForRace(excludedSig);
 				all.addAll(related);
 			}else{//consider this variable
-				HashSet<ITIDEBug> related = engine.considerThisSigForRace(excludedSig);
+				HashSet<TIDERace> related = engine.considerThisSigForRace(excludedSig);
 				all.addAll(related);
 			}
 		}

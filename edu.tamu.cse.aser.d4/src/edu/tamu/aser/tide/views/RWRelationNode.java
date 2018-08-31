@@ -8,8 +8,8 @@ import java.util.LinkedList;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import edu.tamu.aser.tide.engine.TIDERace;
+import edu.tamu.aser.tide.nodes.WriteNode;
 import edu.tamu.aser.tide.plugin.Activator;
-import edu.tamu.aser.tide.trace.WriteNode;
 
 public class RWRelationNode extends TreeNode {
 	protected String name;
@@ -158,40 +158,6 @@ public class RWRelationNode extends TreeNode {
 		}
 		return true;//nothing exist in map, should be removed
 	}
-
-
-//	@SuppressWarnings("unchecked")
-//	public void createChildren(HashMap<String, ConcurrentRelation> map) {
-//		for (ConcurrentRelation concurrentRelation : map.values()) {
-//			if (this.map.containsKey(concurrentRelation.writeNode.toString())) {
-//				CWriteNode writeNode = this.map.get(concurrentRelation.writeNode.toString());
-//				writeNode.setRelationDetail(concurrentRelation);
-//			} else {
-//				CWriteNode writeNode = new CWriteNode(this, concurrentRelation.writeNode);
-//				writeNode.setRelationDetail(concurrentRelation);
-//				this.map.put(writeNode.name, writeNode);
-//				super.children.add(writeNode);
-//			}
-//		}
-//	}
-
-//	public void removeChild(TIDERace race) {
-//		if (race.node1 instanceof WriteNode) {
-//			CWriteNode writeNode = map.get(race.node1.toString());
-//			writeNode.removeRelationDetail(race.node2);
-//			if (writeNode.rwList.isEmpty()) {
-//				super.children.remove(writeNode);
-//			}
-//		}
-//		if (race.node2 instanceof WriteNode) {
-//			CWriteNode writeNode = map.get(race.node2.toString());
-//			writeNode.removeRelationDetail(race.node1);
-//			if (writeNode.rwList.isEmpty()) {
-//				super.children.remove(writeNode);
-//			}
-//		}
-//	}
-
 
 
 }

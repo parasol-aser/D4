@@ -35,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope;
 import com.ibm.wala.cast.java.translator.jdt.JDTSourceLoaderImpl;
+import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.classLoader.ClassLoaderImpl;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
@@ -55,10 +56,13 @@ import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDECGModel;
 import edu.tamu.aser.tide.plugin.Activator;
 import edu.tamu.aser.tide.plugin.ChangedItem;
+import edu.tamu.aser.tide.plugin.MyJavaElementChangeCollector;
 //import edu.tamu.aser.tide.plugin.MyJavaElementChangeCollector;
 import edu.tamu.aser.tide.views.EchoDLView;
 import edu.tamu.aser.tide.views.EchoRaceView;
 import edu.tamu.aser.tide.views.EchoReadWriteView;
+import edu.tamu.wala.increpta.callgraph.impl.IPAExplicitCallGraph.IPAExplicitNode;
+import edu.tamu.wala.increpta.util.IPAAbstractFixedPointSolver;
 
 public class ConvertHandler extends AbstractHandler {
 
@@ -116,11 +120,13 @@ public class ConvertHandler extends AbstractHandler {
 	private HashMap<IJavaProject,TIDECGModel> modelMap = new HashMap<IJavaProject,TIDECGModel>();
 	private TIDECGModel currentModel;
 	private IJavaProject currentProject;
+	private ClassLoaderImpl classloader;
 
 	public HashSet<CGNode> changedNodes = new HashSet<>();
 	public HashSet<CGNode> changedModifiers = new HashSet<>();
 	public HashSet<CGNode> ignoreNodes = new HashSet<>();
 	public HashSet<CGNode> considerNodes = new HashSet<>();
+	public HashSet<CGNode> updateIRNodes = new HashSet<>();
 
 	long start_time = System.currentTimeMillis();
 
@@ -140,7 +146,7 @@ public class ConvertHandler extends AbstractHandler {
 	 */
 	public void handleConsiderMethod(IJavaProject javaProject, IFile file, ChangedItem consider_method) {
 		considerNodes.clear();
-		TIDECGModel model = modelMap.get(javaProject);
+		TIDECGModel model = currentModel;//modelMap.get(javaProject);
 		if(model == null)
 			return;
 		IClassHierarchy cha = model.getClassHierarchy();
@@ -201,7 +207,7 @@ public class ConvertHandler extends AbstractHandler {
 	 */
 	public void handleIgnoreMethod(IJavaProject javaProject, IFile file, ChangedItem ignore_method) {
 		ignoreNodes.clear();
-		TIDECGModel model = modelMap.get(javaProject);
+		TIDECGModel model = currentModel;//modelMap.get(javaProject);
 		if(model == null)
 			return;
 		IClassHierarchy cha = model.getClassHierarchy();
@@ -230,13 +236,12 @@ public class ConvertHandler extends AbstractHandler {
 					if(className.contains(ignore_method.className)){
 
 						for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
-							String mName = m.getName().toString();//JEFF TODO
+							String mName = m.getName().toString();
 
 							if(mName.equals(ignore_method.methodName)){
 								TypeName typeName = m.getDeclaringClass().getName();
 								IClass class_old = loader_old.lookupClass(typeName);
-								//									System.out.println("class_old hash: " + System.identityHashCode(class_old)) ;
-								if(class_old==null)
+								if(class_old == null)
 									return;//TODO: other kinds of changes
 
 								com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
@@ -274,7 +279,7 @@ public class ConvertHandler extends AbstractHandler {
 		changedNodes.clear();
 		changedModifiers.clear();
 
-		TIDECGModel model = modelMap.get(javaProject);
+		TIDECGModel model = currentModel;//modelMap.get(javaProject);
 		if(model == null)
 			return;
 
@@ -288,16 +293,10 @@ public class ConvertHandler extends AbstractHandler {
 			discoverChangedCGNodes(javaProject, file, changedItems);
 		}
 
-		boolean ptachanges = !AbstractFixedPointSolver.changes.isEmpty();
+		boolean ptachanges = !IPAAbstractFixedPointSolver.changes.isEmpty();
 		if(!changedNodes.isEmpty() || ptachanges || !changedModifiers.isEmpty()){//hChanges.isEmpty()
 			//process further check when lock/start changes or pts changes
-			letUsRock2(javaProject, file0, model, ptachanges, true);
-		}
-
-		try {
-			Thread.currentThread().sleep(10);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			letUsRockIncremental(javaProject, file0, model, ptachanges, true);
 		}
 
 	}
@@ -319,16 +318,18 @@ public class ConvertHandler extends AbstractHandler {
 		changedNodes.clear();
 		changedModifiers.clear();
 
-		TIDECGModel model = modelMap.get(javaProject);
+		TIDECGModel model = currentModel;//modelMap.get(javaProject);
 		if(model == null)
 			return;
 
 		discoverChangedCGNodes(javaProject, file, changedItems);
 
-		boolean ptachanges = !AbstractFixedPointSolver.changes.isEmpty();
+		boolean ptachanges = !IPAAbstractFixedPointSolver.changes.isEmpty();
 		if(!changedNodes.isEmpty() || ptachanges || !changedModifiers.isEmpty()){//hChanges.isEmpty()
+			//update cgnode for changed markers
+			updateCGNodeInSameClass(model, file);
 			//process further check when lock/start changes or pts changes
-			letUsRock2(javaProject, file, model, ptachanges, false);
+			letUsRockIncremental(javaProject, file, model, ptachanges, false);
 		}
 
 		try {
@@ -338,8 +339,67 @@ public class ConvertHandler extends AbstractHandler {
 		}
 	}
 
+	private void updateCGNodeInSameClass(TIDECGModel model, IFile file) {
+		updateIRNodes.clear();
+		HashMap<String, HashSet<String>> class2Methods = model.getBugEngine().class2Methods;
+		for (CGNode node : changedNodes) {
+			String classname_tar = node.getMethod().getDeclaringClass().getName().getClassName().toString();
+			HashSet<String> methods = class2Methods.get(classname_tar);
+			String exclude = node.getMethod().getName().toString();
+			for (String methodname_tar : methods) {
+				if(methodname_tar.equals(exclude)){
+					continue;
+				}
+				//match
+				IClassHierarchy cha = model.getClassHierarchy();
+				try{
+					IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
+					Iterator<IClass> iter = classloader.iterateAllClasses();
+					while(iter.hasNext()){
+						IClass javaClass = iter.next();
+						String className = javaClass.getName().getClassName().toString();
+						if(className.contains(classname_tar)){
+
+							for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
+								String mName = m.getName().toString();
+								if(mName.equals(methodname_tar)){
+									TypeName typeName = m.getDeclaringClass().getName();
+									IClass class_old = loader_old.lookupClass(typeName);
+
+									if(class_old==null)
+										return;//TODO: other kinds of changes
+
+									com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
+									//save new method
+									if(class_old instanceof AstClass){
+										AstClass ast_old = (AstClass) class_old;
+										ast_old.updateMethod(m.getSelector(), m);
+									}
+
+//									IR ir_old = model.getCache().getSSACache().findOrCreateIR(m_old, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
+									IR ir = model.getCache().getSSACache().findOrCreateIR(m, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
+
+									System.out.println(m_old.hashCode());
+									CGNode cgnode = model.getOldCGNode(m_old);
+									if(cgnode instanceof IPAExplicitNode){
+										IPAExplicitNode astCGNode = (IPAExplicitNode) cgnode;
+										astCGNode.updateMethod(m, ir);
+										updateIRNodes.add(cgnode);
+									}
+									System.err.println("Updated Item: " + classname_tar + " " + methodname_tar);
+								}
+							}
+						}
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 	private void discoverChangedCGNodes(IJavaProject javaProject, IFile file, ArrayList<ChangedItem> changedItems ){
-		TIDECGModel model = modelMap.get(javaProject);
+		TIDECGModel model = currentModel;//modelMap.get(javaProject);
 		if(model == null)
 			return;
 
@@ -355,6 +415,8 @@ public class ConvertHandler extends AbstractHandler {
 			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
 			cl.init(modules);
 			boolean onlyModifier = false;
+			boolean modifier = false;
+
 			Iterator<IClass> iter = cl.iterateAllClasses();
 			while(iter.hasNext()){
 				IClass javaClass = iter.next();
@@ -364,12 +426,12 @@ public class ConvertHandler extends AbstractHandler {
 				if(apackage != null){
 					apackage_s = apackage.toString().replace('/', '.');
 				}
-				//list all involved packages/class/method
-				for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
-					String mName = m.getName().toString();
-					if(apackage_s!= null)
-						System.out.println(apackage_s + " " + className + " " + mName);
-				}
+//				//list all involved packages/class/method
+//				for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
+//					String mName = m.getName().toString();
+//					if(apackage_s!= null)
+//						System.out.println(apackage_s + " " + className + " " + mName);
+//				}
 
 
 				for (Iterator<ChangedItem> iterator = changedItems.iterator(); iterator.hasNext();) {
@@ -381,8 +443,7 @@ public class ConvertHandler extends AbstractHandler {
 						if(className.contains(changedItem.className)){
 
 							for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
-								String mName = m.getName().toString();//JEFF TODO
-
+								String mName = m.getName().toString();
 								if(mName.equals(changedItem.methodName)){
 									TypeName typeName = m.getDeclaringClass().getName();
 									IClass class_old = loader_old.lookupClass(typeName);
@@ -392,7 +453,10 @@ public class ConvertHandler extends AbstractHandler {
 
 									com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
 									//save new method
-									class_old.updateMethod(m.getSelector(), m);
+									if(class_old instanceof AstClass){
+										AstClass ast_old = (AstClass) class_old;
+										ast_old.updateMethod(m.getSelector(), m);
+									}
 
 									IR ir_old = model.getCache().getSSACache().findOrCreateIR(m_old, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
 									IR ir = model.getCache().getSSACache().findOrCreateIR(m, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
@@ -406,6 +470,9 @@ public class ConvertHandler extends AbstractHandler {
 											//only modifer changes
 											onlyModifier = true;
 										}
+									}else if(m.isSynchronized() != m_old.isSynchronized()){
+										//modifer may change and ir may also change
+										modifier = true;
 									}
 									CGNode node = model.getOldCGNode(m_old);
 									model.updatePointerAnalysis(node,ir_old,ir);
@@ -414,8 +481,12 @@ public class ConvertHandler extends AbstractHandler {
 										changedModifiers.add(node);
 									}else{
 										changedNodes.add(node);
+										if(modifier){
+											changedModifiers.add(node);
+										}
 									}
 									onlyModifier = false;
+									modifier = false;
 									System.out.println();
 									System.err.println("Changed Item: " + changedItem.packageName + " " + changedItem.className + " " + changedItem.methodName);
 								}
@@ -481,23 +552,22 @@ public class ConvertHandler extends AbstractHandler {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-				HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 				//Detect Bugs
 				if(num_of_detection == 1){
 					//initial
 					System.err.println("INITIAL DETECTION >>>");
-					bugs =  model.detectBug();
+					model.detectBug();
 				}else{
 					System.out.println("wrong call");
 				}
 				//update UI
-				model.updateGUI(javaProject, file, bugs, true);
+				model.updateGUI(javaProject, file, true);
 				System.err.println("Total Time: "+(System.currentTimeMillis()-start_time));
 			}
 		}).start();
 	}
 
-	private void letUsRock2(IJavaProject javaProject, final IFile file, final TIDECGModel model, boolean ptachanges, boolean trigger){
+	private void letUsRockIncremental(IJavaProject javaProject, final IFile file, final TIDECGModel model, boolean ptachanges, boolean trigger){
 		num_of_detection++;
 		//TODO: fork a new Thread to do this
 		new Thread(new Runnable(){
@@ -511,15 +581,15 @@ public class ConvertHandler extends AbstractHandler {
 				}else{
 					//incremental
 					System.err.println("DETECTION AGAIN >>>");
-					bugs = model.detectBugAgain(changedNodes, changedModifiers, ptachanges);
+					model.detectBugAgain(changedNodes, changedModifiers, updateIRNodes, ptachanges);
 				}
 				//clear pta changes
-		        model.clearChanges();
+				model.clearChanges();
 				//update UI
-				model.updateGUI(javaProject, file, bugs, false);
-//				if(trigger){
-//					Activator.getDefault().getDefaultCollector().resetCollectedChanges();
-//				}
+				model.updateGUI(javaProject, file, false);
+				if(trigger){
+					Activator.getDefault().getDefaultCollector().resetCollectedChanges();
+				}
 				System.err.println("Incremental Time: "+(System.currentTimeMillis()-start_time));
 				System.out.println();
 			}
@@ -533,10 +603,10 @@ public class ConvertHandler extends AbstractHandler {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-				HashSet<ITIDEBug> removedbugs = model.ignoreCGNodes(ignoreNodes);
+				model.ignoreCGNodes(ignoreNodes);
 				//update UI
 				//remove the marker from editor
-				model.removeBugMarkersForIgnore(removedbugs);
+				model.removeBugMarkersForIgnore(model.getBugEngine().removedraces);
 				//remove the bug from echoview
 				model.updateEchoViewForIgnore();
 				System.err.println("Total Time: "+(System.currentTimeMillis()-start_time));
@@ -553,11 +623,11 @@ public class ConvertHandler extends AbstractHandler {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-				HashSet<ITIDEBug> addbugs = model.considerCGNodes(considerNodes);
+				model.considerCGNodes(considerNodes);
 				//update UI
 				//remove the marker from editor
 				try {
-					model.addBugMarkersForConsider(addbugs, file);
+					model.addBugMarkersForConsider(null, file);
 				} catch (CoreException e) {
 					e.printStackTrace();
 				}
@@ -575,23 +645,14 @@ public class ConvertHandler extends AbstractHandler {
 		IStructuredSelection selection = (IStructuredSelection) sel;
 		Object firstElement = selection.getFirstElement();
 		if (firstElement instanceof ICompilationUnit) {
-
 			ICompilationUnit cu = (ICompilationUnit) firstElement;
 			if(hasMain(cu)){
 				test(cu, selection);//initial
-			}else {
-				//      MessageDialog.openInformation(shell, "Info",
-				//          "Please select a Java source file");
 			}
 		}
-
 		return null;
 	}
 
-
-	public void rewriteExcludeFile() {
-		//leave for test(ICompilationUnit cu, IStructuredSelection selection)
-	}
 
 	public void test(ICompilationUnit cu, IStructuredSelection selection){
 		try{
@@ -617,9 +678,6 @@ public class ConvertHandler extends AbstractHandler {
 //				bufferedWriter.close();
 //			}
 			TIDECGModel model = new TIDECGModel(javaProject, "EclipseDefaultExclusions.txt", mainSig);
-
-//			System.out.println("model is " + System.identityHashCode(model));
-//			long start_time = System.currentTimeMillis();
 			model.buildGraph();
 			System.err.println("Call Graph Construction Time: "+(System.currentTimeMillis()-start_time));
 			modelMap.put(javaProject, model);
@@ -631,7 +689,6 @@ public class ConvertHandler extends AbstractHandler {
 			echoDLView = model.getEchoDLView();
 			//set current model
 			currentModel = model;
-//			currentFile = file;
 			currentProject = javaProject;
 			//concurrent
 			letUsRock(javaProject, file, model);
@@ -639,7 +696,6 @@ public class ConvertHandler extends AbstractHandler {
 			//for trigger button
 //			MyJavaElementChangeCollector collector = Activator.getDefault().getDefaultCollector();
 //			collector.resetCollectedChanges();
-
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -648,89 +704,39 @@ public class ConvertHandler extends AbstractHandler {
 
 	private boolean hasMain(ICompilationUnit cu){
 		try{
-
-			for(IJavaElement e: cu.getChildren())
-			{
-				if(e instanceof SourceType)
-				{
+			for(IJavaElement e: cu.getChildren()){
+				if(e instanceof SourceType){
 					SourceType st = (SourceType)e;
 					for (IMethod m: st.getMethods())
 						if((m.getFlags()&Flags.AccStatic)>0
 								&&(m.getFlags()&Flags.AccPublic)>0
 								&&m.getElementName().equals("main")
-								&&m.getSignature().equals("([QString;)V"))
-						{
+								&&m.getSignature().equals("([QString;)V")){
 							return true;
 						}
 				}
 			}
-
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
 	}
-	private String getSignature(ICompilationUnit cu)
-	{
 
+
+	private String getSignature(ICompilationUnit cu){
 		try {
 			String name = cu.getElementName();
 			int index = name.indexOf(".java");
 			name = name.substring(0,index);
-			for(IType t :cu.getTypes())
-			{
+			for(IType t :cu.getTypes()){
 				String tName = t.getElementName();
 				if(name.equals(tName))
 					return t.getFullyQualifiedName()+".main"+DESC_MAIN;
 			}
 		} catch (JavaModelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		return "";
-
 	}
-
-	public static Object[] getClassNameAndLine(CompilationUnit unit, ASTNode n) {
-		IType fileName = unit.getTypeRoot().findPrimaryType();
-		String s = (fileName == null) ? "" : fileName.toString();
-		// String className = (s.indexOf('[') == -1) ? s : s.substring(0,
-		// s.indexOf('['));
-		String className = unit.getJavaElement().getPath().toString();
-		IFile file = null;
-		try {
-			file = (IFile) unit.getJavaElement()
-					.getCorrespondingResource();
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-		}
-
-		int line = unit.getLineNumber(n.getStartPosition());
-		Object[] nameLine = { className, String.valueOf(line), file};
-		return nameLine;
-	}
-
-
-	protected String getPersistentProperty(IResource res, QualifiedName qn) {
-		try {
-			return res.getPersistentProperty(qn);
-		} catch (CoreException e) {
-			return "";
-		}
-	}
-
-	protected void setPersistentProperty(IResource res, QualifiedName qn,
-			String value) {
-		try {
-			res.setPersistentProperty(qn, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
-
-
-
 
 }

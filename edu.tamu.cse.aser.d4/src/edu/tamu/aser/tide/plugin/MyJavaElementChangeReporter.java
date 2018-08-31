@@ -2,7 +2,6 @@ package edu.tamu.aser.tide.plugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -77,22 +76,17 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 
 				if(unit!=null)
 					unit.accept(myASTVisitor);
-//				ChangedItem item = myASTVisitor.getChangedItem();
-//				System.out.println(item.methodName + " this is changed method. 000");
 				myASTVisitor.reSetChangedItem();
 
 			}else if(deltas.getFlags() == IJavaElementDelta.F_PRIMARY_RESOURCE){
 				System.out.println(deltas.getFlags() + " this is the flag...........");
 				ICompilationUnit elementDelta = (ICompilationUnit) deltas.getElement();
 				System.out.println(elementDelta.toString() + " this is element delta.");
-				//
 				parser.setSource(elementDelta);
 				ASTNode unit = parser.createAST(null);
 
 				if(unit!=null)
 					unit.accept(myASTVisitor);
-//				ChangedItem item = myASTVisitor.getChangedItem();
-//				System.out.println(item.methodName + " this is changed method. ");
 				myASTVisitor.reSetChangedItem();
 
 			}
@@ -106,57 +100,53 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 		traverseAndPrint(delta);
 	}
 
-//	public boolean work = false;
-//	public void work(boolean work) {
-//		this.work = work;
-//	}
+	public boolean work = true;
+	public void work(boolean work) {
+		this.work = work;
+	}
 
 	@Override
 	public void elementChanged(ElementChangedEvent event) {
-//		if(!work)
-//			return;
+		if(!work)
+			return;
 		IJavaElementDelta delta= event.getDelta();
 		IJavaElementDelta[] deltas = delta.getAffectedChildren();
 		while(deltas.length>0){
 			delta = deltas[0];
 			deltas = delta.getAffectedChildren();
 		}
-		//traverseAndPrint(delta);
 
-		//if (delta instanceof JavaElementDelta)
-		{
-			IJavaElement elem = ((JavaElementDelta)delta).getElement();
+		IJavaElement elem = ((JavaElementDelta)delta).getElement();
 
-			if(elem instanceof ICompilationUnit) {
-				parser.setSource((ICompilationUnit)elem);
-				ASTNode unit = parser.createAST(null);
+		if(elem instanceof ICompilationUnit) {
+			parser.setSource((ICompilationUnit)elem);
+			ASTNode unit = parser.createAST(null);
 
-				if(unit!=null)
-					unit.accept(myASTVisitor);
+			if(unit!=null)
+				unit.accept(myASTVisitor);
 
-			}else if (elem instanceof SourceMethod) {//method modifier change, not working
-				String methodName = ((SourceMethod)elem).getElementName();
+		}else if (elem instanceof SourceMethod) {//method modifier change, not working
+			String methodName = ((SourceMethod)elem).getElementName();
 
-				IJavaElement elem2 = ((SourceMethod)elem).getParent();
-				String className = ((SourceType)elem2).getElementName();
-				String packageName = ((SourceType)elem2).getPackageFragment().getElementName();
+			IJavaElement elem2 = ((SourceMethod)elem).getParent();
+			String className = ((SourceType)elem2).getElementName();
+			String packageName = ((SourceType)elem2).getPackageFragment().getElementName();
 
-				myASTVisitor.setChangedItem(packageName, className, methodName);
-			}
+			myASTVisitor.setChangedItem(packageName, className, methodName);
+		}
 
-			if(myASTVisitor.hasChanged()){
-				final IPath path = delta.getElement().getPath();
-				IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
-				final IJavaProject javaProject = delta.getElement().getJavaProject();
-				ArrayList<ChangedItem> changedItems = myASTVisitor.getChangedItem();
-				if(changedItems != null){
-					ConvertHandler chandler = Activator.getDefault().getConvertHandler();
-					if(chandler != null){
-						chandler.handleMethodChange(javaProject,file,changedItems);//, myASTVisitor.rChanges
-					}
+		if(myASTVisitor.hasChanged()){
+			final IPath path = delta.getElement().getPath();
+			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+			final IJavaProject javaProject = delta.getElement().getJavaProject();
+			ArrayList<ChangedItem> changedItems = myASTVisitor.getChangedItem();
+			if(changedItems != null){
+				ConvertHandler chandler = Activator.getDefault().getConvertHandler();
+				if(chandler != null){
+					chandler.handleMethodChange(javaProject,file,changedItems);//, myASTVisitor.rChanges
 				}
-				myASTVisitor.reSetChangedItem();
 			}
+			myASTVisitor.reSetChangedItem();
 		}
 	}
 
@@ -164,9 +154,6 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 		private HashMap<String,MethodDeclaration> subtrees = new HashMap<String,MethodDeclaration>();
 		private ArrayList<ChangedItem> changedItems = new ArrayList<>();
 		private    boolean active;
-
-		//check when lock/thread/method stmts: 0 -> not change; 1 -> new added; -1 -> new del; 2 -> objchange;
-//		private ReporterChanges rChanges = new ReporterChanges();
 
 		public MyASTVisitor() {
 		}
@@ -191,31 +178,11 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 			}
 		}
 
-//		public void setChangedItem(String packageName, String className, String methodName){
-//			changed.packageName = packageName;
-//			changed.className = className;
-//			changed.methodName = methodName;
-//
-//			active = true;
-//		}
-
 		public void reSetChangedItem(){
 			active = false;
 			changedItems.clear();
-//			rChanges.clear();
-//			changed.packageName = "";//empty
-//			changed.className = "";
-//			changed.methodName = "";
 		}
 
-		@Override
-		public boolean visit(VariableDeclarationStatement node) {
-			for (Iterator iter = node.fragments().iterator(); iter.hasNext();) {
-				VariableDeclarationFragment fragment = (VariableDeclarationFragment) iter.next();
-				// ... store these fragments somewhere
-			}
-			return false; // prevent that SimpleName is interpreted as reference
-		}
 
 		@Override
 		public boolean visit(FieldDeclaration node) {
@@ -238,13 +205,12 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 				}
 			}
 
-			if(methodName.equals(className))//TODO:  support static constructor?
+			if(methodName.equals(className))
 				methodName = "<init>";
 
 			//full signature
 			String fullName = packageName+"."+className+"."+methodName;
 
-			//System.out.println(node);
 			// Finding match for this methods name(mName) in saved method subtrees...
 			boolean methodHasChanged = false;
 			if (subtrees.containsKey(fullName)) {
@@ -254,7 +220,6 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 			} else {
 				// No earlier entry found, definitely changed => added
 				methodHasChanged = true;
-//				rChanges.add(new_change, 3, fullName, 1);
 			}
 			if (methodHasChanged) {
 				//record changes
@@ -262,35 +227,14 @@ public class MyJavaElementChangeReporter implements IElementChangedListener {
 				new_change.methodName = methodName;
 				new_change.className = className;
 
-				//for change are in code but not in ir: e.g. see sunflow/LigherServer/calculatePhotons
-//				if(subtrees.containsKey(fullName)){
-//					new_change.stmt_n = node.getBody().statements();
-//					new_change.stmt_o = subtrees.get(fullName).getBody().statements();
-//				}
 				if(!changedItems.contains(new_change)){
 					changedItems.add(new_change);
 					active = true;
 				}
-//				MethodDeclaration changedmethod = subtrees.get(fullName);
-
-//				if(subtrees.containsKey(fullName)){
-//					//see the diff
-//					List stmts_n = node.getBody().statements();
-//					List stmts_o = subtrees.get(fullName).getBody().statements();
-//					compareDifference(stmts_n, stmts_o, new_change);
-//				}
-
-				// "changed" is a HashMap of IMethods that have been earlierly identified as changed
-				// "added" works similarly but for added methods (using IJavaElementDelta.getAddedChildren())
-				//                if (!changed.containsKey(mName) && !added.containsKey(mName)) {
-				//                    // Method has indeed changed and is not yet queued for further actions
-				//                    changed.put(mName, (IMethod) node.resolveBinding().getJavaElement());
-				//                }
 			}
 			// "subtrees" must be updated with every method's AST subtree in order for this to work
 			subtrees.put(fullName, node);
 			// continue visiting after first MethodDeclaration
-
 			return false;
 		}
 

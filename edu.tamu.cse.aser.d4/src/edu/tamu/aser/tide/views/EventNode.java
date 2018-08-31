@@ -23,12 +23,11 @@ public class EventNode extends TreeNode{
 	@Override
 	public ImageDescriptor getImage() {
 		return Activator.getImageDescriptor("forward_nav.gif");
-//		return null;
 	}
 
 	@Override
 	protected void createChildren(ArrayList<LinkedList<String>> trace, String fix) {
-		// TODO Auto-generated method stub
+		// no child
 	}
 
 }

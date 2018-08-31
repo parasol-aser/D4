@@ -6,8 +6,8 @@ import java.util.HashSet;
 import org.eclipse.core.resources.IFile;
 
 import edu.tamu.aser.tide.engine.ITIDEBug;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 
 public class CheckDatarace implements ITIDEBug{

@@ -46,15 +46,9 @@ public class RaceNode extends TreeNode{
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void createChildren(ArrayList<LinkedList<String>> trace, String fix) {
-		// TODO Auto-generated method stub
-//		TraceNode tracenode = new TraceNode(this, trace);
-//		FixNode fixnode = new FixNode(this, fix);
-//		super.children.add(tracenode);
-//		super.children.add(fixnode);
 		LinkedList<String> trace1 = trace.get(0);
 		LinkedList<String> trace2 = trace.get(1);
 		if(this instanceof RaceNode){
-//			"Trace of " + rw1.getSig() + " is in thread" + tid1 + ": \n"
 			//1st rwnode
 			String name1 = "Trace of " + race.node1.getSig() + " is :";
 			SubTraceNode subtrace1 = new SubTraceNode(this, name1, trace1);

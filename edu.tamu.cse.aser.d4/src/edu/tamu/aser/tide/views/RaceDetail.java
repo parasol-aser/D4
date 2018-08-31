@@ -23,8 +23,6 @@ public class RaceDetail extends TreeNode{
 		return name;
 	}
 
-	//total number
-
 	@Override
 	public ImageDescriptor getImage() {
 		return Activator.getImageDescriptor("folder_icon.gif");
@@ -38,7 +36,7 @@ public class RaceDetail extends TreeNode{
 	protected void createChild(TIDERace race) {
 		createChild(race, false);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected void createChild(TIDERace race, boolean isNewest) {
 		//transfer to racenode

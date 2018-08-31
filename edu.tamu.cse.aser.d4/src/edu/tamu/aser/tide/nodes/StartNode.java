@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 import org.eclipse.core.resources.IFile;
 
@@ -13,17 +13,15 @@ public class StartNode extends SyncNode{
 	final MutableIntSet TID_child = IntSetUtil.make();
 	CGNode node;
 	CGNode target;
-	public int linenum;
+	public int line;
 	private IFile file;
 
-	public StartNode(int TID, int TID_child, CGNode node, CGNode node2, int linenum, IFile file)//int GID,
-	{
-//		this.GID = GID;
+	public StartNode(int TID, int TID_child, CGNode node, CGNode node2, int linenum, IFile file){
 		this.parentTID = TID;
 		this.selfTID = TID_child;
 		this.node = node;
 		this.target = node2;
-		this.linenum = linenum;
+		this.line = linenum;
 		this.file = file;
 	}
 
@@ -42,9 +40,6 @@ public class StartNode extends SyncNode{
 		return parentTID;
 	}
 
-//	public int getGID() {
-//		return GID;
-//	}
 	public int getSelfTID() {
 		return selfTID;
 	}
@@ -59,19 +54,18 @@ public class StartNode extends SyncNode{
 		return TID_child;
 	}
 
-	public String toString()
-	{
-//		return " "+parentTID+" start "+TID_child;
+	public String toString(){
 		if(node == null){//main
 			String tclassname = target.getMethod().getDeclaringClass().toString();
 			String tmethodname = target.getMethod().getName().toString();
-			return "Main thread created by " + tclassname.substring(tclassname.indexOf(':') +3, tclassname.length()) + "." + tmethodname;
+			return "Main thread created by " + tclassname.substring(tclassname.indexOf(':') +3, tclassname.length()) + "." + tmethodname + " (line " + line + ")";
 		}else{
 			String pclassname = node.getMethod().getDeclaringClass().toString();
 			String pmethodname = node.getMethod().getName().toString();
-			return "Child thread created by " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname ;
+			return "Child thread created by " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname  + " (line " + line + ")";
 		}
 	}
+
 	@Override
 	public CGNode getBelonging() {
 		return node;
@@ -83,6 +77,6 @@ public class StartNode extends SyncNode{
 
 	@Override
 	public int getLine() {
-		return linenum;
+		return line;
 	}
 }

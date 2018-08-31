@@ -61,8 +61,10 @@ public class RelationDetail extends TreeNode{
 	protected void addChild(TIDERace race, String sig, boolean isNewest) {
 		if(map.keySet().contains(sig)){
 			RWRelationNode rwRelation = map.get(sig);
-			rwRelation.isNewest = isNewest;
-			rwRelation.addChild(race, isNewest);
+			if(!rwRelation.getRaces().contains(race)){
+				rwRelation.isNewest = isNewest;
+				rwRelation.addChild(race, isNewest);
+			}
 		}
 	}
 
@@ -91,28 +93,4 @@ public class RelationDetail extends TreeNode{
 	}
 
 
-//	protected void removeChild(TIDERace race) {
-//		RWRelationNode relationNode = map.get(race.initsig);
-//		relationNode.removeChild(race);
-//		if (relationNode.children.isEmpty()) {
-//			children.remove(relationNode);
-//		}
-//	}
-
-
-//	@SuppressWarnings("unchecked")
-//	protected void createChildren(HashMap<String, HashMap<String, ConcurrentRelation> > relations) {
-//		RWRelationNode relationNode;
-//		for(Map.Entry<String, HashMap<String, ConcurrentRelation>> relation : relations.entrySet()) {
-//			if (map.containsKey(relation.getKey())) {
-//				relationNode = map.get(relation.getKey());
-//				relationNode.createChildren(relation.getValue());
-//			} else {
-//				relationNode = new RWRelationNode(this, relation.getKey());
-//				relationNode.createChildren(relation.getValue());
-//				super.children.add(relationNode);
-//				map.put(relation.getKey(), relationNode);
-//			}
-//		}
-//	}
 }

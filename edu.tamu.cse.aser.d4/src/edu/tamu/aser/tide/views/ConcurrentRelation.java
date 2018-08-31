@@ -2,9 +2,9 @@ package edu.tamu.aser.tide.views;
 
 import java.util.HashSet;
 
-import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.MemNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class ConcurrentRelation{
 	public WriteNode writeNode;
