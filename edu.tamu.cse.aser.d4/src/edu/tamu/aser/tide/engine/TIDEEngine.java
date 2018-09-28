@@ -604,11 +604,11 @@ public class TIDEEngine{
 		HashSet<SSAInstruction> catchinsts = InstInsideCatchBlock(cfg);//won't consider rw,lock related to catch blocks
 		SSAInstruction[] insts = n.getIR().getInstructions();
 		System.out.println("==== " + n.getMethod().toString());
-		for (int i = 0; i < insts.length; i++) {
-			SSAInstruction ssaInstruction = insts[i];
-			System.out.println(ssaInstruction);
-		}
-		System.out.println();
+//		for (int i = 0; i < insts.length; i++) {
+//			SSAInstruction ssaInstruction = insts[i];
+//			System.out.println(ssaInstruction);
+//		}
+//		System.out.println();
 
 		for(int i=0; i<insts.length; i++){
 			SSAInstruction inst = insts[i];
@@ -1639,10 +1639,7 @@ public class TIDEEngine{
 				}
 				while (node == null){
 					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
-					if(new_param == -1)
-						node = handleRunnable(instKey, new_param, useNode);
-					else
-						break;
+					node = handleRunnable(instKey, new_param, useNode);
 				}
 				return node;
 			}
