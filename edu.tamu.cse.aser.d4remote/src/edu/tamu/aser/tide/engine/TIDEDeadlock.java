@@ -7,12 +7,12 @@ import java.util.LinkedList;
 
 import org.eclipse.core.resources.IFile;
 
-import edu.tamu.aser.tide.trace.DLLockPair;
+import edu.tamu.aser.tide.nodes.DLPair;
 
 public class TIDEDeadlock implements ITIDEBug {
 
-	public final DLLockPair lp1;
-	public final DLLockPair lp2;
+	public final DLPair lp1;
+	public final DLPair lp2;
 	public int tid1;
 	public int tid2;
 	public String deadlockMsg, fixMsg;
@@ -20,12 +20,12 @@ public class TIDEDeadlock implements ITIDEBug {
 	public HashMap<String, IFile> event_ifile_map = new HashMap<>();
 	public HashMap<String, Integer> event_line_map = new HashMap<>();
 
-	public TIDEDeadlock(DLLockPair lp1, DLLockPair lp2){
+	public TIDEDeadlock(DLPair lp1, DLPair lp2){
 		this.lp1=lp1;
 		this.lp2=lp2;
 	}
 
-	public TIDEDeadlock(int tid1, DLLockPair dllp1, Integer tid2, DLLockPair dllp2) {
+	public TIDEDeadlock(int tid1, DLPair dllp1, Integer tid2, DLPair dllp2) {
 		this.lp1 = dllp1;
 		this.lp2 = dllp2;
 		this.tid1 = tid1;

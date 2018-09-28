@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 import java.util.HashSet;
 
@@ -10,27 +10,16 @@ import com.ibm.wala.ssa.SSAInstruction;
 
 public abstract class MemNode implements INode {
 	final int TID;
-	String addr, sig;
+	String sig;
 	int line;
 	PointerKey pointerKey;
 	private HashSet<String> objsigs = new HashSet<>();
-	private String prefix;
+	public String prefix;
 	protected CGNode node;
 	public SSAInstruction inst;
 	public IFile file;
-//	protected LinkedList<String> trace;
-//	public HashMap<String, IFile> event_ifile_map;
-//	public HashMap<String, Integer> event_line_map;
 	public String localSig = "";
 
-	public MemNode( int TID, String addr, String sig, int line)//int GID,
-	{
-//		this.GID = GID;
-		this.TID = TID;
-		this.addr = addr;
-		this.sig = sig;
-		this.line = line;
-	}
 
 	public MemNode(int curTID, String instSig, int sourceLineNum, PointerKey key,
 			String prefix, CGNode node, SSAInstruction inst, IFile file) {//current used
@@ -44,6 +33,15 @@ public abstract class MemNode implements INode {
 		this.file = file;
 	}
 
+	public MemNode copy(int line){
+		//update sig
+		String new_sig = sig.substring(0, sig.lastIndexOf(":") + 1) + line;
+		if(this instanceof ReadNode)
+			return new ReadNode(TID, new_sig, line, pointerKey, prefix, node, inst, file);
+		else
+			return new WriteNode(TID, new_sig, line, pointerKey, prefix, node, inst, file);
+	}
+
 	public void setLocalSig(String lsig){
 		this.localSig = lsig;
 	}
@@ -55,17 +53,8 @@ public abstract class MemNode implements INode {
 	public IFile getFile(){
 		return file;
 	}
-//	public int hashCode(){
-//		return objsigs.hashCode() + pointerKey.hashCode();
-//	}
-//
-//	public boolean equals(Object o){
-//		if(o instanceof DLockNode){
-//			if(((DLockNode) o).getLockSig().equals(objsigs))
-//				return true;
-//		}
-//		return false;
-//	}
+
+
 	@Override
 	public boolean equals(Object that){
 		if(that instanceof MemNode){
@@ -75,11 +64,14 @@ public abstract class MemNode implements INode {
 				if(this.objsigs.equals(thatnode.objsigs)
 						&& this.prefix.equals(thatnode.prefix)
 						&& this.localSig.equals(((MemNode) that).localSig)
-//						&& this.file.equals(thatnode.file)
 //						&& this.line == ((MemNode) that).line//line??
 						){
-					return true;
-				}
+					if(this.file != null && thatnode.file != null){
+						if(this.file.equals(thatnode.file))
+							return true;
+					}else{
+						return true;
+					}				}
 			}
 		}
 		return false;
@@ -122,38 +114,32 @@ public abstract class MemNode implements INode {
 		return pointerKey;
 	}
 
-	public String getAddress()
-	{
-		return addr;
-	}
 	public int getTID() {
 		return TID;
 	}
-//	public int getGID() {
-//		return GID;
-//	}
-	public String getSig()
-	{
+
+	public String getSig(){
 		return sig;
 	}
 
-	public void setSig(String sig)
-	{
+	public void setSig(String sig){
 		this.sig = sig;
 	}
 
-	public int getLine()
-	{
+	public int getLine(){
 		return line;
 	}
 
-	public void setLine(int line)
-	{
-		this.line = line;
+	public boolean setLine(int line){
+		if(this.line != line){
+			this.line = line;
+			return true;
+		}
+		return false;
 	}
 
-	public void setInst(SSAInstruction inst){
-		this.inst = inst;
+	public SSAInstruction getInst(){
+		return inst;
 	}
 
 

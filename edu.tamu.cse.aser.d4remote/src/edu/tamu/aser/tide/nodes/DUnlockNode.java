@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 import java.util.HashSet;
 
@@ -13,21 +13,12 @@ public class DUnlockNode extends SyncNode{
 
 	final int TID;
 	int sourceLineNum;
-	 String lock, instSig;
+	String lock, instSig;
 	PointerKey key;
 	OrdinalSet<InstanceKey> instances;
 	private HashSet<String> locksigs = new HashSet<>();
 	private String prefix;
 	private CGNode node;
-
-	public DUnlockNode(int TID, String instSig, String lock, int sln)//int GID,
-	{
-//		this.GID = GID;
-		this.TID = TID;
-		this.instSig = instSig;
-		this.lock = lock;
-		this.sourceLineNum = sln;
-	}
 
 	public DUnlockNode(int curTID, String instSig2, int sourceLineNum, PointerKey key,
 			OrdinalSet<InstanceKey> instances, CGNode node, int sln) {
@@ -61,22 +52,18 @@ public class DUnlockNode extends SyncNode{
 		return locksigs;
 	}
 
-	public int hashCode()
-	{
-//		return locksigs.hashCode();//return the lock string
+	public int hashCode(){
+//		return locksigs.hashCode();
 		if(key == null)
 			return locksigs.hashCode();
 		else
 			return locksigs.hashCode() + key.hashCode();
 	}
 
-	public boolean equals(Object o)
-	{
+	public boolean equals(Object o){
 		if(o instanceof DUnlockNode){
 			if(((DUnlockNode) o).getLockSig().equals(locksigs) && ((DUnlockNode) o).instSig.equals(instSig))
 				return true;
-//			if(lock.equals(((DLockNode) o).getLockString()))
-//				return true;
 		}
 		return false;
 	}
@@ -86,37 +73,33 @@ public class DUnlockNode extends SyncNode{
 	public String getLockedObj() {
 		return lock;
 	}
+
 	public int getTID() {
 		return TID;
 	}
-//	public int getGID() {
-//		return GID;
-//	}
-	public String getLockString()
-	{
+
+	public String getLockString(){
 		return lock;
 	}
 
 	public String toString(){
-		return "lock on " + instSig + " on line " + sourceLineNum;
-//		return " "+TID+" unlock "+locksigs;
+		String methodname = node.getMethod().getName().toString();
+		return "UnLock in " + instSig.substring(0, instSig.indexOf(':')) +"." + methodname;
+//		return "Unlock on " + instSig + " on line " + sourceLineNum;
 	}
 
 	@Override
 	public int getSelfTID() {
-		// TODO Auto-generated method stub
 		return TID;
 	}
 
 	@Override
 	public IFile getFile() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int getLine() {
-		// TODO Auto-generated method stub
 		return sourceLineNum;
 	}
 }

@@ -12,12 +12,12 @@ import akka.routing.BalancingPool;
 import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.graph.Trace;
+import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
-import edu.tamu.aser.tide.trace.DLLockPair;
-import edu.tamu.aser.tide.trace.DLockNode;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.DLPair;
+import edu.tamu.aser.tide.nodes.DLockNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class BugHub extends UntypedActor{
 
@@ -49,11 +49,6 @@ public class BugHub extends UntypedActor{
 			nrOfWorks = variableWriteMap.keySet().size();
 		}else if(message instanceof RemoveLocalVar){//trace, remove local nodes
 			TIDEEngine engine = ReproduceBenchmark_remote.engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
 			//constract w/rnodes
 			ArrayList<Trace> alltrace = engine.shb.getAllTraces();
 			int total = alltrace.size();
@@ -76,11 +71,6 @@ public class BugHub extends UntypedActor{
 			}
 		}else if(message instanceof DistributeDatarace){//parallel check bugs
 			TIDEEngine engine = ReproduceBenchmark_remote.engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
 			for(String sig: engine.sharedFields){
 				HashSet<WriteNode> writes = engine.sigWriteNodes.get(sig);
 				if(writes != null){
@@ -94,14 +84,9 @@ public class BugHub extends UntypedActor{
 			}
 		}else if(message instanceof DistributeDeadlock){//parallel check bugs
 			TIDEEngine engine = ReproduceBenchmark_remote.engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
-			Set<Integer> tids = engine.threadDLLockPairs.keySet();
+			Set<Integer> tids = engine.threadDLPairs.keySet();
 			for(Integer tid1: tids){
-				ArrayList<DLLockPair> dLLockPairs = engine.threadDLLockPairs.get(tid1);
+				ArrayList<DLPair> dLLockPairs = engine.threadDLPairs.get(tid1);
 				workerRouter.tell(new CheckDeadlock(tid1, tids, dLLockPairs), getSelf());
 				nrOfWorks++;
 			}
@@ -141,11 +126,6 @@ public class BugHub extends UntypedActor{
 			IncrementalCheckDatarace work = (IncrementalCheckDatarace) message;
 			HashSet<String> checks = work.getNodes();
 			TIDEEngine engine  = ReproduceBenchmark_remote.engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
 			for (String sig : checks) {
 				HashSet<WriteNode> writes = engine.sigWriteNodes.get(sig);
 				HashSet<ReadNode> reads = engine.sigReadNodes.get(sig);
@@ -162,11 +142,6 @@ public class BugHub extends UntypedActor{
 		}else if(message instanceof IncrementalRecheckCommonLock){
 //			IncrementalRecheckCommonLock work = (IncrementalRecheckCommonLock) message;
 			TIDEEngine engine = ReproduceBenchmark_remote.engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
 			Object[] bugs = engine.bugs.toArray();
 			int total = bugs.length;
 			int num_in_group = total/8 + total%8;

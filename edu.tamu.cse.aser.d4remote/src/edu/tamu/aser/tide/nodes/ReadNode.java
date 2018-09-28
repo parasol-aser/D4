@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 import org.eclipse.core.resources.IFile;
 
@@ -8,29 +8,26 @@ import com.ibm.wala.ssa.SSAInstruction;
 
 public class ReadNode extends MemNode{
 
-
-	public ReadNode(int TID, String addr, String sig, int line)//int GID,
-	{
-		super(TID, addr, sig, line);
-	}
 	public ReadNode(int curTID, String instSig, int sourceLineNum, PointerKey key,
 			String prefix, CGNode node, SSAInstruction inst, IFile file) {
 		super(curTID, instSig, sourceLineNum, key, prefix, node, inst, file);
 	}
 
-//	public void addObjSig(String sig){
-//		objsigs.add(sig);
-//	}
-//
-//	public HashSet<String> getObjSig(){
-//		return objsigs;
-//	}
-
-	public String toString()
-	{
-//		return " "+TID+" read "+addr +" "+ sig+" "+line;
+	public String toString(){
 		String classname = super.node.getMethod().getDeclaringClass().toString();
 		String methodname = super.node.getMethod().getName().toString();
-		return "Read on " + super.getPrefix() + " in " +  classname.substring(classname.indexOf(':') +3, classname.length()) + "." + methodname;
+		String cn = null;
+		boolean jdk = false;
+		if(classname.contains("java/util/")){
+			jdk = true;
+			cn = classname.substring(classname.indexOf("L") +1, classname.length() -1);
+		}else{
+			cn = classname.substring(classname.indexOf(':') +3, classname.length());
+		}
+		if(jdk){
+				return "(Ext Lib) Read on " + super.getPrefix() + " in " +  cn + "." + methodname + " (line " + line + ")";
+		}else{
+				return "Read on " + super.getPrefix() + " in " +  cn + "." + methodname + " (line " + line + ")";
+		}
 	}
 }

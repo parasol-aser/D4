@@ -2,7 +2,7 @@ package edu.tamu.aser.tide.akkasys;
 
 import java.util.ArrayList;
 
-import edu.tamu.aser.tide.graph.Trace;
+import edu.tamu.aser.tide.shb.Trace;
 
 public class RemoveLocalJob {
 

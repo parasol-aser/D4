@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.util.intset.MutableIntSet;
 
@@ -16,24 +17,23 @@ import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDEDeadlock;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.graph.SHBEdge;
-import edu.tamu.aser.tide.graph.SHBGraph;
-import edu.tamu.aser.tide.graph.Trace;
+import edu.tamu.aser.tide.shb.SHBEdge;
+import edu.tamu.aser.tide.shb.SHBGraph;
+import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
-import edu.tamu.aser.tide.trace.DLLockPair;
-import edu.tamu.aser.tide.trace.DLockNode;
-import edu.tamu.aser.tide.trace.DUnlockNode;
-import edu.tamu.aser.tide.trace.INode;
-import edu.tamu.aser.tide.trace.JoinNode;
-import edu.tamu.aser.tide.trace.LockPair;
-import edu.tamu.aser.tide.trace.MemNode;
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.StartNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.DLPair;
+import edu.tamu.aser.tide.nodes.DLockNode;
+import edu.tamu.aser.tide.nodes.DUnlockNode;
+import edu.tamu.aser.tide.nodes.INode;
+import edu.tamu.aser.tide.nodes.JoinNode;
+import edu.tamu.aser.tide.nodes.LockPair;
+import edu.tamu.aser.tide.nodes.MemNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.StartNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class BugWorker extends UntypedActor{
 
-//	private final static boolean DEBUG = true;
 
 
 	@Override
@@ -77,33 +77,23 @@ public class BugWorker extends UntypedActor{
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
 		DLockNode check = job.getCheckLock();
 		TIDEEngine engine = ReproduceBenchmark_remote.engine;
-//		if(DEBUG){
-//			engine = Test.engine;
-//		}else{
-//			engine = TIDECGModel.bugEngine;
-//		}
 		//collect dlpair including check
 		SHBGraph shb = ReproduceBenchmark_remote.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
 		ArrayList<Integer> ctids = shb.getTrace(check.getBelonging()).getTraceTids();
-		Set<Integer> tids = engine.threadDLLockPairs.keySet();
+		Set<Integer> tids = engine.threadDLPairs.keySet();
 		for (int ctid : ctids) {
-			ArrayList<DLLockPair> dLLockPairs = engine.threadDLLockPairs.get(ctid);
+			ArrayList<DLPair> dLLockPairs = engine.threadDLPairs.get(ctid);
 			if(dLLockPairs == null){
 				continue;
 			}
-			for (DLLockPair pair : dLLockPairs) {
+			for (DLPair pair : dLLockPairs) {
 				if (pair.lock1.equals(check) || pair.lock2.equals(check)) {
-					DLLockPair dllp1 = pair;
+					DLPair dllp1 = pair;
 					for(Integer tid2: tids){
 						if(tid2 != ctid){
-							ArrayList<DLLockPair> dLLockPairs2 = engine.threadDLLockPairs.get(tid2);
+							ArrayList<DLPair> dLLockPairs2 = engine.threadDLPairs.get(tid2);
 							for(int j=0;j<dLLockPairs2.size();j++){
-								DLLockPair dllp2 = dLLockPairs2.get(j);
+								DLPair dllp2 = dLLockPairs2.get(j);
 								HashSet<String> l11sig = dllp1.lock1.getLockSig();
 								HashSet<String> l12sig = dllp1.lock2.getLockSig();
 								HashSet<String> l21sig = dllp2.lock1.getLockSig();
@@ -141,10 +131,6 @@ public class BugWorker extends UntypedActor{
 		}
 		if(bugs.size() > 0){
 			ReproduceBenchmark_remote.engine.addBugsBack(bugs);
-//			if(DEBUG)
-//				Test.engine.addBugsBack(bugs);
-//			else
-//				TIDECGModel.bugEngine.addBugsBack(bugs);
 		}
 		getSender().tell(new ReturnResult(), getSelf());
 	}
@@ -153,21 +139,21 @@ public class BugWorker extends UntypedActor{
 
 	private void processCheckDeadlock(CheckDeadlock job) {
 		HashSet<ITIDEBug> bugs = new HashSet<ITIDEBug>();
-		ArrayList<DLLockPair> dLLockPairs = job.getPairs();
+		ArrayList<DLPair> dLLockPairs = job.getPairs();
 		Set<Integer> tids = job.getTids();
 		int tid1 = job.getTid();
 		for(int i=0;i<dLLockPairs.size();i++){
-			DLLockPair dllp1 = dLLockPairs.get(i);
+			DLPair dllp1 = dLLockPairs.get(i);
 			for(Integer tid2: tids){
 				if(tid2!=tid1){
-					ArrayList<DLLockPair> dLLockPairs2;
-					dLLockPairs2 = ReproduceBenchmark_remote.engine.threadDLLockPairs.get(tid2);
+					ArrayList<DLPair> dLLockPairs2;
+					dLLockPairs2 = ReproduceBenchmark_remote.engine.threadDLPairs.get(tid2);
 //					if(DEBUG)
 //						dLLockPairs2 = Test.engine.threadDLLockPairs.get(tid2);
 //					else
 //						dLLockPairs2 = TIDECGModel.bugEngine.threadDLLockPairs.get(tid2);
 					for(int j=0;j<dLLockPairs2.size();j++){
-						DLLockPair dllp2 = dLLockPairs2.get(j);
+						DLPair dllp2 = dLLockPairs2.get(j);
 						HashSet<String> l11sig = dllp1.lock1.getLockSig();
 						HashSet<String> l12sig = dllp1.lock2.getLockSig();
 						HashSet<String> l21sig = dllp2.lock1.getLockSig();
@@ -593,7 +579,7 @@ public class BugWorker extends UntypedActor{
 					}
 				}
 			}
-			SHBEdge edge = shb.getIncomingEdgeWithTid(cgNode, tid);//using dfs, since usually is single tid shbedge
+			SHBEdge edge = shb.getIncomingEdgeWithTidForShowTrace(cgNode, tid);//using dfs, since usually is single tid shbedge
 			if (edge == null) {
 				break;
 			}else{
@@ -607,27 +593,9 @@ public class BugWorker extends UntypedActor{
 
 
 
-	private boolean ifHasCommonSig(LockPair pair, LockPair pair2) {
-		HashSet<String> sigs = ((DLockNode)pair.lock).getLockSig();
-		HashSet<String> sigs2 = ((DLockNode) pair2.lock).getLockSig();
-		for (String sig : sigs) {
-			if(sigs2.contains(sig)){
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-
 	private boolean doesHaveLockBetween(INode check, ArrayList<LockPair> pairs,
 			HashMap<LockPair, INode> pair_edge_locations) {
 		SHBGraph shb = ReproduceBenchmark_remote.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
 		for (LockPair pair : pairs) {
 			INode node = pair_edge_locations.get(pair);
 			DLockNode lock = (DLockNode) pair.lock;
@@ -690,131 +658,19 @@ public class BugWorker extends UntypedActor{
 		}
 	}
 
-	private boolean checkReachabilityof(int tid1, DLLockPair dllp1, int tid2, DLLockPair dllp2) {//replaced
-		HashMap<Integer, StartNode> mapOfStartNode;
-		boolean isDeadlock = false;
-//		int tid1 = dllp1.lock1.getTID();
-//		int tid2 = dllp2.lock1.getTID();
-		//new
-		isDeadlock = hasHBRelation(tid1, dllp1.lock1, tid2, dllp2.lock1);
-//		if (!isDeadlock) {
-//			TIDEEngine engine;
-//			if(DEBUG){
-//				engine = Test.engine;
-//			}else{
-//				engine = TIDECGModel.bugEngine;
-//			}
-//			//has common lock, update the race inside lock
-//			if (engine.bugs.size() > 0 && engine.change) {
-//				HashSet<TIDERace> removes = new HashSet<>();
-//				for (ITIDEBug bug : engine.bugs) {
-//					if(bug instanceof TIDERace){
-//						TIDERace exist = (TIDERace) bug;
-//						MemNode exist1 = exist.node1;
-//						MemNode exist2 = exist.node2;
-//						if () {
-//							removes.add(exist);
-//						}
-//					}
-//				}
-//				if (removes.size() > 0) {
-//					engine.removeBugs(removes);
-//				}
-//			}
-//		}
-
-		//find out parent
-//		StartNode startNode1 = mapOfStartNode.get(tid1);
-//		MutableIntSet kids1 = startNode1.getTID_Child();
-//		StartNode startNode2 = mapOfStartNode.get(tid2);
-//		MutableIntSet kids2 = startNode2.getTID_Child();
-//		if(kids1.contains(tid2)){
-//			//tid1 is parent of tid2
-//			if(trace.indexOf(startNode2) < trace.indexOf(dllp1.lock1)){
-//				isDeadlock = true;
-//			}
-//		}else if(kids2.contains(tid1)) {
-//			//tid2 is parent of tid1
-//			if(trace.indexOf(startNode1) < trace.indexOf(dllp2.lock1)){
-//				isDeadlock = true;
-//			}
-//		}else{
-//			StartNode sNode = sameParent(tid1, tid2);
-//			if(sNode != null){
-//				//same parent thread
-//				isDeadlock = true;
-//			}else{
-//				//other conditions
-//				int earlier;
-//				int later;
-//				if(trace.indexOf(startNode1) < trace.indexOf(startNode2)){
-//					//wtid starts early
-//					earlier = tid1;
-//					later = tid2;
-//					//					System.out.println("earlier: "+earlier + "  later: "+later);
-//					//check relation
-//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
-//					if(relatives == null){
-//						isDeadlock = false;
-//					}else {
-//						StartNode parenStart = relatives.get(1);
-//						if(trace.indexOf(dllp1.lock1) > trace.indexOf(parenStart)){
-//							isDeadlock = true;
-//						}
-//					}
-//				}else{
-//					earlier = tid2;
-//					later = tid1;
-//					//					System.out.println("earlier: "+earlier + "  later: "+later);
-//					//check relation
-//					ArrayList<StartNode> relatives = shareGrandParent(earlier, later);
-//					if(relatives == null){
-//						isDeadlock = false;
-//					}else{
-//						StartNode parenStart = relatives.get(1);
-//						if(trace.indexOf(dllp2.lock1) > trace.indexOf(parenStart)){
-//							isDeadlock = true;
-//						}
-//					}
-//				}
-//			}
-//		}
-		return isDeadlock;
+	private boolean checkReachabilityof(int tid1, DLPair dllp1, int tid2, DLPair dllp2) {//replaced
+		return hasHBRelation(tid1, dllp1.lock1, tid2, dllp2.lock1);
 	}
 
 
 	private boolean hasHBRelation(int erTID, INode comper, int eeTID, INode compee){
 		boolean donothave = false;
+		CallGraph cg = ReproduceBenchmark_remote.engine.callGraph;
 		SHBGraph shb = ReproduceBenchmark_remote.engine.shb;
-//		if(DEBUG){
-//			shb = Test.engine.shb;
-//		}else{
-//			shb = TIDECGModel.bugEngine.shb;
-//		}
-//		if (comper instanceof MemNode) {
-//			PointerKey keyer = ((MemNode) comper).getPointer();
-//			PointerKey keyee = ((MemNode) compee).getPointer();
-//			if (keyer != null && keyee != null) {
-//				OrdinalSet<InstanceKey> erVariable = Test.engine.pointerAnalysis.getPointsToSet(keyer);
-//				OrdinalSet<InstanceKey> eeVariable = Test.engine.pointerAnalysis.getPointsToSet(keyee);
-//				System.out.println();
-//			}
-//		}
 		StartNode erStartNode = ReproduceBenchmark_remote.engine.mapOfStartNode.get(erTID);
 		StartNode eeStartNode =ReproduceBenchmark_remote.engine.mapOfStartNode.get(eeTID);
 		JoinNode erJoinNode =ReproduceBenchmark_remote.engine.mapOfJoinNode.get(erTID);
 		JoinNode eeJoinNode =ReproduceBenchmark_remote.engine.mapOfJoinNode.get(eeTID);
-//		if(DEBUG){
-//			erStartNode = Test.engine.mapOfStartNode.get(erTID);
-//			eeStartNode = Test.engine.mapOfStartNode.get(eeTID);
-//			erJoinNode = Test.engine.mapOfJoinNode.get(erTID);
-//			eeJoinNode = Test.engine.mapOfJoinNode.get(eeTID);
-//		}else{
-//			erStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(erTID);
-//			eeStartNode = TIDECGModel.bugEngine.mapOfStartNode.get(eeTID);
-//			erJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(erTID);
-//			eeJoinNode = TIDECGModel.bugEngine.mapOfJoinNode.get(eeTID);
-//		}
 
 		if (erStartNode == null || eeStartNode == null) {
 			return false;//should not be?? the startnode has been removed, but the rwnode still got collected.
@@ -863,16 +719,16 @@ public class BugWorker extends UntypedActor{
 						donothave = true;
 					}
 				}else if(erJoinNode == null){//-1: start -> join; 1: join -> start;
-					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent) < 0){//trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)
+					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent, cg) < 0){//trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)
 						donothave = true;
 					}
 				}else if(eeJoinNode == null){
-					if(shb.compareStartJoin(eeStartNode, erJoinNode, parent) < 0){//trace.indexOf(wJoinNode) > trace.indexOf(xStartNode)
+					if(shb.compareStartJoin(eeStartNode, erJoinNode, parent, cg) < 0){//trace.indexOf(wJoinNode) > trace.indexOf(xStartNode)
 						donothave = true;
 					}
 				}else{
-					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent) < 0
-							&& shb.compareStartJoin(eeStartNode, erJoinNode, parent) < 0){//(trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)) && (trace.indexOf(wJoinNode) > trace.indexOf(xStartNode))
+					if(shb.compareStartJoin(erStartNode, eeJoinNode, parent, cg) < 0
+							&& shb.compareStartJoin(eeStartNode, erJoinNode, parent, cg) < 0){//(trace.indexOf(xJoinNode) > trace.indexOf(wStartNode)) && (trace.indexOf(wJoinNode) > trace.indexOf(xStartNode))
 						donothave = true;
 					}
 				}
@@ -895,13 +751,5 @@ public class BugWorker extends UntypedActor{
 	}
 
 
-
-
-
-//	private int compare(SyncNode syncNode, INode comper) {
-//
-//
-//		return 0;
-//	}
 
 }

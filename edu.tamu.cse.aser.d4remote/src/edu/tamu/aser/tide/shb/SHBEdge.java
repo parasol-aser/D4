@@ -1,22 +1,20 @@
-package edu.tamu.aser.tide.graph;
+package edu.tamu.aser.tide.shb;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import com.ibm.wala.ipa.callgraph.CGNode;
-
-import edu.tamu.aser.tide.trace.INode;
+import edu.tamu.aser.tide.nodes.INode;
 
 public class SHBEdge {
 
 	private INode node;
-	private CGNode n;
+	private String cgnode;
 	private HashSet<Integer> tids = new HashSet<>();	//edge tid mapping
 
 
-	public SHBEdge(INode node, CGNode n) {
+	public SHBEdge(INode node, String n) {
 		this.node = node;
-		this.n = n;
+		this.cgnode = n;
 		int tid = node.getTID();
 		if(!tids.contains(tid)){
 			tids.add(tid);
@@ -27,8 +25,12 @@ public class SHBEdge {
 		return node;
 	}
 
-	public CGNode getSink(){
-		return n;
+	/**
+	 * return sig of cgnode
+	 * @return
+	 */
+	public String getSink(){
+		return cgnode;
 	}
 
 	public void includeTid(int tid){

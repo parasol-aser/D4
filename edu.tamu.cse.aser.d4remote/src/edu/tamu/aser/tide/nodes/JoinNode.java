@@ -1,4 +1,4 @@
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 import org.eclipse.core.resources.IFile;
 
@@ -16,9 +16,7 @@ public class JoinNode extends SyncNode{
 	int line;
 	private IFile file;
 
-	public JoinNode(int TID, int TID_end, CGNode n, CGNode node, int line, IFile file)//int GID,
-	{
-//		this.GID = GID;
+	public JoinNode(int TID, int TID_end, CGNode n, CGNode node, int line, IFile file) {
 		this.parentTID = TID;
 		this.selfTID = TID_end;
 		this.node = n;
@@ -31,12 +29,10 @@ public class JoinNode extends SyncNode{
 		return target;
 	}
 
-//	public int getGID() {
-//		return GID;
-//	}
 	public int getTID() {
 		return parentTID;
 	}
+
 	public int getParentTID(){
 		return parentTID;
 	}
@@ -45,17 +41,14 @@ public class JoinNode extends SyncNode{
 		return selfTID;
 	}
 
-	public String toString()
-	{
-//		return " "+TID+" join "+TID_end;
+	public String toString(){
 		String pclassname = node.getMethod().getDeclaringClass().toString();
 		String pmethodname = node.getMethod().getName().toString();
-		return "Child thread joined to " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname + " on line " + line;
+		return "Child thread joined to " + pclassname.substring(pclassname.indexOf(':') +3, pclassname.length()) + "." + pmethodname + " (line " + line + ")";
 	}
 
 	@Override
 	public CGNode getBelonging() {
-		// TODO Auto-generated method stub
 		return node;
 	}
 
@@ -72,13 +65,15 @@ public class JoinNode extends SyncNode{
 	public void addParent(int parent){
 		TID_parents.add(parent);
 	}
+
 	public void addParents(MutableIntSet parents){
 		TID_parents.addAll(parents);
 	}
-	public MutableIntSet getTID_Parents()
-	{
+
+	public MutableIntSet getTID_Parents(){
 		return TID_parents;
 	}
+
 	public void removeParent(int pid) {
 		TID_parents.remove(pid);
 	}

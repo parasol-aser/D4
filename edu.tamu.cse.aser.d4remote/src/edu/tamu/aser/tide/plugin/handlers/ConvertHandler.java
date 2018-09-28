@@ -118,129 +118,6 @@ public class ConvertHandler extends AbstractHandler {
 		return currentProject;
 	}
 
-	/**
-	 * consider ignored functions back
-	 * @param javaProject
-	 * @param file
-	 * @param consider_method
-	 */
-	public void handleConsiderMethod(IJavaProject javaProject, IFile file, ChangedItem consider_method) {
-		considerNodes.clear();
-		TIDECGModel model = modelMap.get(javaProject);
-		if(model == null)
-			return;
-		IClassHierarchy cha = model.getClassHierarchy();
-
-		try{
-			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
-			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
-
-			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
-			List<Module> modules = new LinkedList<Module>();
-			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
-			cl.init(modules);
-			Iterator<IClass> iter = cl.iterateAllClasses();
-			while(iter.hasNext()){
-				IClass javaClass = iter.next();
-				String className = javaClass.getName().getClassName().toString();
-				Atom apackage = javaClass.getName().getPackage();
-				String apackage_s = null;
-				if(apackage != null){
-					apackage_s = apackage.toString().replace('/', '.');
-				}
-
-				if((apackage==null&&consider_method.packageName.isEmpty())
-						||apackage!=null&&apackage_s.equals(consider_method.packageName)){
-
-					if(className.contains(consider_method.className)){
-
-						for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
-							String mName = m.getName().toString();//JEFF TODO
-
-							if(mName.equals(consider_method.methodName)){
-								TypeName typeName = m.getDeclaringClass().getName();
-								IClass class_old = loader_old.lookupClass(typeName);
-								//									System.out.println("class_old hash: " + System.identityHashCode(class_old)) ;
-								if(class_old==null)
-									return;//TODO: other kinds of changes
-
-								com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
-								CGNode node = model.getOldCGNode(m_old);
-								considerNodes.add(node);
-							}
-						}
-					}
-				}
-			}
-			if(considerNodes.size() != 0){
-				letUsConsider(file, model);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
-
-	/**
-	 * ignore function/method
-	 * @param ignore_method
-	 */
-	public void handleIgnoreMethod(IJavaProject javaProject, IFile file, ChangedItem ignore_method) {
-		ignoreNodes.clear();
-		TIDECGModel model = modelMap.get(javaProject);
-		if(model == null)
-			return;
-		IClassHierarchy cha = model.getClassHierarchy();
-
-		try{
-			IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
-			IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
-
-			ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha.getScope().getExclusions(), cha);
-			List<Module> modules = new LinkedList<Module>();
-			modules.add(EclipseSourceFileModule.createEclipseSourceFileModule(file));
-			cl.init(modules);
-			Iterator<IClass> iter = cl.iterateAllClasses();
-			while(iter.hasNext()){
-				IClass javaClass = iter.next();
-				String className = javaClass.getName().getClassName().toString();
-				Atom apackage = javaClass.getName().getPackage();
-				String apackage_s = null;
-				if(apackage != null){
-					apackage_s = apackage.toString().replace('/', '.');
-				}
-
-				if((apackage==null&&ignore_method.packageName.isEmpty())
-						||apackage!=null&&apackage_s.equals(ignore_method.packageName)){
-
-					if(className.contains(ignore_method.className)){
-
-						for(com.ibm.wala.classLoader.IMethod m : javaClass.getDeclaredMethods()){
-							String mName = m.getName().toString();//JEFF TODO
-
-							if(mName.equals(ignore_method.methodName)){
-								TypeName typeName = m.getDeclaringClass().getName();
-								IClass class_old = loader_old.lookupClass(typeName);
-								//									System.out.println("class_old hash: " + System.identityHashCode(class_old)) ;
-								if(class_old==null)
-									return;//TODO: other kinds of changes
-
-								com.ibm.wala.classLoader.IMethod m_old = class_old.getMethod(m.getSelector());// cha.resolveMethod(m.getReference());
-								CGNode node = model.getOldCGNode(m_old);
-								ignoreNodes.add(node);
-							}
-						}
-					}
-				}
-			}
-			if(ignoreNodes.size() != 0){
-				letUsIgnore(file, model);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
 
 	/**
 	 * TriggerCheckHandler
@@ -512,48 +389,6 @@ public class ConvertHandler extends AbstractHandler {
 		}).start();
 	}
 
-	private void letUsIgnore(IFile file, TIDECGModel model) {
-		if(num_of_detection <= 0){
-			return;
-		}
-		new Thread(new Runnable(){
-			@Override
-			public void run() {
-				HashSet<ITIDEBug> removedbugs = model.ignoreCGNodes(ignoreNodes);
-				//update UI
-				//remove the marker from editor
-				model.removeBugMarkersForIgnore(removedbugs);
-				//remove the bug from echoview
-//				model.updateEchoViewForIgnore();
-				System.err.println("Total Time: "+(System.currentTimeMillis()-start_time));
-			}
-		}).start();
-	}
-
-
-
-	private void letUsConsider(IFile file, TIDECGModel model) {
-		if(num_of_detection <= 0){
-			return;
-		}
-		new Thread(new Runnable(){
-			@Override
-			public void run() {
-				HashSet<ITIDEBug> addbugs = model.considerCGNodes(considerNodes);
-				//update UI
-				//remove the marker from editor
-				try {
-					model.addBugMarkersForConsider(addbugs, file);
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
-				//remove the bug from echoview
-//				model.updateEchoViewForConsider();
-				System.err.println("Total Time: "+(System.currentTimeMillis()-start_time));
-			}
-		}).start();
-	}
-
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -576,10 +411,6 @@ public class ConvertHandler extends AbstractHandler {
 		return null;
 	}
 
-
-	public void rewriteExcludeFile() {
-		//leave for test(ICompilationUnit cu, IStructuredSelection selection)
-	}
 
 	public void test(ICompilationUnit cu, IStructuredSelection selection){
 		try{

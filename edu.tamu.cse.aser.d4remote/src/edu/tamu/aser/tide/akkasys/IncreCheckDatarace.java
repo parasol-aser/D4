@@ -2,8 +2,8 @@ package edu.tamu.aser.tide.akkasys;
 
 import java.util.HashSet;
 
-import edu.tamu.aser.tide.trace.ReadNode;
-import edu.tamu.aser.tide.trace.WriteNode;
+import edu.tamu.aser.tide.nodes.ReadNode;
+import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class IncreCheckDatarace {
 	private String sig;

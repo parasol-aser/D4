@@ -26,15 +26,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package edu.tamu.aser.tide.trace;
+package edu.tamu.aser.tide.nodes;
 
 public class LockPair {
 	public DLockNode lock;
 	public DUnlockNode unlock;
-	//make be wait node
-	public LockPair(DLockNode lock, DUnlockNode unlock)
-	{
+
+	/**
+	 * lock -> unlock
+	 * @param lock
+	 * @param unlock
+	 */
+	public LockPair(DLockNode lock, DUnlockNode unlock){
 		this.lock = lock;
 		this.unlock = unlock;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof LockPair){
+			LockPair that = (LockPair) obj;
+			if(this.lock.equals(that.lock) && this.unlock.equals(that.unlock)){
+				return true;
+			}
+		}
+		return false;
 	}
 }
