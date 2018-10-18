@@ -22,19 +22,14 @@ import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.IMethod.SourcePosition;
-import com.ibm.wala.fixedpoint.impl.AbstractFixedPointSolver;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.ide.util.JdtPosition;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.Context;
-import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
-import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
-import com.ibm.wala.ipa.callgraph.propagation.PropagationGraph;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -67,7 +62,6 @@ import edu.tamu.aser.tide.akkabug.FindSharedVariable;
 import edu.tamu.aser.tide.akkabug.IncreRemoveLocalVar;
 import edu.tamu.aser.tide.akkabug.IncrementalCheckDatarace;
 import edu.tamu.aser.tide.akkabug.IncrementalDeadlock;
-import edu.tamu.aser.tide.akkabug.IncrementalRecheckCommonLock;
 import edu.tamu.aser.tide.akkabug.RemoveLocalVar;
 import edu.tamu.aser.tide.nodes.DLPair;
 import edu.tamu.aser.tide.nodes.DLockNode;
@@ -87,7 +81,6 @@ import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPointerAnalysisImpl;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPropagationGraph;
 import edu.tamu.wala.increpta.util.IPAAbstractFixedPointSolver;
-import scala.collection.generic.BitOperations.Int;
 
 public class TIDEEngine{
 

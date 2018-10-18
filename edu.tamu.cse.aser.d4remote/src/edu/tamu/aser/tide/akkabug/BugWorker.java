@@ -17,9 +17,6 @@ import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDEDeadlock;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.shb.SHBEdge;
-import edu.tamu.aser.tide.shb.SHBGraph;
-import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.nodes.DLPair;
 import edu.tamu.aser.tide.nodes.DLockNode;
 import edu.tamu.aser.tide.nodes.DUnlockNode;
@@ -30,6 +27,9 @@ import edu.tamu.aser.tide.nodes.MemNode;
 import edu.tamu.aser.tide.nodes.ReadNode;
 import edu.tamu.aser.tide.nodes.StartNode;
 import edu.tamu.aser.tide.nodes.WriteNode;
+import edu.tamu.aser.tide.shb.SHBEdge;
+import edu.tamu.aser.tide.shb.SHBGraph;
+import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 
 public class BugWorker extends UntypedActor{

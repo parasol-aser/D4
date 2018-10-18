@@ -1,6 +1,7 @@
 package edu.tamu.aser.tide.nodes;
 
 import org.eclipse.core.resources.IFile;
+
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 

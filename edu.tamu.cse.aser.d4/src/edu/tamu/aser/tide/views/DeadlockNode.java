@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import edu.tamu.aser.tide.engine.TIDEDeadlock;
-import edu.tamu.aser.tide.engine.TIDERace;
 import edu.tamu.aser.tide.plugin.Activator;
 
 public class DeadlockNode extends TreeNode{

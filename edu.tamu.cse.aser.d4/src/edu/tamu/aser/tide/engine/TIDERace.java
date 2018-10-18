@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import org.eclipse.core.resources.IFile;
 
 import edu.tamu.aser.tide.nodes.MemNode;
-import edu.tamu.aser.tide.nodes.WriteNode;
 
 public class TIDERace implements ITIDEBug{
 

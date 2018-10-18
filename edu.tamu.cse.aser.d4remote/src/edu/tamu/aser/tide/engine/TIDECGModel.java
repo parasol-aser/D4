@@ -4,35 +4,25 @@
 package edu.tamu.aser.tide.engine;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import com.ibm.wala.cast.ipa.callgraph.AstCallGraph;
 import com.ibm.wala.cast.ipa.callgraph.AstCallGraph.AstCGNode;
 import com.ibm.wala.cfg.ControlFlowGraph;
-import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
-import com.ibm.wala.classLoader.IMethod.SourcePosition;
 import com.ibm.wala.eclipse.cg.model.WalaProjectCGModel;
-import com.ibm.wala.ide.util.JdtPosition;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
@@ -47,7 +37,6 @@ import com.ibm.wala.ipa.callgraph.propagation.PropagationGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationSystem;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -64,20 +53,9 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import edu.tamu.aser.tide.akkabug.BugHub;
-import edu.tamu.aser.tide.shb.SHBEdge;
-import edu.tamu.aser.tide.shb.SHBGraph;
-import edu.tamu.aser.tide.marker.BugMarker;
-import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
-import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 import edu.tamu.aser.tide.nodes.DLockNode;
-import edu.tamu.aser.tide.nodes.INode;
 import edu.tamu.aser.tide.nodes.MemNode;
-import edu.tamu.aser.tide.nodes.MethodNode;
-import edu.tamu.aser.tide.nodes.ReadNode;
-import edu.tamu.aser.tide.nodes.StartNode;
-import edu.tamu.aser.tide.nodes.SyncNode;
-import edu.tamu.aser.tide.nodes.WriteNode;
-import scala.collection.generic.BitOperations.Int;
+import edu.tamu.aser.tide.plugin.handlers.ConvertHandler;
 
 public class TIDECGModel extends WalaProjectCGModel {
 

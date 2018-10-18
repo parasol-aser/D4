@@ -66,9 +66,6 @@ import edu.tamu.aser.tide.akkabug.IncrementalCheckDatarace;
 import edu.tamu.aser.tide.akkabug.IncrementalDeadlock;
 import edu.tamu.aser.tide.akkabug.IncrementalRecheckCommonLock;
 import edu.tamu.aser.tide.akkabug.RemoveLocalVar;
-import edu.tamu.aser.tide.shb.SHBEdge;
-import edu.tamu.aser.tide.shb.SHBGraph;
-import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.nodes.DLPair;
 import edu.tamu.aser.tide.nodes.DLockNode;
 import edu.tamu.aser.tide.nodes.DUnlockNode;
@@ -81,6 +78,9 @@ import edu.tamu.aser.tide.nodes.ReadNode;
 import edu.tamu.aser.tide.nodes.StartNode;
 import edu.tamu.aser.tide.nodes.SyncNode;
 import edu.tamu.aser.tide.nodes.WriteNode;
+import edu.tamu.aser.tide.shb.SHBEdge;
+import edu.tamu.aser.tide.shb.SHBGraph;
+import edu.tamu.aser.tide.shb.Trace;
 
 public class TIDEEngine {
 

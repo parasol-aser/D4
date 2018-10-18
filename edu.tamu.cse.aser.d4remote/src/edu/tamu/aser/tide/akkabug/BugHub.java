@@ -12,11 +12,11 @@ import akka.routing.BalancingPool;
 import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDEEngine;
 import edu.tamu.aser.tide.engine.TIDERace;
-import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.nodes.DLPair;
 import edu.tamu.aser.tide.nodes.DLockNode;
 import edu.tamu.aser.tide.nodes.ReadNode;
 import edu.tamu.aser.tide.nodes.WriteNode;
+import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.aser.tide.tests.ReproduceBenchmark_remote;
 
 public class BugHub extends UntypedActor{
