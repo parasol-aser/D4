@@ -40,7 +40,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import edu.tamu.aser.tide.akkasys.BugHub;
+import edu.tamu.aser.tide.akkabug.BugHub;
 import edu.tamu.aser.tide.engine.AnalysisUtils;
 import edu.tamu.aser.tide.engine.ITIDEBug;
 import edu.tamu.aser.tide.engine.TIDEEngine;

@@ -63,7 +63,7 @@ import com.ibm.wala.util.graph.InferGraphRoots;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import edu.tamu.aser.tide.akkasys.BugHub;
+import edu.tamu.aser.tide.akkabug.BugHub;
 import edu.tamu.aser.tide.shb.SHBEdge;
 import edu.tamu.aser.tide.shb.SHBGraph;
 import edu.tamu.aser.tide.marker.BugMarker;
