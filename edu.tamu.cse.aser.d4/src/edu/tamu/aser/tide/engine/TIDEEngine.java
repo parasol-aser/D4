@@ -676,8 +676,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-										System.err.println("ERROR: starting new thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								System.out.println("Run : " + node.toString());
@@ -743,8 +751,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-										System.err.println("ERROR: joining parent thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								System.out.println("Join : " + node.toString());
@@ -1260,8 +1276,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-										System.err.println("ERROR: starting new thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								System.out.println("Run : " + node.toString());
@@ -1327,8 +1351,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-										System.err.println("ERROR: joining parent thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								System.out.println("Join : " + node.toString());
@@ -1632,6 +1664,8 @@ public class TIDEEngine{
 				}
 				while (node == null){
 					new_param = findDefsInDataFlowFor(useNode, new_param, creation.iindex);
+					if(new_param == -1)
+					    return null;
 					node = handleRunnable(instKey, new_param, useNode);
 				}
 				return node;
@@ -2949,8 +2983,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-										System.err.println("ERROR: starting new thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								System.out.println("Run : " + node.toString());
@@ -3017,8 +3059,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-										System.err.println("ERROR: joining parent thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								System.out.println("Join : " + node.toString());
@@ -3286,8 +3336,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins, param, n);
 									if(node==null){
-										System.err.println("ERROR: starting new thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 
@@ -3350,8 +3408,16 @@ public class TIDEEngine{
 									}
 									node = handleRunnable(ins,param, n);
 									if(node==null){
-										System.err.println("ERROR: joining parent thread: "+ name);
-										continue;
+										if(key instanceof LocalPointerKey){
+											//class implements runnable
+											LocalPointerKey localkey = (LocalPointerKey) key;
+											name = localkey.getNode().getMethod().getDeclaringClass().getName();
+											node = threadSigNodeMap.get(name);
+											if(node == null){
+												System.err.println("ERROR: starting new thread: "+ name);
+												continue;
+											}
+										}
 									}
 								}
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, isThreadPool, true);
