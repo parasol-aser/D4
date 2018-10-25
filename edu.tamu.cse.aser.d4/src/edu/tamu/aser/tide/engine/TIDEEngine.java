@@ -20,6 +20,7 @@ import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.IMethod.SourcePosition;
 import com.ibm.wala.fixpoint.IVariable;
@@ -28,6 +29,7 @@ import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ssa.IR;
@@ -46,6 +48,7 @@ import com.ibm.wala.ssa.SSAMonitorInstruction;
 import com.ibm.wala.ssa.SSANewInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.collections.HashSetFactory;
@@ -80,6 +83,7 @@ import edu.tamu.aser.tide.shb.SHBGraph;
 import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPointerAnalysisImpl;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPropagationGraph;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGraphBuilder;
 import edu.tamu.wala.increpta.util.IPAAbstractFixedPointSolver;
 
 public class TIDEEngine{
@@ -124,6 +128,7 @@ public class TIDEEngine{
 
 	private static HashMap<CGNode,Collection<Loop>> nodeLoops = new HashMap<CGNode,Collection<Loop>>();
 
+	private IPASSAPropagationCallGraphBuilder builder;
 	public CallGraph callGraph;
 	public IPAPointerAnalysisImpl pointerAnalysis;
 	protected IPAPropagationGraph propagationGraph;
@@ -214,7 +219,8 @@ public class TIDEEngine{
 
 
 
-	public TIDEEngine(String entrySignature,CallGraph callGraph, IPAPropagationGraph flowgraph, IPAPointerAnalysisImpl pointerAnalysis, ActorRef bughub){
+	public TIDEEngine(IPASSAPropagationCallGraphBuilder builder, String entrySignature,CallGraph callGraph, IPAPropagationGraph flowgraph, IPAPointerAnalysisImpl pointerAnalysis, ActorRef bughub){
+		this.builder = builder;
 		this.callGraph = callGraph;
 		this.pointerAnalysis = pointerAnalysis;
 		this.maxGraphNodeID = callGraph.getNumberOfNodes() + 1000;
@@ -1174,7 +1180,7 @@ public class TIDEEngine{
 			FieldReference field = ((SSAFieldAccessInstruction)inst).getDeclaredField();
 			IField f = builder.getClassHierarchy().resolveField(field);
 			if(f == null)
-				return;
+				return;//should not be null
 			PointerKey staticPointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForStaticField(f);//builder.getPointerKeyForStaticField(f);
 			OrdinalSet<InstanceKey> baseObjects = pointerAnalysis.getPointsToSet(staticPointer);
 			logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, staticPointer, baseObjects, sig, file);

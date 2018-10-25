@@ -384,7 +384,7 @@ public class ReproduceBenchmarks {
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, numOfWorkers), "bughub");
 		start_time = System.currentTimeMillis();
 		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
-		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
 		engine.detectBothBugs(ps);
 
 //		System.out.println("EXHAUSTIVE DETECTION >>>");
@@ -449,7 +449,7 @@ public class ReproduceBenchmarks {
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
 //		start_time = System.currentTimeMillis();
 		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
-		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
 		engine.detectBothBugs(ps);
 
 		int race = 0;
@@ -517,7 +517,7 @@ public class ReproduceBenchmarks {
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
 //		start_time = System.currentTimeMillis();
 		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
-		engine = new TIDEEngine((includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
 		engine.detectBothBugs(ps);
 
 //		System.out.println("INITIAL DETECTION >>>");
