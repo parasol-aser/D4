@@ -1171,7 +1171,13 @@ public class TIDEEngine{
 		String instSig =typeclassname.substring(1)+":"+sourceLineNum;
 
 		if(((SSAFieldAccessInstruction)inst).isStatic()){
-			logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, null, null, sig, file);
+			FieldReference field = ((SSAFieldAccessInstruction)inst).getDeclaredField();
+			IField f = builder.getClassHierarchy().resolveField(field);
+			if(f == null)
+				return;
+			PointerKey staticPointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForStaticField(f);//builder.getPointerKeyForStaticField(f);
+			OrdinalSet<InstanceKey> baseObjects = pointerAnalysis.getPointsToSet(staticPointer);
+			logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, staticPointer, baseObjects, sig, file);
 		}else{
 			int baseValueNumber = ((SSAFieldAccessInstruction)inst).getUse(0);
 			PointerKey basePointer = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, baseValueNumber);//+
