@@ -76,7 +76,11 @@ public class D4JDTJavaSourceAnalysisEngine<I extends InstanceKey> extends Eclips
 
   @Override
   public IAnalysisCacheView makeDefaultCache() {
-    return new AnalysisCacheImpl(AstIRFactory.makeDefaultFactory());
+    if(super.getOptions() == null){
+      return new AnalysisCacheImpl(AstIRFactory.makeDefaultFactory());
+    }else{
+      return new AnalysisCacheImpl(AstIRFactory.makeDefaultFactory(), super.getOptions().getSSAOptions());
+    }
   }
 
   @Override
