@@ -55,7 +55,7 @@ public class SHBGraph{
 	}
 
 	public boolean addTrace(CGNode cgnode, Trace trace, int tid){
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		if(traceMapping.containsKey(node)){
 			traceMapping.get(node).includeTid(tid);
 			return false;
@@ -69,7 +69,7 @@ public class SHBGraph{
 
 
 	public boolean delTrace(CGNode cgnode, int tid){
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		if(traceMapping.containsKey(node)){
 			ArrayList<Integer> tids = traceMapping.get(node).getTraceTids();
 			if(tids.contains(tid) && tids.size() == 1)
@@ -84,7 +84,7 @@ public class SHBGraph{
 	}
 
 	public boolean delTrace(CGNode cgnode){
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		if(traceMapping.containsKey(node)){
 			//if remove these nodes, when consider back, they are missing, then require re-traversal insts.
 			//			clearSourceINodeFor(node);
@@ -101,7 +101,7 @@ public class SHBGraph{
 	}
 
 	public boolean replaceTrace(CGNode cgnode, Trace curTrace){
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		if(traceMapping.containsKey(node)){
 			ArrayList<Integer> tids = traceMapping.get(node).getTraceTids();
 			curTrace.includeTids(tids);
@@ -115,17 +115,17 @@ public class SHBGraph{
 	}
 
 	public SHBEdge addEdge(INode inst, CGNode method) {
-		String node = method.getMethod().toString();
+		String node = method.getMethod().toString() + " " + method.getContext().toString();
 		return edgeManager.addEdge(inst, node);
 	}
 
 	public boolean delEdge(INode inst, CGNode method) {
-		String node = method.getMethod().toString();
+		String node = method.getMethod().toString() + " " + method.getContext().toString();
 		return edgeManager.delEdge(inst, node);
 	}
 
 	public Trace getTrace(CGNode cgnode){
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		return traceMapping.get(node);
 	}
 
@@ -291,7 +291,7 @@ public class SHBGraph{
 	}
 
 	public HashSet<INode> getIncomingSourcesOf(CGNode cgnode) {
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		HashSet<INode> sources = new HashSet<>();
 		HashSet<SHBEdge> inEdges = getIncomingEdgesOf(node);
 		for (SHBEdge in : inEdges) {
@@ -302,7 +302,7 @@ public class SHBGraph{
 	}
 
 	public HashSet<CGNode> getIncomingSourcesOf(CGNode cgnode, int tid) {
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		HashSet<CGNode> sources = new HashSet<>();
 		HashSet<SHBEdge> inEdges = getIncomingEdgesOf(node);
 		for (SHBEdge in : inEdges) {
@@ -317,7 +317,7 @@ public class SHBGraph{
 	}
 
 	public HashSet<CGNode> getOutGoingSinksOf(CGNode node) {
-		String n = node.getMethod().toString();
+		String n = node.getMethod().toString() + " " + node.getContext().toString();
 		HashSet<CGNode> sinks = new HashSet<>();
 		HashSet<SHBEdge> outEdges = getOutGoingEdgesOf(n);
 		for (SHBEdge out : outEdges) {
@@ -377,22 +377,22 @@ public class SHBGraph{
 	}
 
 	public void addBackEdge(CGNode cgnode, JoinNode jNode) {
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		edgeManager.addBackEdge(node, jNode);
 	}
 
 	public HashSet<SHBEdge> getIncomingEdgeWithTid(CGNode cgnode, int tid){//may need to return hashset<shbedge>
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		return edgeManager.getIncomingEdgeWithTid(node, tid);
 	}
 
 	public SHBEdge getIncomingEdgeWithTidForShowTrace(CGNode cgnode, int tid){//may need to return hashset<shbedge>
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		return edgeManager.getIncomingEdgeWithTidForShowTrace(node, tid);
 	}
 
 	public HashSet<SHBEdge> getAllIncomingEdgeWithTid(CGNode cgnode, int tid){//may need to return hashset<shbedge>
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		return edgeManager.getAllIncomingEdgeWithTid(node, tid);
 	}
 
@@ -448,7 +448,7 @@ public class SHBGraph{
 		HashSet<CGNode> nextIsolates = new HashSet<>();
 		while(!mayIsolates.isEmpty()){
 			for (CGNode tarnode : mayIsolates) {
-				String tar = tarnode.getMethod().toString();
+				String tar = tarnode.getMethod().toString() + " " + tarnode.getContext().toString();
 				HashSet<SHBEdge> inEdges_sink = getIncomingEdgesOf(tar);
 				if(inEdges_sink == null){
 					//tar and ignore are the same node, and it recursively call itself. already removed
@@ -477,7 +477,7 @@ public class SHBGraph{
 	}
 
 	public void removeTidFromAllTraces(CGNode cgnode, int oldkid) {//and edge
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		Trace curTrace = getTrace(node);
 		if(!curTrace.removeTid(oldkid)){
 			return;
@@ -501,7 +501,7 @@ public class SHBGraph{
 	}
 
 	public boolean includeTidForKidTraces(CGNode cgnode, int newTid) {//and edge
-		String node = cgnode.getMethod().toString();
+		String node = cgnode.getMethod().toString() + " " + cgnode.getContext().toString();
 		Trace curTrace = getTrace(node);
 		if(curTrace == null){//should not be?? curtrace just created or retreived.
 			return false;
