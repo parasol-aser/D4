@@ -24,6 +24,19 @@ In the newly launched Eclipse application, right-click a main class in Package E
 
 The incremental detection can be triggered by saving the changed files.
 
+** Add the following method to the ````com.ibm.wala.cast.loader.AstClass````:
+```java
+  public void updateMethod(Selector selector, IMethod method) {
+    if (declaredMethods.containsKey(selector)) {
+      declaredMethods.put(selector, method);
+    } else if (getSuperclass() != null) {
+      if(getSuperclass() instanceof AstClass){
+        ((AstClass) getSuperclass()).updateMethod(selector,method);
+      }
+    }
+  }
+```
+
 #### D4 views
 
 Go to Window -> Show View -> Others to display D4 views (i.e., D4 Concurrent Relations, D4 Race List, D4 Deadlock List). 
