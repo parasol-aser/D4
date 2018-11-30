@@ -647,7 +647,7 @@ public class TIDEEngine{
 						String sig = imethod.getSignature();
 						if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
 							//Future runnable
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -669,7 +669,7 @@ public class TIDEEngine{
 						}else if(sig.equals("java.lang.Thread.start()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
 							//Thread, Executors and ThreadPoolExecutor
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -701,7 +701,7 @@ public class TIDEEngine{
 							hasSyncBetween = true;
 						}else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
 							//Future join
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -728,7 +728,7 @@ public class TIDEEngine{
 						else if(sig.equals("java.lang.Thread.join()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
 							//Executors and ThreadPoolExecutor
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances) {
 								TypeName name = ins.getConcreteType().getName();
@@ -868,7 +868,7 @@ public class TIDEEngine{
 				}else{
 					//instance
 					int objectValueNumber = inst.getUse(0);
-					PointerKey objectPointer = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, objectValueNumber);
+					PointerKey objectPointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, objectValueNumber);
 					OrdinalSet<InstanceKey> lockedObjects = pointerAnalysis.getPointsToSet(objectPointer);
 					DLockNode will = null;
 					if(lockedObjects.size()>0){//must be larger than 0
@@ -955,7 +955,7 @@ public class TIDEEngine{
 		SSAMonitorInstruction monitorInstruction = ((SSAMonitorInstruction) inst);
 		int lockValueNumber = monitorInstruction.getRef();
 
-		PointerKey lockPointer = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, lockValueNumber);
+		PointerKey lockPointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, lockValueNumber);
 		OrdinalSet<InstanceKey> lockObjects = pointerAnalysis.getPointsToSet(lockPointer);
 		// for deadlock
 		String typeclassname =  n.getMethod().getDeclaringClass().getName().toString();
@@ -1131,7 +1131,7 @@ public class TIDEEngine{
 		int	arrayRef = arrayRefInst.getArrayRef();
 		String typeclassname =  method.getDeclaringClass().getName().toString();
 		String instSig =typeclassname.substring(1)+":"+sourceLineNum;
-		PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, arrayRef);
+		PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, arrayRef);
 		OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 		//		String field = handleArrayTypes(arrayRefInst, n, instances); //currently, won't consider
 		String field = "";
@@ -1186,7 +1186,7 @@ public class TIDEEngine{
 			logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, staticPointer, baseObjects, sig, file);
 		}else{
 			int baseValueNumber = ((SSAFieldAccessInstruction)inst).getUse(0);
-			PointerKey basePointer = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, baseValueNumber);//+
+			PointerKey basePointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, baseValueNumber);//+
 			OrdinalSet<InstanceKey> baseObjects = pointerAnalysis.getPointsToSet(basePointer);//+
 			logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, basePointer, baseObjects, sig, file);
 		}
@@ -1254,7 +1254,7 @@ public class TIDEEngine{
 						String sig = imethod.getSignature();
 						if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
 							//Future runnable
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -1275,7 +1275,7 @@ public class TIDEEngine{
 							hasSyncBetween = true;
 						}else if(sig.equals("java.lang.Thread.start()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -1308,7 +1308,7 @@ public class TIDEEngine{
 						}
 						else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
 							//Future join
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -1334,7 +1334,7 @@ public class TIDEEngine{
 						}
 						else if(sig.equals("java.lang.Thread.join()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -1574,7 +1574,7 @@ public class TIDEEngine{
 		}else if(creation instanceof SSAArrayReferenceInstruction ){
 			SSAArrayReferenceInstruction arrayRefInst = (SSAArrayReferenceInstruction) creation;
 			int def0 = arrayRefInst.getArrayRef();
-			PointerKey key0 = pointerAnalysis.getHeapModel().getPointerKeyForLocal(who, def0);
+			PointerKey key0 = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(who, def0);
 			OrdinalSet<InstanceKey> instances0 = pointerAnalysis.getPointsToSet(key0);
 			return handleArrayTypes(arrayRefInst, who, instances0);
 		}else if(creation instanceof SSAAbstractInvokeInstruction){
@@ -2078,7 +2078,7 @@ public class TIDEEngine{
 						unlock.addLockSig(lock);
 					}else{
 						int objectValueNumber = inst.getUse(0);
-						PointerKey objectPointer = pointerAnalysis.getHeapModel().getPointerKeyForLocal(cgNode, objectValueNumber);
+						PointerKey objectPointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(cgNode, objectValueNumber);
 						OrdinalSet<InstanceKey> lockedObjects = pointerAnalysis.getPointsToSet(objectPointer);
 						if(lockedObjects.size() > 0){//must be larger than 0
 							//start to record new locks
@@ -2961,7 +2961,7 @@ public class TIDEEngine{
 						//System.out.println("Invoke Inst: "+sig);
 						if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
 							//Future runnable
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -2982,7 +2982,7 @@ public class TIDEEngine{
 							hasSyncBetween = true;
 						}else if(sig.equals("java.lang.Thread.start()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -3016,7 +3016,7 @@ public class TIDEEngine{
 						}
 						else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
 							//Future join
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -3042,7 +3042,7 @@ public class TIDEEngine{
 						}
 						else if(sig.equals("java.lang.Thread.join()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -3313,7 +3313,7 @@ public class TIDEEngine{
 						String sig = imethod.getSignature();
 						if(sig.contains("java.util.concurrent") && sig.contains(".submit(Ljava/lang/Runnable;)Ljava/util/concurrent/Future")){
 							//Future runnable
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -3335,7 +3335,7 @@ public class TIDEEngine{
 							hasSyncBetween = true;
 						}else if(sig.equals("java.lang.Thread.start()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("execute"))){
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -3367,7 +3367,7 @@ public class TIDEEngine{
 						}
 						else if(sig.contains("java.util.concurrent.Future.get()Ljava/lang/Object")){
 							//Future join
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
@@ -3391,7 +3391,7 @@ public class TIDEEngine{
 							hasSyncBetween = true;
 						}else if(sig.equals("java.lang.Thread.join()V")
 								|| (sig.contains("java.util.concurrent") && sig.contains("shutdown()V"))){
-							PointerKey key = pointerAnalysis.getHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
+							PointerKey key = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, ((SSAAbstractInvokeInstruction) inst).getReceiver());
 							OrdinalSet<InstanceKey> instances = pointerAnalysis.getPointsToSet(key);
 							for(InstanceKey ins: instances){
 								TypeName name = ins.getConcreteType().getName();
