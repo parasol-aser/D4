@@ -6,6 +6,7 @@ D4 is a tool that detects data races and deadlocks interactively in the Eclipse 
 
 ### Software Dependencies
 - Java 1.8 to compile
+- Eclipse Mars, Photon 
 - Eclipse PDE
 - [WALA 1.5.0](https://github.com/wala/WALA)
 - [Incremental Pointer Analysis](https://github.com/april1989/Incremental_Points_to_Analysis.git)(submodule)
