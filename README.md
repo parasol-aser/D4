@@ -16,7 +16,7 @@ D4 is a tool that detects data races and deadlocks interactively in the Eclipse 
 ````git clone https://github.com/wala/WALA```` 
 
 
-````git clone --recurse-submodules git@github.com:parasol-aser/D4.git```` 
+````git clone --recurse-submodules https://github.com/parasol-aser/D4```` 
 
 Import all the projects into Eclipse, and launch the plugin:  ````/edu.tamu.cse.aser.d4```` -> ````MANIFEST.MF```` -> Testing -> Launch an Eclipse application. 
 
