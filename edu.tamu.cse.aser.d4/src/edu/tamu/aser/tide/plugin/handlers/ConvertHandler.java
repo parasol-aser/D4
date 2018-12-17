@@ -114,7 +114,7 @@ public class ConvertHandler extends AbstractHandler {
 	private HashMap<IJavaProject,TIDECGModel> modelMap = new HashMap<IJavaProject,TIDECGModel>();
 	private TIDECGModel currentModel;
 	private IJavaProject currentProject;
-	private ClassLoaderImpl classloader;
+//	private ClassLoaderImpl classloader;
 
 	public HashSet<CGNode> changedNodes = new HashSet<>();
 	public HashSet<CGNode> changedModifiers = new HashSet<>();
@@ -347,8 +347,10 @@ public class ConvertHandler extends AbstractHandler {
 				//match
 				IClassHierarchy cha = model.getClassHierarchy();
 				try{
+					IClassLoader parent = cha.getLoader(ClassLoaderReference.Application);
 					IClassLoader loader_old = cha.getLoader(JavaSourceAnalysisScope.SOURCE);
-					Iterator<IClass> iter = classloader.iterateAllClasses();
+					ClassLoaderImpl cl = new JDTSourceLoaderImpl(JavaSourceAnalysisScope.SOURCE, parent, cha);
+					Iterator<IClass> iter = cl.iterateAllClasses();
 					while(iter.hasNext()){
 						IClass javaClass = iter.next();
 						String className = javaClass.getName().getClassName().toString();

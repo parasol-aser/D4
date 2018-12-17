@@ -2211,7 +2211,7 @@ public class TIDEEngine{
 			//remove from other maps
 			removeRelatedFromRWMaps(node);
 			//remove related lock info/ rw mapping
-			shb.clearOutgoingEdgesFor(node.getMethod().toString());
+			shb.clearOutgoingEdgesFor(node.getMethod().toString() + " " + node.getContext().toString());
 			//keep tids, incoming edges
 			trace.clearContent();
 			//replace with new trace and new relation
