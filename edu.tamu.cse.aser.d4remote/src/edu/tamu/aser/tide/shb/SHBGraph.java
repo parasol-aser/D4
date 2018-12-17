@@ -158,6 +158,8 @@ public class SHBGraph{
 		// -1: sync -> comper; 1: comper -> sync; 0: ?
 		HashSet<INode> stops = findTheTopNode(sync, stid);
 		HashSet<INode> itops = findTheTopNode(inode, itid);
+		if(stops.size() == 0 || itops.size() == 0)
+			return -1;
 		if(stops.containsAll(itops) && itops.containsAll(stops)){
 			//same origins
 			Object[] origins = stops.toArray();

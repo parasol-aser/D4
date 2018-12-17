@@ -82,6 +82,7 @@ import edu.tamu.aser.tide.shb.SHBEdge;
 import edu.tamu.aser.tide.shb.SHBGraph;
 import edu.tamu.aser.tide.shb.Trace;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPointerAnalysisImpl;
+import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPointsToSetVariable;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPAPropagationGraph;
 import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGraphBuilder;
 import edu.tamu.wala.increpta.util.IPAAbstractFixedPointSolver;
@@ -1183,7 +1184,10 @@ public class TIDEEngine{
 				return;//should not be null
 			PointerKey staticPointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForStaticField(f);//builder.getPointerKeyForStaticField(f);
 			OrdinalSet<InstanceKey> baseObjects = pointerAnalysis.getPointsToSet(staticPointer);
-			logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, staticPointer, baseObjects, sig, file);
+			if(baseObjects.size() > 0)
+				logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, staticPointer, baseObjects, sig, file);
+			else
+				logFieldAccess(inst, sourceLineNum, instSig, curTrace, n, null, null, sig, file);
 		}else{
 			int baseValueNumber = ((SSAFieldAccessInstruction)inst).getUse(0);
 			PointerKey basePointer = pointerAnalysis.getIPAHeapModel().getPointerKeyForLocal(n, baseValueNumber);//+
@@ -3478,7 +3482,7 @@ public class TIDEEngine{
 		HashSet<IVariable> changes = IPAAbstractFixedPointSolver.changes;
 		//find node from instSig
 		for (IVariable v : changes) {
-			PointsToSetVariable var = (PointsToSetVariable) v;
+			IPAPointsToSetVariable var = (IPAPointsToSetVariable) v;
 			PointerKey key = var.getPointerKey();
 			OrdinalSet<InstanceKey> newobjects = pointerAnalysis.getPointsToSet(key);//new
 			//interested wr
