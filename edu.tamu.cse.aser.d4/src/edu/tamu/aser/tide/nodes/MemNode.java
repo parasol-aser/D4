@@ -64,14 +64,16 @@ public abstract class MemNode implements INode {
 				if(this.objsigs.equals(thatnode.objsigs)
 						&& this.prefix.equals(thatnode.prefix)
 						&& this.localSig.equals(((MemNode) that).localSig)
-//						&& this.line == ((MemNode) that).line//line??
-						){
+						&& this.line == ((MemNode) that).line){
 					if(this.file != null && thatnode.file != null){
 						if(this.file.equals(thatnode.file))
 							return true;
-					}else{
+					}else if(this.file == null && thatnode.file == null){
 						return true;
-					}				}
+					}else{
+						return false;
+					}				
+				}
 			}
 		}
 		return false;
