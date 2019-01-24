@@ -184,6 +184,8 @@ public class TIDECGModel extends WalaProjectCGModel {
 				IPath fullPath = file.getProject().getFullPath();//full path of the project
 				if(bugEngine.races.isEmpty() && bugEngine.deadlocks.isEmpty())
 					System.err.println(" _________________NO BUGS ________________");
+				else
+					System.err.println("\nRaces: " + bugEngine.races.size() + "    Deadlocks: " + bugEngine.deadlocks.size() + "\n");
 
 				for(TIDERace race: bugEngine.races){
 					showRace(fullPath, race);

@@ -88,6 +88,8 @@ import edu.tamu.wala.increpta.ipa.callgraph.propagation.IPASSAPropagationCallGra
 import edu.tamu.wala.increpta.util.IPAAbstractFixedPointSolver;
 
 public class TIDEEngine{
+	
+	private boolean DEBUG = false;
 
 	//count the number of sigs from different traces: only for shared fields
 	private HashMap<String, HashMap<Integer, Integer>> rsig_tid_num_map = new HashMap<>();
@@ -365,9 +367,11 @@ public class TIDEEngine{
 			}
 
 			//race detection
-			System.err.println("End stmt traversal: " + (System.currentTimeMillis() - start));
+			if(DEBUG)
+				System.err.println("End stmt traversal: " + (System.currentTimeMillis() - start));
 			long local_start = System.currentTimeMillis();
-			System.err.println("Start to detect race: find shared variables");
+			if(DEBUG)
+				System.err.println("Start to detect race: find shared variables");
 			//organize variable read/write map
 			organizeRWMaps();
 			//1. find shared variables
@@ -393,30 +397,36 @@ public class TIDEEngine{
 					}
 				}
 			}
-
-			System.err.println("End find shared variables: " + (System.currentTimeMillis() - local_start));
+			
+			if(DEBUG)
+				System.err.println("End find shared variables: " + (System.currentTimeMillis() - local_start));
 			local_start = System.currentTimeMillis();
-			System.err.println("Start to detect race: remove local nodes ");
+			if(DEBUG)
+				System.err.println("Start to detect race: remove local nodes ");
 
 			//2. remove local nodes
 			bughub.tell(new RemoveLocalVar(), bughub);
 			awaitBugHubComplete();
 
-			System.err.println("End remove local nodes: " + (System.currentTimeMillis() - local_start));
+			if(DEBUG)
+				System.err.println("End remove local nodes: " + (System.currentTimeMillis() - local_start));
 			local_start = System.currentTimeMillis();
-			System.err.println("Start to detect race: real detection  " );
+			if(DEBUG)
+				System.err.println("Start to detect race: real detection  " );
 
 			//3. performance race detection with Fork-Join
 			bughub.tell(new DistributeDatarace(), bughub);
 			awaitBugHubComplete();
-
-			System.err.println("End real detection: " + (System.currentTimeMillis() - local_start));
+			
+			if(DEBUG)
+				System.err.println("End real detection: " + (System.currentTimeMillis() - local_start));
 			local_start = System.currentTimeMillis();
 			timeForDetectingRaces = timeForDetectingRaces + (System.currentTimeMillis() - start);
 			start = System.currentTimeMillis();
 
 			//detect deadlock
-			System.err.println("Start to detect deadlock: real detection ");
+			if(DEBUG)
+				System.err.println("Start to detect deadlock: real detection ");
 
 			//detect deadlocks
 			bughub.tell(new DistributeDeadlock(), bughub);
@@ -603,7 +613,6 @@ public class TIDEEngine{
 		SSACFG cfg = n.getIR().getControlFlowGraph();
 		HashSet<SSAInstruction> catchinsts = InstInsideCatchBlock(cfg);//won't consider rw,lock related to catch blocks
 		SSAInstruction[] insts = n.getIR().getInstructions();
-		System.out.println("==== " + n.getMethod().toString());
 //		for (int i = 0; i < insts.length; i++) {
 //			SSAInstruction ssaInstruction = insts[i];
 //			System.out.println(ssaInstruction);
@@ -662,7 +671,8 @@ public class TIDEEngine{
 										continue;
 									}
 								}
-								System.out.println("Run : " + node.toString());
+								if(DEBUG)
+									System.out.println("Run : " + node.toString());
 
 								processNewThreadInvoke(n, node, imethod, inst, ins, sourceLineNum, file, curTrace,false);
 							}
@@ -695,7 +705,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Run : " + node.toString());
+								if(DEBUG)
+									System.out.println("Run : " + node.toString());
 
 								processNewThreadInvoke(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, false);
 							}
@@ -720,7 +731,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Join : " + node.toString());
+								if(DEBUG)
+									System.out.println("Join : " + node.toString());
 
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, false, false);
 							}
@@ -770,7 +782,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Join : " + node.toString());
+								if(DEBUG)
+									System.out.println("Join : " + node.toString());
 
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, isThreadPool, false);
 							}
@@ -1272,7 +1285,8 @@ public class TIDEEngine{
 										continue;
 									}
 								}
-								System.out.println("Run : " + node.toString());
+								if(DEBUG)
+									System.out.println("Run : " + node.toString());
 
 								processNewThreadInvoke(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, true);
 							}
@@ -1304,7 +1318,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Run : " + node.toString());
+								if(DEBUG)
+									System.out.println("Run : " + node.toString());
 
 								processNewThreadInvoke(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, true);
 							}
@@ -1330,7 +1345,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Join : " + node.toString());
+								if(DEBUG)
+									System.out.println("Join : " + node.toString());
 
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, false, true);
 							}
@@ -1379,7 +1395,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Join : " + node.toString());
+								if(DEBUG)
+									System.out.println("Join : " + node.toString());
 
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, isThreadPool, true);
 							}
@@ -2164,10 +2181,11 @@ public class TIDEEngine{
 		for (CGNode cgNode : changedNodes) {
 			System.out.println(cgNode.getMethod().toString());
 		}
-		System.out.println("+++++++++++ changed modifier +++++++++++" + changedModifiers.size());
+		System.out.println("\n+++++++++++ changed modifier +++++++++++" + changedModifiers.size());
 		for (CGNode cgNode : changedModifiers) {
 			System.out.println(cgNode.getMethod().toString());
 		}
+		System.out.println();
 		//start to modify engine
 		for (CGNode node : changedModifiers) {
 			//only consider sync
@@ -2226,11 +2244,11 @@ public class TIDEEngine{
 		}
 		//record memnodes within removed_l/interested_l to recheck their lockset if the lock change is inside changedNode
 		considerRWNodesForInterestLock();//should only related to changednodes
-		System.out.println("mapofstartnodes after change ====================================");
+		System.out.println("Thread Start after change ====================================");
 		for (Integer tid : mapOfStartNode.keySet()) {
 			System.out.println(mapOfStartNode.get(tid).toString());
 		}
-		System.out.println("mapOfJoinNode =========================");
+		System.out.println("Thread Join after change ====================================");
 		for (Integer tid : mapOfJoinNode.keySet()) {
 			System.out.println(mapOfJoinNode.get(tid).toString());
 		}
@@ -2792,7 +2810,7 @@ public class TIDEEngine{
 				}
 			}
 		}
-		System.out.println("SIZE of Removed Bugs (in removeBugsRelatedToInterests): " + removedraces.size() + " " + removeddeadlocks.size()) ;
+//		System.out.println("SIZE of Removed Bugs (in removeBugsRelatedToInterests): " + removedraces.size() + " " + removeddeadlocks.size()) ;
 
 		races.removeAll(removedraces);
 		this.removedraces.addAll(removedraces);
@@ -2979,7 +2997,8 @@ public class TIDEEngine{
 										continue;
 									}
 								}
-								System.out.println("Run : " + node.toString());
+								if(DEBUG)
+									System.out.println("Run : " + node.toString());
 
 								processNewThreadInvokeIncremental(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, oldkids, oldkid_line_map, dupkids, false);
 							}
@@ -3011,7 +3030,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Run : " + node.toString());
+								if(DEBUG)
+									System.out.println("Run : " + node.toString());
 
 								//duplicate graph node id or existing node with trace?
 								processNewThreadInvokeIncremental(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, oldkids, oldkid_line_map, dupkids, false);
@@ -3038,7 +3058,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Join : " + node.toString());
+								if(DEBUG)
+									System.out.println("Join : " + node.toString());
 
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, false, false);
 							}
@@ -3087,7 +3108,8 @@ public class TIDEEngine{
 										}
 									}
 								}
-								System.out.println("Join : " + node.toString());
+								if(DEBUG)
+									System.out.println("Join : " + node.toString());
 
 								processNewThreadJoin(n, node, imethod, inst, ins, sourceLineNum, file, curTrace, false, false);
 							}
@@ -3710,8 +3732,8 @@ public class TIDEEngine{
 		}
 		//        ps.print(incre_race_time+" "+incre_dl_time+" ");
 
-		System.out.println("Removed bugs ============================ " + removedraces.size() + " " + removeddeadlocks.size());
-		System.out.println("Added bugs ============================ " + addedraces.size() + " " + addeddeadlocks.size());
+		System.out.println("Removed bugs ==> race: " + removedraces.size() + "   deadlock:" + removeddeadlocks.size());
+		System.out.println("Added bugs ==> race: " + addedraces.size() + "   deadlock:" + addeddeadlocks.size());
 
 //		races.removeAll(removedraces);
 //		deadlocks.removeAll(removeddeadlocks);
@@ -3722,16 +3744,22 @@ public class TIDEEngine{
 	public void recursiveIncludeTraceToInterestedL(CGNode root){
 		HashSet<CGNode> sinks = shb.getOutGoingSinksOf(root);
 		HashSet<CGNode> temps = new HashSet<>();
+		HashSet<CGNode> total = new HashSet<>();
 		temps.addAll(sinks);
+		total.addAll(sinks);
 		while (temps.size() > 0) {
+			sinks.clear();
 			for (CGNode temp : temps) {
 				includeTraceToInterestL(temp);
 				HashSet<CGNode> next_sinks = shb.getOutGoingSinksOf(temp);
-				sinks.addAll(next_sinks);
+				for (CGNode next_sink : next_sinks) {
+					if(!total.contains(next_sink))
+						sinks.add(next_sink);
+				}
 			}
 			temps.clear();
 			temps.addAll(sinks);
-			sinks.clear();
+			total.addAll(sinks);
 		}
 	}
 
@@ -3753,18 +3781,23 @@ public class TIDEEngine{
 	public void recursiveIncludeTraceToInterestedRW(CGNode root){
 		HashSet<CGNode> sinks = shb.getOutGoingSinksOf(root);
 		HashSet<CGNode> temps = new HashSet<>();
+		HashSet<CGNode> total = new HashSet<>();
 		temps.addAll(sinks);
+		total.addAll(sinks);
 		while (temps.size() > 0) {
+			sinks.clear();
 			for (CGNode temp : temps) {
 				includeTraceToInterestRW(temp);
 				HashSet<CGNode> next_sinks = shb.getOutGoingSinksOf(temp);
-				sinks.addAll(next_sinks);
+				for (CGNode next_sink : next_sinks) {
+					if(!total.contains(next_sink))
+						sinks.add(next_sink);
+				}
 			}
-			removeBugsRelatedToInterests(temps);
 			temps.clear();
-			temps.addAll(sinks);
-			sinks.clear();
+			temps.addAll(sinks);			
 		}
+		removeBugsRelatedToInterests(total);
 	}
 
 	private void includeTraceToInterestRW(CGNode node) {
@@ -3796,16 +3829,22 @@ public class TIDEEngine{
 	public void recursiveRemoveTraceFromSigRW(CGNode root){
 		HashSet<CGNode> sinks = shb.getOutGoingSinksOf(root);
 		HashSet<CGNode> temps = new HashSet<>();
+		HashSet<CGNode> total = new HashSet<>();
 		temps.addAll(sinks);
+		total.addAll(sinks);
 		while (temps.size() > 0) {
 			sinks.clear();
 			for (CGNode temp : temps) {
 				removeTraceFromSigRW(temp);
 				HashSet<CGNode> next_sinks = shb.getOutGoingSinksOf(temp);
-				sinks.addAll(next_sinks);
+				for (CGNode next_sink : next_sinks) {
+					if(!total.contains(next_sink))
+						sinks.add(next_sink);
+				}
 			}
 			temps.clear();
 			temps.addAll(sinks);
+			total.addAll(sinks);
 		}
 	}
 
@@ -3849,7 +3888,7 @@ public class TIDEEngine{
 
 
 	private void recheckRace() {
-		System.err.println("Start to detect races INCREMENTALLLy: ");
+		System.err.println("Start to detect races INCREMENTALLLY: ");
 		//1. find shared vars
 		HashSet<String> new_sharedFields = new HashSet<>();
 		//seq
@@ -3891,7 +3930,7 @@ public class TIDEEngine{
 
 
 	private void recheckLock() {
-		System.err.println("Start to detect deadlock INCREMENTALLLy:");
+		System.err.println("Start to detect deadlock INCREMENTALLLY:");
 		bughub.tell(new IncrementalDeadlock(interest_l), bughub);
 		awaitBugHubComplete();
 	}

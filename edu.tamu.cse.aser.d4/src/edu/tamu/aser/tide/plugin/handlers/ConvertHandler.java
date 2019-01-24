@@ -484,7 +484,7 @@ public class ConvertHandler extends AbstractHandler {
 									onlyModifier = false;
 									modifier = false;
 									System.out.println();
-									System.err.println("Changed Item: " + changedItem.packageName + " " + changedItem.className + " " + changedItem.methodName);
+//									System.err.println("Changed Item: " + changedItem.packageName + " " + changedItem.className + " " + changedItem.methodName);
 								}
 							}
 						}
@@ -586,7 +586,7 @@ public class ConvertHandler extends AbstractHandler {
 				if(trigger){
 					Activator.getDefault().getDefaultCollector().resetCollectedChanges();
 				}
-				System.err.println("Incremental Time: "+(System.currentTimeMillis()-start_time));
+				System.err.println("\nIncremental Time (exclude update Eclipse views): "+(System.currentTimeMillis()-start_time));
 				System.out.println();
 			}
 		}).start();
