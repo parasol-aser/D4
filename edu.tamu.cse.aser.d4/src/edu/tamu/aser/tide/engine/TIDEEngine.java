@@ -3269,7 +3269,10 @@ public class TIDEEngine{
 					List<SSAInstruction> insts2 = succ.getAllInstructions();
 					for (SSAInstruction inst2 : insts2) {
 						if(inst2.toString().contains("start()V")
-								||inst2.toString().contains("join()V")){
+								||inst2.toString().contains("join()V")
+								||inst2.toString().contains("put")
+								||inst2.toString().contains("get")
+								||inst2.toString().contains("monitor")){
 							continue;
 						}
 						catchinsts.add(inst2);
