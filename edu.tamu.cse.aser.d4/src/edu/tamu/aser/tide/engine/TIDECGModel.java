@@ -468,6 +468,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 		int line22 = l22.getLine();
 
 		String deadlockMsg = "Deadlock: ("+sig11  +","+sig12+ ";  "+sig21+ ","+sig22+ ")";
+		deadlockMsg.replace("$", "");
 		System.err.println(deadlockMsg);
 		ArrayList<LinkedList<String>> traceMsg = obtainTraceOfDeadlock(bug);
 //		String fixMsg = obtainFixOfDeadlock(bug);
@@ -521,6 +522,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 			sig =sig.substring(0, lindex);//remove instance hashcode
 
 		String raceMsg = "Race: "+sig+" ("+rnode.getSig()+", "+wnode.getSig()+")";
+		raceMsg.replace("$", "");
 		System.err.println(raceMsg + rnode.getObjSig().toString());
 		ArrayList<LinkedList<String>> traceMsg = obtainTraceOfRace(race);
 //		String fixMsg = obtainFixOfRace(race);

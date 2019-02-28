@@ -20,9 +20,9 @@ public class ReadNode extends MemNode{
 		boolean jdk = false;
 		if(classname.contains("java/util/")){
 			jdk = true;
-			cn = classname.substring(classname.indexOf("L") +1, classname.length() -1);
+			cn = classname.substring(classname.indexOf("L") +1, classname.length() -1).replace("$", "");
 		}else{
-			cn = classname.substring(classname.indexOf(':') +3, classname.length());
+			cn = classname.substring(classname.indexOf(':') +3, classname.length()).replace("$", "");
 		}
 		if(jdk){
 				return "(Ext Lib) Read on " + super.getPrefix() + " in " +  cn + "." + methodname + " (line " + line + ")";

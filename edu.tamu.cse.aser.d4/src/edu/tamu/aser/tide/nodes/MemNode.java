@@ -24,7 +24,7 @@ public abstract class MemNode implements INode {
 	public MemNode(int curTID, String instSig, int sourceLineNum, PointerKey key,
 			String prefix, CGNode node, SSAInstruction inst, IFile file) {//current used
 		this.TID = curTID;
-		this.sig = instSig;
+		this.sig = instSig.replace("$", "");
 		this.line = sourceLineNum;
 		this.pointerKey = key;
 		this.prefix = prefix;
@@ -125,7 +125,7 @@ public abstract class MemNode implements INode {
 	}
 
 	public void setSig(String sig){
-		this.sig = sig;
+		this.sig = sig.replace("$", "");
 	}
 
 	public int getLine(){
