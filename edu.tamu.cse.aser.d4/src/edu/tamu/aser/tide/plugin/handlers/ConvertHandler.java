@@ -40,6 +40,7 @@ import com.ibm.wala.ide.classloader.EclipseSourceFileModule;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
@@ -374,12 +375,13 @@ public class ConvertHandler extends AbstractHandler {
 
 //									IR ir_old = model.getCache().getSSACache().findOrCreateIR(m_old, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
 									IR ir = model.getCache().getSSACache().findOrCreateIR(m, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
+									DefUse du = model.getCache().getSSACache().findOrCreateDU(ir, Everywhere.EVERYWHERE);
 
 									System.out.println(m_old.hashCode());
 									CGNode cgnode = model.getOldCGNode(m_old);
 									if(cgnode instanceof IPAExplicitNode){
 										IPAExplicitNode astCGNode = (IPAExplicitNode) cgnode;
-										astCGNode.updateMethod(m, ir);
+										astCGNode.updateMethod(m, ir, du);
 										updateIRNodes.add(cgnode);
 									}
 									System.err.println("Updated Item: " + classname_tar + " " + methodname_tar);
@@ -456,6 +458,7 @@ public class ConvertHandler extends AbstractHandler {
 
 									IR ir_old = model.getCache().getSSACache().findOrCreateIR(m_old, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
 									IR ir = model.getCache().getSSACache().findOrCreateIR(m, Everywhere.EVERYWHERE, model.getOptions().getSSAOptions());
+									DefUse du = model.getCache().getSSACache().findOrCreateDU(ir, Everywhere.EVERYWHERE);
 
 									if(compareIRs(ir_old, ir, furItems)){//only compare the inner ir
 										if(m.isSynchronized() == m_old.isSynchronized()){
@@ -472,7 +475,7 @@ public class ConvertHandler extends AbstractHandler {
 									}
 									CGNode node = model.getOldCGNode(m_old);
 									model.updatePointerAnalysis(node,ir_old,ir);
-									node = model.updateCallGraph(m_old,m,ir);
+									node = model.updateCallGraph(m_old,m,ir,du);
 									if(onlyModifier){
 										changedModifiers.add(node);
 									}else{

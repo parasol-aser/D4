@@ -73,7 +73,7 @@ public class ReproduceBenchmarks {
 
     static String[] benchmark_names = new String[] { "avrora", "batik", "eclipse", "fop", "h2", "jython",
 			"luindex", "lusearch", "pmd", "sunflow", "tomcat", "tradebeans", "tradesoap",
-			"xalan"};
+			"xalan", "nolock"};
 
 	public static void main(String[] args) throws IOException, ClassHierarchyException, IllegalArgumentException, CallGraphBuilderCancelException {
 		if(args.length == 0 || args.length > 2){
@@ -265,6 +265,12 @@ public class ReproduceBenchmarks {
 			testFile = "data/xalantestfile.txt";
 			excludeFile = "data/ShortDefaultExclusions.txt";
 			scheduletime = 900000;
+			break;
+		case "nolock":
+			mainClassName = "Main";
+			mainMethodSig = mainClassName + mainSignature;
+			excludeFile = "data/ShortDefaultExclusions.txt";
+			testFile = "data/nolocktestfile.txt";
 			break;
 		case "all_short":
 			if(args.length == 2){

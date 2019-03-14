@@ -42,6 +42,7 @@ import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
@@ -1004,12 +1005,12 @@ public class TIDECGModel extends WalaProjectCGModel {
 	}
 
 	public CGNode updateCallGraph(com.ibm.wala.classLoader.IMethod m_old,
-			com.ibm.wala.classLoader.IMethod m, IR ir) {
+			com.ibm.wala.classLoader.IMethod m, IR ir, DefUse du) {
 		CGNode node = null;
 		try{
 			IPAExplicitCallGraph cg = (IPAExplicitCallGraph) getGraph();
 			IPAExplicitNode oldNode = (IPAExplicitNode) cg.findOrCreateNode(m_old, Everywhere.EVERYWHERE);
-			oldNode.updateMethod(m, ir);
+			oldNode.updateMethod(m, ir, du);
 			//update call graph key
 			cg.updateNode(m_old, m, Everywhere.EVERYWHERE, oldNode);
 			//update call site?

@@ -613,11 +613,11 @@ public class TIDEEngine{
 		SSACFG cfg = n.getIR().getControlFlowGraph();
 		HashSet<SSAInstruction> catchinsts = InstInsideCatchBlock(cfg);//won't consider rw,lock related to catch blocks
 		SSAInstruction[] insts = n.getIR().getInstructions();
-//		for (int i = 0; i < insts.length; i++) {
-//			SSAInstruction ssaInstruction = insts[i];
-//			System.out.println(ssaInstruction);
-//		}
-//		System.out.println();
+		for (int i = 0; i < insts.length; i++) {
+			SSAInstruction ssaInstruction = insts[i];
+			System.out.println(ssaInstruction);
+		}
+		System.out.println();
 
 		for(int i=0; i<insts.length; i++){
 			SSAInstruction inst = insts[i];
