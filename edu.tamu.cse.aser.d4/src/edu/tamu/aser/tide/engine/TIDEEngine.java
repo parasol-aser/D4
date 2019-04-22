@@ -134,7 +134,6 @@ public class TIDEEngine{
 	private IPASSAPropagationCallGraphBuilder builder;
 	public CallGraph callGraph;
 	public IPAPointerAnalysisImpl pointerAnalysis;
-	protected IPAPropagationGraph propagationGraph;
 	private int maxGraphNodeID;
 
 	public long timeForDetectingRaces = 0;
@@ -220,14 +219,11 @@ public class TIDEEngine{
 
 
 
-
-
-	public TIDEEngine(IPASSAPropagationCallGraphBuilder builder, String entrySignature,CallGraph callGraph, IPAPropagationGraph flowgraph, IPAPointerAnalysisImpl pointerAnalysis, ActorRef bughub){
+	public TIDEEngine(IPASSAPropagationCallGraphBuilder builder, String entrySignature,CallGraph callGraph, IPAPointerAnalysisImpl pointerAnalysis, ActorRef bughub){
 		this.builder = builder;
 		this.callGraph = callGraph;
 		this.pointerAnalysis = pointerAnalysis;
 		this.maxGraphNodeID = callGraph.getNumberOfNodes() + 1000;
-		this.propagationGraph = flowgraph;
 		this.bughub = bughub;
 
 		consideredJDKCollectionClass.add(ARRAYLIST);
@@ -237,15 +233,41 @@ public class TIDEEngine{
 		consideredJDKCollectionClass.add(ARRAYS);
 		consideredJDKCollectionClass.add(STRING);
 
+		//!!!!!!!!!!!!
+		//in context-sensitive: the entrypoint should not be fakenote context, should have correct context! 
+		//recollect run cgnode here. also works for context-insensitive
+		Iterator<CGNode> iter = callGraph.iterator();
+		while(iter.hasNext()) {
+			CGNode node = iter.next();
+			IMethod method = node.getMethod();
+			IClass klass = method.getDeclaringClass();
+			if(method.isPublic()&&!method.isStatic()) {
+				if (method.getName().toString().equals("run")
+						&&method.getDescriptor().toString().equals("()V")){
+					if (AnalysisUtils.implementsRunnableInterface(klass) || AnalysisUtils.extendsThreadClass(klass)
+							) {
+						TypeName name  = klass.getName();
+						threadSigNodeMap.put(name, node);
+//						System.out.println(node.toString());
+					}
+				}else if(method.getName().toString().equals("call")){  //java.util.concurrent.callable
+					if (AnalysisUtils.implementsCallableInterface(klass) || AnalysisUtils.extendsThreadClass(klass)
+							) {
+						TypeName name  = klass.getName();
+						threadSigNodeMap.put(name, node);
+//						System.out.println(node.toString());
+					}
+				}
+			}
+		}
+		
 		Collection<CGNode> cgnodes = callGraph.getEntrypointNodes();
 		for(CGNode n: cgnodes){
 			String sig = n.getMethod().getSignature();
 			//find the main node
 			if(sig.contains(entrySignature)){
 				mainEntryNodes.add(n);
-			}else{
-				TypeName name  = n.getMethod().getDeclaringClass().getName();
-				threadSigNodeMap.put(name, n);
+//				System.out.println(n.toString());
 			}
 		}
 	}
@@ -613,11 +635,11 @@ public class TIDEEngine{
 		SSACFG cfg = n.getIR().getControlFlowGraph();
 		HashSet<SSAInstruction> catchinsts = InstInsideCatchBlock(cfg);//won't consider rw,lock related to catch blocks
 		SSAInstruction[] insts = n.getIR().getInstructions();
-		for (int i = 0; i < insts.length; i++) {
-			SSAInstruction ssaInstruction = insts[i];
-			System.out.println(ssaInstruction);
-		}
-		System.out.println();
+//		for (int i = 0; i < insts.length; i++) {
+//			SSAInstruction ssaInstruction = insts[i];
+//			System.out.println(ssaInstruction);
+//		}
+//		System.out.println();
 
 		for(int i=0; i<insts.length; i++){
 			SSAInstruction inst = insts[i];

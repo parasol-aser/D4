@@ -143,7 +143,7 @@ public class TIDECGModel extends WalaProjectCGModel {
 		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
 		//initial bug engine
 		bughub = akkasys.actorOf(Props.create(BugHub.class, nrOfWorkers), "bughub");
-		bugEngine = new TIDEEngine(builder, entrySignature, callGraph, flowgraph, (IPAPointerAnalysisImpl) engine.getPointerAnalysis(), bughub);
+		bugEngine = new TIDEEngine(builder, entrySignature, callGraph, (IPAPointerAnalysisImpl) engine.getPointerAnalysis(), bughub);
 		BugHub.setPlugin(true);
 		BugWorker.setPlugin(true);
 		bugEngine.setChange(false);

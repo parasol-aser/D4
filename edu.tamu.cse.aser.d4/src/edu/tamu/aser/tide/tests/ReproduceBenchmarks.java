@@ -389,8 +389,7 @@ public class ReproduceBenchmarks {
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, numOfWorkers), "bughub");
 		start_time = System.currentTimeMillis();
-		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
-		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, pta, bughub);
 		engine.detectBothBugs(ps);
 
 //		System.out.println("EXHAUSTIVE DETECTION >>>");
@@ -454,8 +453,7 @@ public class ReproduceBenchmarks {
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
 //		start_time = System.currentTimeMillis();
-		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
-		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, pta, bughub);
 		engine.detectBothBugs(ps);
 
 		int race = 0;
@@ -522,8 +520,7 @@ public class ReproduceBenchmarks {
 		ActorSystem akkasys = ActorSystem.create();
 		ActorRef bughub = akkasys.actorOf(Props.create(BugHub.class, 1), "bughub");
 //		start_time = System.currentTimeMillis();
-		IPAPropagationGraph flowgraph = builder.getSystem().getPropagationGraph();
-		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, flowgraph, pta, bughub);
+		engine = new TIDEEngine(builder, (includeAllMainEntryPoints? mainSignature:mainMethodSig), cg, pta, bughub);
 		engine.detectBothBugs(ps);
 
 //		System.out.println("INITIAL DETECTION >>>");
@@ -748,14 +745,6 @@ public class ReproduceBenchmarks {
 									||klass.getName().toString().contains(mainClassName))
 								result.add(new DefaultEntrypoint(method, classHierarchy));
 							System.out.println("+++++ " + method.toString());
-						}
-						else if(method.isPublic()&&!method.isStatic()
-								&&method.getName().toString().equals("run")
-								&&method.getDescriptor().toString().equals("()V"))
-						{
-							if (AnalysisUtils.implementsRunnableInterface(klass) || AnalysisUtils.extendsThreadClass(klass))
-								result.add(new DefaultEntrypoint(method, classHierarchy));
-
 						}
 					} catch (Exception e) {
 						throw new RuntimeException(e);

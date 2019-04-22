@@ -286,6 +286,19 @@ public class AnalysisUtils {
 	private static boolean doesAllowPropagation(int valueNumber, CGNode enclosingCGNode, IClassHierarchy classHierarchy) {
 		return !isDefUseReachableFromParameterOrStaticField(valueNumber, enclosingCGNode, classHierarchy);
 	}
+	
+	public static boolean implementsCallableInterface(IClass klass) {
+		for (IClass implementedInterface : klass.getAllImplementedInterfaces()) {
+			if (isCallableInterface(implementedInterface)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isCallableInterface(IClass interfaceClass) {
+		return AnalysisUtils.getEnclosingNonanonymousClassName(interfaceClass.getName()).equals("java.util.concurrent.Callable");
+	}
 
 //	public static IField getAccessedField(BasicAnalysisData basicAnalysisData, SSAFieldAccessInstruction fieldAccessInstruction) {
 //		return basicAnalysisData.classHierarchy.resolveField(fieldAccessInstruction.getDeclaredField());
